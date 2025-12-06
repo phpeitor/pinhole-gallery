@@ -1,0 +1,130 @@
+@import url('https://fonts.googleapis.com/css?family=Heebo:400,700,800');
+
+body {
+    font-family: 'Heebo';
+    font-weight: 400;
+    font-size: 1.6rem;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.h1,
+.h2,
+.h3,
+.h4,
+.h5,
+.h6 {
+    font-family: 'Heebo';
+    font-weight: 900;
+}
+
+.pinhole-nav,
+.section-filter,
+.pinhole-footer,
+.site-description,
+.entry-category a,
+.entry-meta,
+.submit,
+.mks_read_more a,
+input[type="submit"],
+a.mks_button,
+.pinhole-button,
+.submit,
+.pinhole-button-social,
+.widget .mks_autor_link_wrap a,
+.widget .mks_read_more a,
+button,
+.entry-tags a,
+.tagcloud a,
+.mfp-counter,
+.pinhole-pagination,
+.pinhole-sticky-bottom a {
+    font-family: 'Heebo';
+    font-weight: 500;
+}
+
+.pinhole-nav,
+.pinhole-soc-menu {
+    font-size: 1.6rem;
+}
+
+h1,
+.h1 {
+    font-size: 3rem;
+}
+
+h2,
+.h2 {
+    font-size: 2.6rem;
+}
+
+h3,
+.h3,
+.pinhole-header-3 .h1 {
+    font-size: 2.2rem;
+}
+
+h4,
+.h4 {
+    font-size: 2rem;
+}
+
+h5,
+.h5 {
+    font-size: 2.1rem;
+}
+
+h6,
+.h6 {
+    font-size: 1.6rem;
+}
+
+.section-title .entry-title {
+    font-size: 3rem;
+}
+
+.widget-title {
+    font-size: 1.8rem;
+}
+.entry-category a,
+.entry-meta {
+    font-size: 1.2rem;
+}
+
+
+.site-title {
+    text-transform: none;
+}
+
+.site-description {
+    text-transform: none;
+}
+
+.pinhole-nav>li>a {
+    text-transform: none;
+}
+
+.section-title .entry-title,
+.widget-title {
+    text-transform: none;
+}
+
+.entry-category a,
+.entry-meta,
+.section-actions a,
+.entry-tags a {
+    text-transform: none;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    text-transform: none;
+}

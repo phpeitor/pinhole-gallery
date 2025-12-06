@@ -1,0 +1,263 @@
+body {
+    color: #ffffff;
+    background-image: linear-gradient(to right bottom, #cc0000, #cc3300, #ff7b00, #ffbb00,#fffa00);
+}
+
+.pinhole-sidebar,
+.pinhole-section-full-content {
+    background: #cc0000;
+}
+
+.pinhole-sidebar-overlay {
+    background: rgba(0, 0, 0, 0.8);
+}
+
+a,
+.site-title a,
+.pinhole-nav a,
+.section-filter a,
+.entry-title a,
+.entry-category a,
+.pinhole-button-secondary,
+.pinhole-sidebar-close,
+.pswp-bottom-container-action,
+.pswp-nav .pswp-arrow,
+.pinhole-soc-menu {
+    color: #ffffff;
+}
+
+.pswp-close,
+.pswp-container>button.pswp-arrow,
+.pswp-counter {
+    color: #cc0000;
+}
+
+.pswp-bg {
+    background: rgba(0, 0, 0, 0.95);
+}
+
+.pswp-bottom-container,
+.pswp-bottom-container-action {
+    background: #cc0000;
+}
+
+.site-description {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.section-header:before,
+.widget-title:after,
+.pinhole-footer:before,
+.widget_rss ul li:after,
+.pinhole-vertical-separator {
+    background: rgba(255, 255, 255, 0.25);
+}
+
+blockquote,
+q,
+pre {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.pinhole-pagination a.page-numbers:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.entry-meta,
+.entry-meta a,
+.entry-category a,
+.entry-tags a,
+.pinhole-sticky-bottom span {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+table,
+td,
+th {
+    border-color: rgba(255, 255, 255, 0.25);
+}
+
+.submit,
+.mks_read_more a,
+input[type="submit"],
+a.mks_button,
+.pinhole-button,
+.submit,
+.pinhole-button-social,
+.widget .mks_autor_link_wrap a,
+.widget .mks_read_more a,
+button {
+    color: #cc0000;
+    background: #ffffff;
+}
+
+.pinhole-button-secondary {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.pinhole-button-secondary:hover {
+    color: #cc0000;
+    background: rgba(255, 255, 255, 1);
+}
+
+.submit:hover,
+.mks_read_more a:hover,
+input[type="submit"]:hover,
+a.mks_button:hover,
+.pinhole-button:hover,
+.submit:hover,
+.pinhole-button-social:hover,
+.widget .mks_autor_link_wrap a:hover,
+.widget .mks_read_more a:hover,
+button:hover,
+.pinhole-pagination .next a:hover,
+.pinhole-pagination .prev a:hover,
+.pinhole-pagination .page-numbers.prev:hover,
+.pinhole-pagination .page-numbers.next:hover,
+.pinhole-pagination .pinhole-prev:hover,
+.pinhole-pagination .pinhole-next:hover,
+.load-more a:hover,
+.pinhole-loader-active a {
+    background: rgba(255, 255, 255, 0.7);
+}
+
+.pinhole-item .pinhole-download,
+.pswp-img-wrap .pinhole-download {
+    color: #ffffff;
+    background: #cc0000;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="url"],
+input[type="tel"],
+input[type="number"],
+input[type="date"],
+input[type="password"],
+input[type="search"],
+textarea,
+select {
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+.load-more a,
+.pinhole-pagination .page-numbers.prev,
+.pinhole-pagination .page-numbers.next,
+.pinhole-pagination .prev-next a,
+.pinhole-pagination .prev-next a,
+.pinhole-pagination .next a,
+.pinhole-pagination .prev a,
+.pinhole-infinite-scroll a,
+.pinhole-link-pages>span,
+.module-actions ul.page-numbers span.page-numbers {
+    color: #cc0000;
+    background-color: #ffffff;
+}
+
+.pinhole-pagination .current {
+    color: #cc0000;
+    background-color: #ffffff;
+}
+
+.pinhole-nav>li>a:after {
+    background-color: #ffffff;
+}
+
+.pinhole-nav .sub-menu {
+    background: rgba(255, 255, 255, 0.95);
+    color: #cc0000;
+}
+
+.pinhole-nav .sub-menu a {
+    color: #cc0000;
+}
+
+.entry-title a:after,
+.entry-category a:after,
+.entry-meta a:after,
+.entry-content a:after,
+.filter-active:after,
+.section-actions a:after,
+.entry-tags a:after,
+.widget li a:before,
+.widget p a:before {
+    background-color: #ffffff;
+}
+
+.items-hidden .pinhole-info,
+.items-overlay .pinhole-info,
+.items-hidden .entry-title a,
+.items-hidden .entry-category a,
+.items-hidden .entry-meta a,
+.items-overlay .entry-title a,
+.items-overlay .entry-category a,
+.items-overlay a,
+.items-gradient a,
+.items-gradient .entry-title a,
+.items-gradient .pinhole-info,
+.items-gradient .entry-category a,
+.items-overlay .entry-meta a,
+.items-overlay .entry-meta,
+.items-hidden .entry-meta a,
+.items-hidden .entry-meta,
+.items-gradient .entry-meta a,
+.items-gradient .entry-meta {
+    color: #FFF;
+}
+
+.items-overlay .pinhole-item:hover .item-link:after {
+    background: rgba(0, 0, 0, 0.8);
+}
+
+.items-hidden .item-link:after,
+.items-overlay .item-link:after,
+.items-below .item-link:after,
+.items-gradient .item-link:after,
+.items-hidden .pinhole-info-more .item-link:after {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.items-hidden .pinhole-item:hover .item-link:after {
+    background: rgba(0, 0, 0, 0.8);
+}
+
+.pinhole-popup.items-hidden .pinhole-item:hover .item-link:after {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.pinhole-popup.items-hidden .pinhole-info-more:hover .item-link:after {
+    background: rgba(0, 0, 0, 0.8);
+}
+
+.items-gradient .entry-title a:after,
+.items-gradient .entry-category a:after,
+.items-gradient .entry-meta a:after,
+.items-hidden .entry-title a:after,
+.items-hidden .entry-category a:after,
+.items-hidden .entry-meta a:after,
+.items-overlay .entry-title a:after,
+.items-overlay .entry-category a:after,
+.items-overlay .entry-meta a:after {
+    background: rgba(0, 51, 17, 1);
+}
+
+.pinhole-header-sticky,
+.pinhole-sticky-bottom {
+    background: #cc0000;
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+@media (max-width: 750px) {
+    .pinhole-header {
+        background: #cc0000;
+    }
+}
+
+@media (max-width: 630px) {
+    .sticky-bottom-slot {
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+}
+.pinhole-sidebar-close path {
+    fill:#ffffff;
+}
