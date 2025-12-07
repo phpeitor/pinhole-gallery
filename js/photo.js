@@ -101,7 +101,6 @@ document.addEventListener("DOMContentLoaded", () => {
             };
         });
 
-      // 🔥 Inicializar PhotoSwipe para elementos dinámicos
       const links = galleryContainer.querySelectorAll(".pinhole-item a");
 
       links.forEach(link => {
@@ -121,25 +120,33 @@ document.addEventListener("DOMContentLoaded", () => {
           });
 
           const pswp = new PhotoSwipe(
-            document.querySelector(".pswp"),
-            PhotoSwipeUI_Default,
-            items,
-            {
-                index,
-                history: false,
-                shareEl: true,   // 🔥 activar botón share
-                shareButtons: [
-                    {
-                        id: "download",
-                        label: "Descargar imagen",
-                        url: "{{raw_image_url}}",
-                        download: true
-                    }
-                ]
-            }
+                document.querySelector(".pswp"),
+                PhotoSwipeUI_Default,
+                items,
+                {
+                    index,
+                    history: false,
+                    shareEl: true, // activar boton share
+                }
           );
 
+          pswp.listen('beforeChange', function () {
+                const btn = document.querySelector('.pswp__button--download');
+                if (btn) {
+                    const item = pswp.currItem;
+                    btn.href = item.src;
+                    btn.setAttribute('download', item.src.split('/').pop());
+                }
+          });
+
+          pswp.listen('afterInit', function () {
+                document.querySelector('.pswp__button--zoom').style.display = 'block';
+                document.querySelector('.pswp__button--fs').style.display = 'block';
+                document.querySelector('.pswp__button--share').style.display = 'block';
+          });
+
           pswp.init();
+
         };
       });
 

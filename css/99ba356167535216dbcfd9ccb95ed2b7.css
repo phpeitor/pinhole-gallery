@@ -22042,3 +22042,43 @@ body .meks_ess.outline a {
 body .meks_ess.outline a:hover {
   border-color: #eaeaea !important;
 }
+
+.pswp__button--share,
+.pswp__button--fs,
+.pswp__button--zoom,
+.pswp__button--download {
+    display: block !important;
+    opacity: 1 !important;
+    width: 44px;
+    height: 44px;
+}
+
+.pswp__button--fs:before {
+    font-family: FontAwesome;
+    content: "\f065";
+    font-size: 20px;
+    line-height: 44px;
+}
+
+.pswp__button--zoom:before {
+    font-family: FontAwesome;
+    content: "\f00e";
+    font-size: 20px;
+    line-height: 44px;
+}
+
+.pswp__button--download:before {
+    font-family: FontAwesome;
+    content: "\f019";
+    font-size: 20px;
+    line-height: 44px;
+}
+
+.pswp__button--share,
+.pswp__button--fs,
+.pswp__button--zoom,
+.pswp__button--download {
+    background: none !important;
+}
+
+
