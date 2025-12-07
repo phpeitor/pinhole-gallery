@@ -12223,16 +12223,16 @@ a.text-gray-dark:hover {
 }
 @font-face {
   font-family: FontAwesome;
-  src: url("../fonts/fontawesome-webfont.eot?v=4.7.0");
-  src: url("../fonts/fontawesome-webfont.eot?#iefix&v=4.7.0")
+  src: url("../../fonts/fontawesome-webfont.eot?v=4.7.0");
+  src: url("../../fonts/fontawesome-webfont.eot?#iefix&v=4.7.0")
       format("embedded-opentype"),
-    url("../fonts/fontawesome-webfont.woff2?v=4.7.0")
+    url("../../fonts/fontawesome-webfont.woff2?v=4.7.0")
       format("woff2"),
-    url("../fonts/fontawesome-webfont.woff?v=4.7.0")
+    url("../../fonts/fontawesome-webfont.woff?v=4.7.0")
       format("woff"),
-    url("../fonts/fontawesome-webfont.ttf?v=4.7.0")
+    url("../../fonts/fontawesome-webfont.ttf?v=4.7.0")
       format("truetype"),
-    url("../fonts/fontawesome-webfont.svg?v=4.7.0#fontawesomeregular")
+    url("../../fonts/fontawesome-webfont.svg?v=4.7.0#fontawesomeregular")
       format("svg");
   font-weight: 400;
   font-style: normal;
@@ -19198,7 +19198,7 @@ body .entry-content .blocks-gallery-item a:hover {
   overflow: hidden;
 }
 .fonts a {
-  background: url("../img/pinhole_customizer_sprite.jpg")
+  background: url("../../img/pinhole_customizer_sprite.jpg")
     no-repeat;
   background-position: 0 -1px;
   border: 1px solid transparent;
