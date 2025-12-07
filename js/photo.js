@@ -176,4 +176,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const initialFolder = document.querySelector(".gallery")?.dataset?.folder;
   if (initialFolder) fetchAndRender(initialFolder, null);
 
+  if (!location.hash) {
+      location.hash = "#emma5th";
+      const folder = fallbackIdToFolder("emma5th");
+      fetchAndRender(folder, "HB 5TH");
+  }
+
 });
