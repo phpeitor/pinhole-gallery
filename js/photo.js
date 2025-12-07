@@ -66,13 +66,17 @@ document.addEventListener("DOMContentLoaded", () => {
       galleryContainer.classList.remove("items-hidden");
 
       if (data.length === 0) {
+        galleryContainer.removeAttribute("style");   // Quita height, position, etc.
+        galleryContainer.classList.remove("masonry-initialized"); 
         galleryContainer.innerHTML = `
-          <div style="width:100%; padding:40px 0; text-align:center; opacity:0.6;">
-              No hay fotos en esta galería.
-          </div>
+            <div style="width:100%; padding:40px 0; text-align:center; opacity:0.6;">
+                No hay fotos en esta galería.
+            </div>
         `;
+
         titleEl.textContent = titleText || folder.replace("/", " ");
         metaEl.textContent = `0 Photos`;
+
         return;
       }
 
@@ -80,6 +84,22 @@ document.addEventListener("DOMContentLoaded", () => {
         const node = buildPinholeItem(folder, item);
         galleryContainer.appendChild(node);
       });
+
+      const imgs = galleryContainer.querySelectorAll("img");
+      let loaded = 0;
+
+        imgs.forEach(img => {
+            img.onload = () => {
+                loaded++;
+                if (loaded === imgs.length) {
+                    new Masonry(galleryContainer, {
+                        itemSelector: '.pinhole-item',
+                        columnWidth: '.pinhole-item',
+                        percentPosition: true
+                    });
+                }
+            };
+        });
 
       // 🔥 Inicializar PhotoSwipe para elementos dinámicos
       const links = galleryContainer.querySelectorAll(".pinhole-item a");
@@ -104,7 +124,19 @@ document.addEventListener("DOMContentLoaded", () => {
             document.querySelector(".pswp"),
             PhotoSwipeUI_Default,
             items,
-            { index, history: false }
+            {
+                index,
+                history: false,
+                shareEl: true,   // 🔥 activar botón share
+                shareButtons: [
+                    {
+                        id: "download",
+                        label: "Descargar imagen",
+                        url: "{{raw_image_url}}",
+                        download: true
+                    }
+                ]
+            }
           );
 
           pswp.init();

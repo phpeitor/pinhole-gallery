@@ -4095,8 +4095,6 @@ function(e, t) {
 	}, o.makeJQueryPlugin(), o
 });
 
-
-
 /* Minit: /wp-includes/js/masonry.min.js */
 /*! This file is auto-generated */
 /*!
