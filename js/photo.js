@@ -6,24 +6,40 @@ document.addEventListener("DOMContentLoaded", () => {
     const CHUNK = 10;
     let msnry = null;
 
+    let loader = document.querySelector(".infiniteLoader");
+    let infinityObserver = null;
+
     const galleryContainer = document.querySelector(".pinhole-gallery");
     const titleEl = document.querySelector(".entry-title");
     const metaEl = document.querySelector(".entry-meta");
 
     const THUMB_WIDTH = 378;
 
-    // -------------------------
-    //   CONVERTIR ID A CARPETA
-    // -------------------------
     function fallbackIdToFolder(id) {
         const m = id.match(/^([a-zA-Z]+)(\d+)(.*)$/);
         if (m) return `${m[1]}/${m[2]}${m[3] || ""}`;
         return id.replace(/_/g, "/");
     }
 
-    // -------------------------
-    //   CREAR ITEM HTML
-    // -------------------------
+    function getParentFromMenu(id) {
+        // Busca en todo el menú responsive y principal
+        const selector = `a[href="#${id}"]`;
+        const child = document.querySelector(selector);
+        if (!child) return null;
+
+        // El padre es el UL anterior dentro del menú
+        const parentUl = child.closest("ul.sub-menu");
+        if (!parentUl) return null;
+
+        // Primer <li> antes del ul.sub-menu es el padre
+        const parentLi = parentUl.closest("li.menu-item-has-children");
+        if (!parentLi) return null;
+
+        // Texto del padre (Emma, Alaia, etc.)
+        const parentLink = parentLi.querySelector("a");
+        return parentLink ? parentLink.textContent.trim() : null;
+    }
+
     function buildPinholeItem(folder, itemData) {
         let filename, realW, realH;
 
@@ -52,41 +68,65 @@ document.addEventListener("DOMContentLoaded", () => {
         return wrap;
     }
 
-    // -------------------------
-    //   FETCH Y RENDER
-    // -------------------------
     async function fetchAndRender(folder, titleText = null) {
         try {
             const res = await fetch(`php/list.php?folder=${encodeURIComponent(folder)}`);
             if (!res.ok) throw new Error("HTTP " + res.status);
+
             const data = await res.json();
 
             currentData = data;
             currentFolder = folder;
             renderIndex = 0;
 
-            // Reset
             galleryContainer.innerHTML = "";
+
             if (msnry) {
                 msnry.destroy();
                 msnry = null;
             }
 
+            if (infinityObserver) {
+                infinityObserver.disconnect();
+                infinityObserver = null;
+            }
+
+            loader.style.display = "none";
+
             if (data.length === 0) {
                 galleryContainer.innerHTML = `
-                    <div style="padding:40px 0; text-align:center; opacity:.6;">
+                    <div style="padding:40px; text-align:center; opacity:.6;">
                         No hay fotos en esta galería.
                     </div>`;
                 metaEl.textContent = "0 Photos";
                 return;
             }
 
-            renderMore();
+            renderMore(); // primeras 10
 
-            const btn = document.getElementById("loadMoreBtn");
-            btn.style.display = data.length > CHUNK ? "block" : "none";
+            // SOLO si hay más fotos activamos scroll infinito
+            if (data.length > CHUNK) {
+                loader.style.display = "block";
 
-            titleEl.textContent = titleText || folder;
+                infinityObserver = new IntersectionObserver((entries) => {
+                    if (!entries[0].isIntersecting) return;
+
+                    loader.style.display = "block";
+
+                    setTimeout(() => renderMore(), 300);
+                }, { rootMargin: "200px" });
+
+                infinityObserver.observe(loader);
+            }
+
+            const id = folder.replace("/", ""); // ej: emma5th
+            const parent = getParentFromMenu(id);
+
+            if (parent) {
+                titleEl.textContent = `${parent} – ${titleText}`;
+            } else {
+                titleEl.textContent = titleText;
+            }
             metaEl.textContent = `${data.length} Photos`;
 
         } catch (e) {
@@ -94,25 +134,19 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // -------------------------
-    //   RENDER PROGRESIVO
-    // -------------------------
     function renderMore() {
         const slice = currentData.slice(renderIndex, renderIndex + CHUNK);
+        const newElems = [];
 
         slice.forEach(item => {
-            galleryContainer.appendChild(buildPinholeItem(currentFolder, item));
+            const elem = buildPinholeItem(currentFolder, item);
+            galleryContainer.appendChild(elem);
+            newElems.push(elem);
         });
 
         renderIndex += CHUNK;
 
-        // Detectar nuevos nodos para Masonry
-        const newElems = Array.from(galleryContainer.querySelectorAll(".pinhole-item"))
-                              .slice(-slice.length);
-
-        // Esperar imágenes reales
         imagesLoaded(newElems, () => {
-
             if (!msnry) {
                 msnry = new Masonry(galleryContainer, {
                     itemSelector: ".pinhole-item",
@@ -121,20 +155,25 @@ document.addEventListener("DOMContentLoaded", () => {
             } else {
                 msnry.appended(newElems);
             }
-
             msnry.layout();
         });
 
         reconnectPhotoSwipe(newElems);
 
+        // NO MÁS FOTOS → apagar loader y observer
         if (renderIndex >= currentData.length) {
-            document.getElementById("loadMoreBtn").style.display = "none";
+
+            loader.style.display = "none";
+
+            if (infinityObserver) {
+                infinityObserver.disconnect();
+                infinityObserver = null;
+            }
+
+            return;
         }
     }
 
-    // -------------------------
-    //   RECONNECT PHOTOSWIPE
-    // -------------------------
     function reconnectPhotoSwipe(newElems) {
         const links = newElems.map(el => el.querySelector("a.item-link"));
 
@@ -163,22 +202,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     btn.download = pswp.currItem.src.split("/").pop();
                 });
 
-                pswp.listen("afterInit", () => {
-                    document.querySelector(".pswp__button--zoom").style.display = "block";
-                    document.querySelector(".pswp__button--fs").style.display = "block";
-                    document.querySelector(".pswp__button--share").style.display = "block";
-                });
-
                 pswp.init();
             });
         });
     }
 
-    // -------------------------
-    //   EVENTOS
-    // -------------------------
-    document.querySelector("#loadMoreBtn").onclick = renderMore;
-
+    // MENÚ
     document.querySelectorAll("a[href^='#']").forEach(link => {
         link.addEventListener("click", e => {
             const id = link.getAttribute("href").replace("#", "");
@@ -192,7 +221,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // Default
+    // DEFAULT LOAD
     if (!location.hash) {
         location.hash = "#emma5th";
         fetchAndRender("emma5th", "HB 5TH");
