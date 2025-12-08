@@ -3,7 +3,7 @@
 [![forthebadge](http://forthebadge.com/images/badges/built-with-love.svg)](https://www.linkedin.com/in/drphp/)
 
 <a href="https://www.instagram.com/amvsoft.tech/">
-  <img src="https://cdn.dribbble.com/userupload/41869976/file/original-420900b654e5d2145330fc8b735e9573.gif" alt="Instagram" width="600">
+  <img src="https://cdn.dribbble.com/userupload/36814701/file/original-f485756c337f78411c0767aba0f6596f.jpg" alt="Instagram" width="600">
 </a>
 
 `Hello Everyone 🙌`
