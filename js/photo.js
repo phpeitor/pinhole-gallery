@@ -137,6 +137,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
         metaEl.textContent = "0 Photos";
 
+        if (msnry) {
+            msnry.destroy();
+            msnry = null;
+        }
+
+        galleryContainer.style.height = "auto";
+        galleryContainer.style.minHeight = "0"; 
+        galleryContainer.style.paddingBottom = "40px"; 
+
         galleryContainer.innerHTML = `
             <div style="padding:40px 0; text-align:center; opacity:.6;">
                 No hay fotos en esta galería.
@@ -240,6 +249,9 @@ document.addEventListener("DOMContentLoaded", () => {
         history.replaceState(null, "", "#emma5th");
     }
 
-    fetchAndRender(fallbackIdToFolder(id), id.toUpperCase());
+    const link = document.querySelector(`a[href="#${id}"]`);
+    const titleText = link ? link.textContent.trim() : id.replace(/\d+/g, match => " " + match + " ").trim();
+
+    fetchAndRender(fallbackIdToFolder(id), titleText);
 
 });
