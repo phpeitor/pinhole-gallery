@@ -6,7 +6,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const CHUNK = 10;
     let msnry = null;
 
+    // ✔ CORREGIDO: loader por clase
     let loader = document.querySelector(".infiniteLoader");
+
     let infinityObserver = null;
 
     const galleryContainer = document.querySelector(".pinhole-gallery");
@@ -22,20 +24,16 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function getParentFromMenu(id) {
-        // Busca en todo el menú responsive y principal
         const selector = `a[href="#${id}"]`;
         const child = document.querySelector(selector);
         if (!child) return null;
 
-        // El padre es el UL anterior dentro del menú
         const parentUl = child.closest("ul.sub-menu");
         if (!parentUl) return null;
 
-        // Primer <li> antes del ul.sub-menu es el padre
         const parentLi = parentUl.closest("li.menu-item-has-children");
         if (!parentLi) return null;
 
-        // Texto del padre (Emma, Alaia, etc.)
         const parentLink = parentLi.querySelector("a");
         return parentLink ? parentLink.textContent.trim() : null;
     }
@@ -75,51 +73,43 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const data = await res.json();
 
+            if (!Array.isArray(data)) {
+                showEmptyGallery(folder, titleText);
+                return;
+            }
+
             currentData = data;
             currentFolder = folder;
             renderIndex = 0;
 
             galleryContainer.innerHTML = "";
 
-            if (msnry) {
-                msnry.destroy();
-                msnry = null;
-            }
-
-            if (infinityObserver) {
-                infinityObserver.disconnect();
-                infinityObserver = null;
-            }
+            if (msnry) { msnry.destroy(); msnry = null; }
+            if (infinityObserver) { infinityObserver.disconnect(); infinityObserver = null; }
 
             loader.style.display = "none";
 
             if (data.length === 0) {
-                galleryContainer.innerHTML = `
-                    <div style="padding:40px; text-align:center; opacity:.6;">
-                        No hay fotos en esta galería.
-                    </div>`;
-                metaEl.textContent = "0 Photos";
+                showEmptyGallery(folder, titleText);
                 return;
             }
 
-            renderMore(); // primeras 10
+            renderMore();
 
-            // SOLO si hay más fotos activamos scroll infinito
             if (data.length > CHUNK) {
                 loader.style.display = "block";
 
                 infinityObserver = new IntersectionObserver((entries) => {
-                    if (!entries[0].isIntersecting) return;
-
-                    loader.style.display = "block";
-
-                    setTimeout(() => renderMore(), 300);
+                    if (entries[0].isIntersecting) {
+                        loader.style.display = "block";
+                        setTimeout(() => renderMore(), 250);
+                    }
                 }, { rootMargin: "200px" });
 
                 infinityObserver.observe(loader);
             }
 
-            const id = folder.replace("/", ""); // ej: emma5th
+            const id = folder.replace("/", "");
             const parent = getParentFromMenu(id);
 
             if (parent) {
@@ -127,10 +117,37 @@ document.addEventListener("DOMContentLoaded", () => {
             } else {
                 titleEl.textContent = titleText;
             }
+
             metaEl.textContent = `${data.length} Photos`;
 
         } catch (e) {
             console.error(e);
+        }
+    }
+
+    function showEmptyGallery(folder, titleText) {
+        const id = folder.replace("/", "");
+        const parent = getParentFromMenu(id);
+
+        if (parent) {
+            titleEl.textContent = `${parent}`;
+        } else {
+            titleEl.textContent = titleText || "Galería vacía";
+        }
+
+        metaEl.textContent = "0 Photos";
+
+        galleryContainer.innerHTML = `
+            <div style="padding:40px 0; text-align:center; opacity:.6;">
+                No hay fotos en esta galería.
+            </div>
+        `;
+
+        loader.style.display = "none";
+
+        if (infinityObserver) {
+            infinityObserver.disconnect();
+            infinityObserver = null;
         }
     }
 
@@ -160,17 +177,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
         reconnectPhotoSwipe(newElems);
 
-        // NO MÁS FOTOS → apagar loader y observer
         if (renderIndex >= currentData.length) {
-
             loader.style.display = "none";
 
             if (infinityObserver) {
                 infinityObserver.disconnect();
                 infinityObserver = null;
             }
-
-            return;
         }
     }
 
@@ -207,7 +220,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // MENÚ
     document.querySelectorAll("a[href^='#']").forEach(link => {
         link.addEventListener("click", e => {
             const id = link.getAttribute("href").replace("#", "");
@@ -221,10 +233,13 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // DEFAULT LOAD
-    if (!location.hash) {
-        location.hash = "#emma5th";
-        fetchAndRender("emma5th", "HB 5TH");
+    let id = location.hash.replace("#", "");
+
+    if (!id || id === "/" || id === "home" || id === "viewall") {
+        id = "emma5th";
+        history.replaceState(null, "", "#emma5th");
     }
+
+    fetchAndRender(fallbackIdToFolder(id), id.toUpperCase());
 
 });
