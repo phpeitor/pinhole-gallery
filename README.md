@@ -19,5 +19,5 @@ cd pinhole-gallery
 ```
 2. **Ejecutar comando**
 ```bash
-index.php
+index.html
 ```

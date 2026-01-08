@@ -1,21 +1,55 @@
 document.addEventListener("DOMContentLoaded", () => {
-
-    let currentData = [];
     let currentFolder = "";
     let renderIndex = 0;
+    let totalItems = 0;
+    let isLoading = false;
     const CHUNK = 10;
     let msnry = null;
-
-    // ✔ CORREGIDO: loader por clase
     let loader = document.querySelector(".infiniteLoader");
-
     let infinityObserver = null;
-
     const galleryContainer = document.querySelector(".pinhole-gallery");
     const titleEl = document.querySelector(".entry-title");
     const metaEl = document.querySelector(".entry-meta");
-
     const THUMB_WIDTH = 378;
+
+    galleryContainer.addEventListener("click", e => {
+        const link = e.target.closest("a.item-link");
+        if (!link) return;
+
+        e.preventDefault();
+
+        const allLinks = Array.from(
+            galleryContainer.querySelectorAll(".item-link")
+        );
+
+        const index = allLinks.indexOf(link);
+
+        const items = allLinks.map(a => {
+            const size = JSON.parse(a.dataset.size);
+            return {
+                src: a.href,
+                w: size.width,
+                h: size.height
+            };
+        });
+
+        const pswp = new PhotoSwipe(
+            document.querySelector(".pswp"),
+            PhotoSwipeUI_Default,
+            items,
+            { index, history: false, shareEl: true }
+        );
+
+        pswp.listen("beforeChange", () => {
+            const btn = document.querySelector(".pswp__button--download");
+            if (btn) {
+                btn.href = pswp.currItem.src;
+                btn.download = pswp.currItem.src.split("/").pop();
+            }
+        });
+
+        pswp.init();
+    });
 
     function fallbackIdToFolder(id) {
         const m = id.match(/^([a-zA-Z]+)(\d+)(.*)$/);
@@ -53,7 +87,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const url = `./img/${folder}/${filename}`;
         const thumbH = Math.round(THUMB_WIDTH * (realH / realW));
-
         const wrap = document.createElement("div");
         wrap.className = "pinhole-item col-lg-4 col-md-4 col-sm-6";
 
@@ -62,13 +95,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 <img src="${url}" width="${THUMB_WIDTH}" height="${thumbH}" loading="lazy">
             </a>
         `;
-
         return wrap;
     }
 
     async function fetchAndRender(folder, titleText = null) {
         try {
-            const res = await fetch(`php/list.php?folder=${encodeURIComponent(folder)}`);
+            const res = await fetch(
+                `php/list.php?folder=${encodeURIComponent(folder)}&offset=0&limit=${CHUNK}`
+            );
+            
             if (!res.ok) throw new Error("HTTP " + res.status);
 
             const data = await res.json();
@@ -78,10 +113,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            currentData = data;
             currentFolder = folder;
-            renderIndex = 0;
-
+            totalItems = Infinity;
+            renderIndex = data.length;
             galleryContainer.innerHTML = "";
 
             if (msnry) { msnry.destroy(); msnry = null; }
@@ -94,9 +128,22 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
-            renderMore();
+            const newElems = [];
 
-            if (data.length > CHUNK) {
+            data.forEach(item => {
+                const elem = buildPinholeItem(currentFolder, item);
+                galleryContainer.appendChild(elem);
+                newElems.push(elem);
+            });
+
+            imagesLoaded(newElems, () => {
+                msnry = new Masonry(galleryContainer, {
+                    itemSelector: ".pinhole-item",
+                    percentPosition: true
+                });
+            });
+
+            if (data.length === CHUNK) {
                 loader.style.display = "block";
 
                 infinityObserver = new IntersectionObserver((entries) => {
@@ -117,9 +164,7 @@ document.addEventListener("DOMContentLoaded", () => {
             } else {
                 titleEl.textContent = titleText;
             }
-
-            metaEl.textContent = `${data.length} Photos`;
-
+            metaEl.textContent = `Loading photos...`;
         } catch (e) {
             console.error(e);
         }
@@ -160,73 +205,58 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    function renderMore() {
-        const slice = currentData.slice(renderIndex, renderIndex + CHUNK);
-        const newElems = [];
+    async function renderMore() {
+        if (isLoading) return;
+        if (renderIndex >= totalItems) return;
 
-        slice.forEach(item => {
-            const elem = buildPinholeItem(currentFolder, item);
-            galleryContainer.appendChild(elem);
-            newElems.push(elem);
-        });
+        isLoading = true;
+        loader.style.display = "block";
 
-        renderIndex += CHUNK;
+        try {
+            const res = await fetch(
+            `php/list.php?folder=${encodeURIComponent(currentFolder)}&offset=${renderIndex}&limit=${CHUNK}`
+            );
+            const data = await res.json();
 
-        imagesLoaded(newElems, () => {
-            if (!msnry) {
-                msnry = new Masonry(galleryContainer, {
-                    itemSelector: ".pinhole-item",
-                    percentPosition: true
-                });
-            } else {
-                msnry.appended(newElems);
+            if (!Array.isArray(data) || data.length === 0) {
+                loader.style.display = "none";
+                infinityObserver?.disconnect();
+                return;
             }
-            msnry.layout();
-        });
 
-        reconnectPhotoSwipe(newElems);
+            const newElems = [];
 
-        if (renderIndex >= currentData.length) {
-            loader.style.display = "none";
-
-            if (infinityObserver) {
-                infinityObserver.disconnect();
-                infinityObserver = null;
-            }
-        }
-    }
-
-    function reconnectPhotoSwipe(newElems) {
-        const links = newElems.map(el => el.querySelector("a.item-link"));
-
-        links.forEach(link => {
-            link.addEventListener("click", (e) => {
-                e.preventDefault();
-
-                const allLinks = Array.from(galleryContainer.querySelectorAll(".item-link"));
-                const index = allLinks.indexOf(link);
-
-                const items = allLinks.map(a => {
-                    const size = JSON.parse(a.dataset.size);
-                    return { src: a.href, w: size.width, h: size.height };
-                });
-
-                const pswp = new PhotoSwipe(
-                    document.querySelector(".pswp"),
-                    PhotoSwipeUI_Default,
-                    items,
-                    { index, history: false, shareEl: true }
-                );
-
-                pswp.listen("beforeChange", () => {
-                    const btn = document.querySelector(".pswp__button--download");
-                    btn.href = pswp.currItem.src;
-                    btn.download = pswp.currItem.src.split("/").pop();
-                });
-
-                pswp.init();
+            data.forEach(item => {
+                const elem = buildPinholeItem(currentFolder, item);
+                galleryContainer.appendChild(elem);
+                newElems.push(elem);
             });
-        });
+
+            renderIndex += data.length;
+
+            imagesLoaded(newElems, () => {
+                if (!msnry) {
+                    msnry = new Masonry(galleryContainer, {
+                        itemSelector: ".pinhole-item",
+                        percentPosition: true
+                    });
+                } else {
+                    msnry.appended(newElems);
+                }
+                msnry.layout();
+            });
+
+            isLoading = false;
+
+            if (renderIndex >= totalItems) {
+                loader.style.display = "none";
+                infinityObserver?.disconnect();
+            }
+
+        } catch (e) {
+            console.error(e);
+            isLoading = false;
+        }
     }
 
     document.querySelectorAll("a[href^='#']").forEach(link => {
@@ -251,7 +281,5 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const link = document.querySelector(`a[href="#${id}"]`);
     const titleText = link ? link.textContent.trim() : id.replace(/\d+/g, match => " " + match + " ").trim();
-
     fetchAndRender(fallbackIdToFolder(id), titleText);
-
 });
