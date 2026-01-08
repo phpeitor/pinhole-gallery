@@ -108,14 +108,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const data = await res.json();
 
-            if (!Array.isArray(data)) {
+            if (!data || !Array.isArray(data.items)) {
                 showEmptyGallery(folder, titleText);
                 return;
             }
 
             currentFolder = folder;
-            totalItems = Infinity;
-            renderIndex = data.length;
+            totalItems = data.total;
+            renderIndex = data.items.length;
             galleryContainer.innerHTML = "";
 
             if (msnry) { msnry.destroy(); msnry = null; }
@@ -123,31 +123,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
             loader.style.display = "none";
 
-            if (data.length === 0) {
+            if (data.items.length === 0) {
                 showEmptyGallery(folder, titleText);
                 return;
             }
 
             const newElems = [];
 
-            data.forEach(item => {
+            data.items.forEach(item => {
                 const elem = buildPinholeItem(currentFolder, item);
                 galleryContainer.appendChild(elem);
                 newElems.push(elem);
             });
 
-            imagesLoaded(newElems, () => {
+            imagesLoaded(galleryContainer, () => {
                 msnry = new Masonry(galleryContainer, {
                     itemSelector: ".pinhole-item",
                     percentPosition: true
                 });
+                msnry.layout();
             });
 
-            if (data.length === CHUNK) {
+            if (renderIndex < totalItems) {
                 loader.style.display = "block";
 
                 infinityObserver = new IntersectionObserver((entries) => {
-                    if (entries[0].isIntersecting) {
+                    if (entries[0].isIntersecting && !isLoading) {
                         loader.style.display = "block";
                         setTimeout(() => renderMore(), 250);
                     }
@@ -164,7 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
             } else {
                 titleEl.textContent = titleText;
             }
-            metaEl.textContent = `Loading photos...`;
+            metaEl.textContent = `${totalItems} Photos`;
         } catch (e) {
             console.error(e);
         }
@@ -218,7 +219,7 @@ document.addEventListener("DOMContentLoaded", () => {
             );
             const data = await res.json();
 
-            if (!Array.isArray(data) || data.length === 0) {
+            if (!data.items || data.items.length === 0) {
                 loader.style.display = "none";
                 infinityObserver?.disconnect();
                 return;
@@ -226,23 +227,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const newElems = [];
 
-            data.forEach(item => {
+            data.items.forEach(item => {
                 const elem = buildPinholeItem(currentFolder, item);
                 galleryContainer.appendChild(elem);
                 newElems.push(elem);
             });
 
-            renderIndex += data.length;
+            renderIndex += data.items.length;
 
-            imagesLoaded(newElems, () => {
-                if (!msnry) {
-                    msnry = new Masonry(galleryContainer, {
-                        itemSelector: ".pinhole-item",
-                        percentPosition: true
-                    });
-                } else {
-                    msnry.appended(newElems);
-                }
+            console.log("Items renderizados:", galleryContainer.children.length);
+
+            imagesLoaded(galleryContainer, () => {
+                msnry.appended(newElems);
                 msnry.layout();
             });
 

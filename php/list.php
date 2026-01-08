@@ -1,5 +1,6 @@
 <?php
 header('Content-Type: application/json; charset=utf-8');
+
 $folder = trim($_GET['folder'] ?? '', '/');
 
 if (str_contains($folder, '..')) {
@@ -7,8 +8,11 @@ if (str_contains($folder, '..')) {
     exit;
 }
 
-$baseDir = __DIR__ . '/../img/' . $folder;
-$basePath   = realpath(__DIR__ . '/../img');
+$offset = max(0, (int)($_GET['offset'] ?? 0));
+$limit  = min(50, max(1, (int)($_GET['limit'] ?? 10)));
+
+$baseDir   = __DIR__ . '/../img/' . $folder;
+$basePath = realpath(__DIR__ . '/../img');
 $targetPath = realpath($baseDir);
 
 if (!$targetPath || !str_starts_with($targetPath, $basePath)) {
@@ -18,38 +22,45 @@ if (!$targetPath || !str_starts_with($targetPath, $basePath)) {
 
 if (!is_dir($baseDir)) {
     echo json_encode([
-        "error" => "Carpeta no encontrada",
-        "folder" => $folder
+        "total" => 0,
+        "items" => []
     ]);
     exit;
 }
 
+/**
+ * CACHE GLOBAL DE LA CARPETA (sin paginar)
+ */
 $cacheFile = $baseDir . '/.meta.json';
 
 if (file_exists($cacheFile)) {
-    echo file_get_contents($cacheFile);
-    exit;
+    $allItems = json_decode(file_get_contents($cacheFile), true);
+} else {
+    $files = glob($baseDir . "/*.{jpg,JPG,jpeg,JPEG,png,PNG}", GLOB_BRACE);
+    natsort($files);
+
+    $allItems = [];
+
+    foreach ($files as $filePath) {
+        $size = @getimagesize($filePath);
+        if (!$size) continue;
+
+        [$width, $height] = $size;
+
+        $allItems[] = [
+            "filename" => basename($filePath),
+            "width" => $width,
+            "height" => $height
+        ];
+    }
+
+    file_put_contents($cacheFile, json_encode($allItems));
 }
 
-$files = glob($baseDir . "/*.{jpg,JPG,jpeg,JPEG,png,PNG}", GLOB_BRACE);
-natsort($files);
+$total = count($allItems);
+$items = array_slice($allItems, $offset, $limit);
 
-$result = [];
-
-foreach ($files as $filePath) {
-    $filename = basename($filePath);
-    $size = @getimagesize($filePath);
-    if (!$size) continue;
-    [$width, $height] = $size;
-
-    $result[] = [
-        "filename" => $filename,
-        "width" => $width,
-        "height" => $height
-    ];
-}
-
-$json = json_encode(array_values($result));
-file_put_contents($cacheFile, $json);
-echo $json;
-?>
+echo json_encode([
+    "total" => $total,
+    "items" => array_values($items)
+]);
