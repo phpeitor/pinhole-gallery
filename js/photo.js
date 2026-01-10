@@ -3,7 +3,6 @@ document.addEventListener("DOMContentLoaded", () => {
     let renderIndex = 0;
     let totalItems = 0;
     let isLoading = false;
-    const CHUNK = 10;
     let msnry = null;
     let loader = document.querySelector(".infiniteLoader");
     let infinityObserver = null;
@@ -11,8 +10,35 @@ document.addEventListener("DOMContentLoaded", () => {
     const titleEl = document.querySelector(".entry-title");
     const metaEl = document.querySelector(".entry-meta");
     const THUMB_WIDTH = 378;
+    const CHUNK = 10;
+    let HAS_TOKEN = false;
+
+    document.getElementById("mc-embedded-subscribe-form")
+    ?.addEventListener("submit", async e => {
+        e.preventDefault();
+
+        const token = document.getElementById("token").value.trim();
+        if (!token) return;
+
+        const res = await fetch("php/token_validate.php", {
+            method: "POST",
+            headers: { "Content-Type": "application/x-www-form-urlencoded" },
+            body: "token=" + encodeURIComponent(token)
+        });
+
+        const data = await res.json();
+
+        if (data.ok) {
+            unlockGallery();
+            location.reload(); 
+        } else {
+            alert("Token inválido o expirado");
+        }
+    });
+
 
     galleryContainer.addEventListener("click", e => {
+        if (!HAS_TOKEN) return;
         const link = e.target.closest("a.item-link");
         if (!link) return;
 
@@ -49,6 +75,22 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         pswp.init();
+    });
+
+    document.querySelector(".pinhole-sidebar-overlay")
+    ?.addEventListener("click", e => {
+        if (!HAS_TOKEN) {
+            e.stopPropagation();
+            e.preventDefault();
+        }
+    });
+
+    document.querySelector(".pinhole-sidebar-close")
+    ?.addEventListener("click", e => {
+        if (!HAS_TOKEN) {
+            e.preventDefault();
+            alert("Debes ingresar el token para acceder a la galería.");
+        }
     });
 
     function fallbackIdToFolder(id) {
@@ -98,7 +140,34 @@ document.addEventListener("DOMContentLoaded", () => {
         return wrap;
     }
 
+    function lockGallery() {
+        HAS_TOKEN = false;
+        document.body.classList.add("pinhole-lock", "pinhole-sidebar-open");
+    }
+
+    function unlockGallery() {
+        HAS_TOKEN = true;
+        document.body.classList.remove("pinhole-lock", "pinhole-sidebar-open");
+    }
+
+    async function checkToken() {
+        const res = await fetch("php/check_token.php");
+        const data = await res.json();
+
+        if (data.valid) {
+            unlockGallery();
+        } else {
+            lockGallery();
+        }
+    }
+
     async function fetchAndRender(folder, titleText = null) {
+        
+        if (!HAS_TOKEN) {
+            console.warn("Acceso bloqueado: sin token");
+            return;
+        }
+
         try {
             const res = await fetch(
                 `php/list.php?folder=${encodeURIComponent(folder)}&offset=0&limit=${CHUNK}`
@@ -207,6 +276,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     async function renderMore() {
+        if (!HAS_TOKEN) return;
         if (isLoading) return;
         if (renderIndex >= totalItems) return;
 
@@ -257,6 +327,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.querySelectorAll("a[href^='#']").forEach(link => {
         link.addEventListener("click", e => {
+            if (!HAS_TOKEN) {
+                e.preventDefault();
+                return;
+            }
             const id = link.getAttribute("href").replace("#", "");
             if (!id) return;
 
@@ -277,5 +351,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const link = document.querySelector(`a[href="#${id}"]`);
     const titleText = link ? link.textContent.trim() : id.replace(/\d+/g, match => " " + match + " ").trim();
-    fetchAndRender(fallbackIdToFolder(id), titleText);
+    checkToken().then(() => {
+        if (HAS_TOKEN) {
+            fetchAndRender(fallbackIdToFolder(id), titleText);
+        }
+    });
+
 });

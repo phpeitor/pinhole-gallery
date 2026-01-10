@@ -19498,8 +19498,28 @@ h6,
   background: #ffffff;
 }
 .pinhole-sidebar-overlay {
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.9);
 }
+
+body.pinhole-lock {
+    overflow: hidden;
+}
+body.pinhole-lock .pinhole-sidebar-overlay {
+    pointer-events: all;
+    opacity: 1;
+}
+body.pinhole-lock .pinhole-sidebar-close,
+body.pinhole-lock .pinhole-sidebar-overlay {
+    cursor: not-allowed;
+}
+body.pinhole-lock .pinhole-gallery {
+    visibility: hidden;
+}
+
+body:not(.pinhole-lock) .pinhole-gallery {
+    visibility: visible;
+}
+
 a,
 .site-title a,
 .pinhole-nav a,
