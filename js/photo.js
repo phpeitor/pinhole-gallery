@@ -13,6 +13,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const CHUNK = 10;
     let HAS_TOKEN = false;
 
+    document.querySelectorAll('.current-year').forEach(el => {
+        el.textContent = new Date().getFullYear();
+    });
+
     document.getElementById("mc-embedded-subscribe-form")
     ?.addEventListener("submit", async e => {
         e.preventDefault();
