@@ -1,24 +1,20 @@
 <?php
 session_start();
+require_once __DIR__ . '/bootstrap.php';
+
 header('Content-Type: application/json; charset=utf-8');
 
-$VALID_TOKEN = 'EMMA2026';
-$TTL = 60 * 60 * 24;
-
+$VALID_TOKEN = $_ENV['GALLERY_TOKEN'] ?? '';
 $token = trim($_POST['token'] ?? '');
 
-if ($token !== $VALID_TOKEN) {
-    http_response_code(401);
-    echo json_encode(["ok" => false, "message" => "Token inválido"]);
+if (!$VALID_TOKEN || $token !== $VALID_TOKEN) {
+    echo json_encode(['ok' => false]);
     exit;
 }
 
 $_SESSION['gallery_token'] = [
-    'token' => $token,
-    'expires' => time() + $TTL
+    'value'   => $token,
+    'expires' => time() + (60 * 60 * 12) // 12 horas
 ];
 
-echo json_encode([
-    "ok" => true,
-    "expires_in" => $TTL
-]);
+echo json_encode(['ok' => true]);
