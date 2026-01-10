@@ -2,7 +2,7 @@
 session_start();
 header('Content-Type: application/json; charset=utf-8');
 
-$VALID_TOKEN = 'ALAIA-2025';
+$VALID_TOKEN = 'EMMA2026';
 $TTL = 60 * 60 * 24;
 
 $token = trim($_POST['token'] ?? '');

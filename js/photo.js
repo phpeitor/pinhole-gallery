@@ -16,9 +16,16 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("mc-embedded-subscribe-form")
     ?.addEventListener("submit", async e => {
         e.preventDefault();
+        const input = document.getElementById("token");
+        const token = input.value.trim();
+        input.classList.remove("input-error");
 
-        const token = document.getElementById("token").value.trim();
-        if (!token) return;
+        if (!token) {
+            input.classList.add("input-error");
+            input.focus();
+            alertify.error("Debes ingresar el token");
+            return;
+        }
 
         const res = await fetch("php/token_validate.php", {
             method: "POST",
@@ -30,9 +37,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (data.ok) {
             unlockGallery();
-            location.reload(); 
+            location.reload();
         } else {
-            alert("Token inválido o expirado");
+            document.body.classList.remove("pinhole-sidebar-open");
+            input.classList.add("input-error");
+            input.focus();
+            alertify.error("Token inválido o expirado");
         }
     });
 
@@ -89,9 +99,22 @@ document.addEventListener("DOMContentLoaded", () => {
     ?.addEventListener("click", e => {
         if (!HAS_TOKEN) {
             e.preventDefault();
-            alert("Debes ingresar el token para acceder a la galería.");
+            document.body.classList.remove("pinhole-sidebar-open");
+            alertify.error("Debes ingresar el token para acceder a la galería.");
         }
     });
+
+    function lockGallery() {
+        HAS_TOKEN = false;
+        document.body.classList.remove("has-token");
+        document.body.classList.add("pinhole-lock", "pinhole-sidebar-open");
+    }
+
+    function unlockGallery() {
+        HAS_TOKEN = true;
+        document.body.classList.add("has-token");
+        document.body.classList.remove("pinhole-lock", "pinhole-sidebar-open");
+    }
 
     function fallbackIdToFolder(id) {
         const m = id.match(/^([a-zA-Z]+)(\d+)(.*)$/);
@@ -138,16 +161,6 @@ document.addEventListener("DOMContentLoaded", () => {
             </a>
         `;
         return wrap;
-    }
-
-    function lockGallery() {
-        HAS_TOKEN = false;
-        document.body.classList.add("pinhole-lock", "pinhole-sidebar-open");
-    }
-
-    function unlockGallery() {
-        HAS_TOKEN = true;
-        document.body.classList.remove("pinhole-lock", "pinhole-sidebar-open");
     }
 
     async function checkToken() {
@@ -234,7 +247,44 @@ document.addEventListener("DOMContentLoaded", () => {
             } else {
                 titleEl.textContent = titleText;
             }
-            metaEl.textContent = `${totalItems} Photos`;
+            metaEl.innerHTML = `
+            <span class="photo-count">${totalItems} Photos</span>
+            <a class="download-all" title="Descargar todas">
+                ⬇️
+            </a>
+            `;
+
+            const downloadBtn = metaEl.querySelector(".download-all");
+            let isDownloading = false;
+
+            downloadBtn.addEventListener("click", () => {
+                if (isDownloading) return;
+
+                if (!HAS_TOKEN) {
+                    alertify.error("Necesitas token para descargar");
+                    return;
+                }
+
+                isDownloading = true;
+                downloadBtn.classList.add("disabled");
+                downloadBtn.textContent = "⏳";
+
+                const url = `php/zip.php?folder=${encodeURIComponent(currentFolder)}`;
+
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = "";
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+
+                setTimeout(() => {
+                    isDownloading = false;
+                    downloadBtn.classList.remove("disabled");
+                    downloadBtn.textContent = "⬇️";
+                }, 5000);
+            });
+
         } catch (e) {
             console.error(e);
         }
@@ -356,5 +406,4 @@ document.addEventListener("DOMContentLoaded", () => {
             fetchAndRender(fallbackIdToFolder(id), titleText);
         }
     });
-
 });

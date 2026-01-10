@@ -28,9 +28,6 @@ if (!is_dir($baseDir)) {
     exit;
 }
 
-/**
- * CACHE GLOBAL DE LA CARPETA (sin paginar)
- */
 $cacheFile = $baseDir . '/.meta.json';
 
 if (file_exists($cacheFile)) {

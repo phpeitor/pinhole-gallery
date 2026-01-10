@@ -19520,6 +19520,55 @@ body:not(.pinhole-lock) .pinhole-gallery {
     visibility: visible;
 }
 
+.ajs-message,
+.ajs-notifier,
+.ajs-modal,
+.ajs-overlay {
+    z-index: 999999 !important;
+}
+
+.ajs-notifier {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+}
+
+.input-error {
+    border: 2px solid #e53935 !important;
+    box-shadow: 0 0 0 2px rgba(229, 57, 53, 0.15);
+}
+
+.input-error::placeholder {
+    color: #e53935;
+}
+
+body.has-token .pinhole-token-trigger {
+    display: none !important;
+}
+
+.entry-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.download-all {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.download-all:hover {
+  opacity: 0.7;
+}
+
+.download-all.disabled {
+    pointer-events: none;
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
 a,
 .site-title a,
 .pinhole-nav a,
