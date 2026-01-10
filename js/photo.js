@@ -252,6 +252,9 @@ document.addEventListener("DOMContentLoaded", () => {
             <a class="download-all" title="Descargar todas">
                 ⬇️
             </a>
+            <a class="cerrar_session" title="Cerrar sesión" href="php/logout.php">
+                ❌
+            </a>
             `;
 
             const downloadBtn = metaEl.querySelector(".download-all");
