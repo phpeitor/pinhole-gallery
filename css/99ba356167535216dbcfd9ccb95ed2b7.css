@@ -16081,6 +16081,9 @@ p img.alignright {
   -o-transition: opacity 0.3s ease-in;
   transition: opacity 0.3s ease-in;
   min-height: 60vh;
+  position: relative;
+  width: 100%;
+  min-height: 50px;
 }
 .entry-content .pinhole-gallery {
   min-height: auto;
@@ -22148,12 +22151,6 @@ body .meks_ess.outline a:hover {
 .pswp__button--zoom,
 .pswp__button--download {
     background: none !important;
-}
-
-.pinhole-gallery {
-  position: relative !important;
-  width: 100% !important;
-  min-height: 50px !important;
 }
 
 .pinhole-item {

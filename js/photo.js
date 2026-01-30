@@ -244,16 +244,15 @@ document.addEventListener("DOMContentLoaded", () => {
       newElems.forEach(el => frag.appendChild(el));
       galleryContainer.appendChild(frag);
 
-      imagesLoaded(newElems, () => {
-        // si hay otro request nuevo, no hagas layout
-        if (requestId !== activeRequestId) return;
-
-        msnry = new Masonry(galleryContainer, {
-          itemSelector: ".pinhole-item",
-          percentPosition: true,
-        });
-        msnry.layout();
+      msnry = new Masonry(galleryContainer, {
+        itemSelector: ".pinhole-item",
+        percentPosition: true,
+        transitionDuration: 0
       });
+
+      const imgLoad = imagesLoaded(newElems);
+      imgLoad.on("progress", () => msnry.layout());
+      imgLoad.on("always", () => msnry.layout());
 
       // Title
       const id = folder.replace(/\//g, ""); // fix
@@ -310,7 +309,6 @@ document.addEventListener("DOMContentLoaded", () => {
     isLoading = true;
     showLoader(true);
 
-    // mismo controller/RequestId vigente (si cambian de carpeta, se aborta arriba)
     const requestId = activeRequestId;
 
     try {
@@ -336,12 +334,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
       renderIndex += data.items.length;
 
-      imagesLoaded(newElems, () => {
-        if (requestId !== activeRequestId) return;
-        if (!msnry) return;
-        msnry.appended(newElems);
-        msnry.layout();
-      });
+      msnry.appended(newElems);
+      msnry.layout(); 
+
+      const imgLoad = imagesLoaded(newElems);
+      imgLoad.on("progress", () => msnry.layout());
+      imgLoad.on("always", () => msnry.layout());
 
       if (renderIndex >= totalItems) {
         showLoader(false);
@@ -418,4 +416,45 @@ document.addEventListener("DOMContentLoaded", () => {
   checkToken().then(() => {
     if (HAS_TOKEN) fetchAndRender(fallbackIdToFolder(id), titleText);
   });
+
+  // ====== PhotoSwipe (click en imagen) ======
+  galleryContainer.addEventListener("click", (e) => {
+    if (!HAS_TOKEN) return;
+
+    const link = e.target.closest("a.item-link");
+    if (!link) return;
+
+    e.preventDefault();
+
+    const allLinks = Array.from(galleryContainer.querySelectorAll("a.item-link"));
+    const index = allLinks.indexOf(link);
+
+    const items = allLinks.map(a => {
+      const size = JSON.parse(a.dataset.size || '{"width":1920,"height":1280}');
+      return {
+        src: a.href,
+        w: size.width,
+        h: size.height
+      };
+    });
+
+    const pswp = new PhotoSwipe(
+      document.querySelector(".pswp"),
+      PhotoSwipeUI_Default,
+      items,
+      { index, history: false, shareEl: true }
+    );
+
+    // Botón download
+    pswp.listen("beforeChange", () => {
+      const btn = document.querySelector(".pswp__button--download");
+      if (btn) {
+        btn.href = pswp.currItem.src;
+        btn.download = pswp.currItem.src.split("/").pop();
+      }
+    });
+
+    pswp.init();
+  });
+
 });
