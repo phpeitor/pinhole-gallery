@@ -1,63 +1,84 @@
 <?php
+declare(strict_types=1);
+
 header('Content-Type: application/json; charset=utf-8');
 
 $folder = trim($_GET['folder'] ?? '', '/');
-
-if (str_contains($folder, '..')) {
-    http_response_code(400);
-    exit;
+if ($folder === '' || str_contains($folder, '..')) {
+  http_response_code(400);
+  echo json_encode(["total" => 0, "items" => []], JSON_UNESCAPED_SLASHES);
+  exit;
 }
 
 $offset = max(0, (int)($_GET['offset'] ?? 0));
 $limit  = min(50, max(1, (int)($_GET['limit'] ?? 10)));
 
-$baseDir   = __DIR__ . '/../img/' . $folder;
 $basePath = realpath(__DIR__ . '/../img');
+$baseDir  = __DIR__ . '/../img/' . $folder;
 $targetPath = realpath($baseDir);
 
-if (!$targetPath || !str_starts_with($targetPath, $basePath)) {
-    http_response_code(403);
-    exit;
+if (!$basePath || !$targetPath || !str_starts_with($targetPath, $basePath)) {
+  http_response_code(403);
+  echo json_encode(["total" => 0, "items" => []], JSON_UNESCAPED_SLASHES);
+  exit;
 }
 
 if (!is_dir($baseDir)) {
-    echo json_encode([
-        "total" => 0,
-        "items" => []
-    ]);
-    exit;
+  echo json_encode(["total" => 0, "items" => []], JSON_UNESCAPED_SLASHES);
+  exit;
 }
 
 $cacheFile = $baseDir . '/.meta.json';
 
+$files = glob($baseDir . "/*.{jpg,JPG,jpeg,JPEG,png,PNG,webp,WEBP}", GLOB_BRACE) ?: [];
+natsort($files);
+
+// fingerprint por mtime máximo
+$maxMtime = 0;
+foreach ($files as $fp) {
+  $mt = @filemtime($fp);
+  if ($mt && $mt > $maxMtime) $maxMtime = $mt;
+}
+
+$cache = null;
 if (file_exists($cacheFile)) {
-    $allItems = json_decode(file_get_contents($cacheFile), true);
+  $cache = json_decode((string)file_get_contents($cacheFile), true);
+}
+
+// cache válido?
+$useCache = is_array($cache)
+  && isset($cache['maxMtime'], $cache['items'])
+  && (int)$cache['maxMtime'] === (int)$maxMtime
+  && is_array($cache['items']);
+
+if ($useCache) {
+  $allItems = $cache['items'];
 } else {
-    $files = glob($baseDir . "/*.{jpg,JPG,jpeg,JPEG,png,PNG}", GLOB_BRACE);
-    natsort($files);
+  $allItems = [];
 
-    $allItems = [];
+  foreach ($files as $filePath) {
+    $size = @getimagesize($filePath);
+    if (!$size) continue;
 
-    foreach ($files as $filePath) {
-        $size = @getimagesize($filePath);
-        if (!$size) continue;
+    [$width, $height] = [ (int)$size[0], (int)$size[1] ];
 
-        [$width, $height] = $size;
+    $allItems[] = [
+      "filename" => basename($filePath),
+      "width" => $width,
+      "height" => $height
+    ];
+  }
 
-        $allItems[] = [
-            "filename" => basename($filePath),
-            "width" => $width,
-            "height" => $height
-        ];
-    }
-
-    file_put_contents($cacheFile, json_encode($allItems));
+  file_put_contents($cacheFile, json_encode([
+    "maxMtime" => $maxMtime,
+    "items" => $allItems
+  ], JSON_UNESCAPED_SLASHES));
 }
 
 $total = count($allItems);
 $items = array_slice($allItems, $offset, $limit);
 
 echo json_encode([
-    "total" => $total,
-    "items" => array_values($items)
-]);
+  "total" => $total,
+  "items" => array_values($items)
+], JSON_UNESCAPED_SLASHES);
