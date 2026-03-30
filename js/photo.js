@@ -78,12 +78,15 @@ document.addEventListener("DOMContentLoaded", () => {
     HAS_TOKEN = false;
     document.body.classList.remove("has-token");
     document.body.classList.add("pinhole-lock", "pinhole-sidebar-open");
+    setDownloadActionState({ enabled: false, loading: false });
+    refreshTopActionsVisibility();
   }
 
   function unlockGallery() {
     HAS_TOKEN = true;
     document.body.classList.add("has-token");
     document.body.classList.remove("pinhole-lock", "pinhole-sidebar-open");
+    refreshTopActionsVisibility();
   }
 
   async function checkToken() {
@@ -137,6 +140,15 @@ document.addEventListener("DOMContentLoaded", () => {
     btn.setAttribute("aria-disabled", (!enabled || loading) ? "true" : "false");
   }
 
+  function setTopActionsVisibility(visible) {
+    ensureTopActions().classList.toggle("is-hidden", !visible);
+  }
+
+  function refreshTopActionsVisibility() {
+    const currentId = location.hash.replace("#", "");
+    setTopActionsVisibility(HAS_TOKEN && !isHomeRoute(currentId));
+  }
+
   function showHomeView() {
     if (activeController) activeController.abort();
 
@@ -152,6 +164,7 @@ document.addEventListener("DOMContentLoaded", () => {
     titleEl.textContent = "Inicio";
     metaEl.textContent = "";
     setDownloadActionState({ enabled: false, loading: false });
+    setTopActionsVisibility(false);
 
     galleryContainer.style.height = "auto";
     galleryContainer.style.minHeight = "0";
@@ -352,6 +365,7 @@ document.addEventListener("DOMContentLoaded", () => {
       `;
 
       setDownloadActionState({ enabled: totalItems > 0, loading: false });
+      setTopActionsVisibility(true);
 
       // Infinite scroll habilitar/deshabilitar
       if (renderIndex < totalItems) {
@@ -516,6 +530,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   ensureTopActions();
   setDownloadActionState({ enabled: false, loading: false });
+  setTopActionsVisibility(false);
 
   const link = document.querySelector(`a[href="#${id}"]`);
   const titleText = link
@@ -529,7 +544,12 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    if (HAS_TOKEN) fetchAndRender(fallbackIdToFolder(id), titleText);
+    if (HAS_TOKEN) {
+      fetchAndRender(fallbackIdToFolder(id), titleText);
+      return;
+    }
+
+    refreshTopActionsVisibility();
   });
 
   // ====== PhotoSwipe (click en imagen) ======

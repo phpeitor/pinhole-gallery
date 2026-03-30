@@ -301,6 +301,12 @@ body {
     align-items: center;
 }
 
+.pinhole-top-actions.is-hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
 .top-action-btn {
     width: 42px;
     height: 42px;
