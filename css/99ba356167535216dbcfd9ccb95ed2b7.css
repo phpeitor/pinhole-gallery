@@ -6085,7 +6085,6 @@ p.mks-ep-modal-test-drive-response-success a {
 .icon-volume-off,
 .icon-users {
   font-family: "Simple-Line-Icons";
-  speak: none;
   font-style: normal;
   font-weight: normal;
   font-variant: normal;
@@ -7402,9 +7401,6 @@ select {
 [type="reset"],
 [type="submit"],
 button,
-html [type="button"] {
-  -webkit-appearance: button;
-}
 [type="button"]::-moz-focus-inner,
 [type="reset"]::-moz-focus-inner,
 [type="submit"]::-moz-focus-inner,
@@ -7450,7 +7446,6 @@ textarea {
   height: auto;
 }
 [type="search"] {
-  -webkit-appearance: textfield;
   outline-offset: -2px;
 }
 [type="search"]::-webkit-search-cancel-button,
@@ -7596,9 +7591,6 @@ input[type="radio"]:disabled {
 input[type="date"],
 input[type="datetime-local"],
 input[type="month"],
-input[type="time"] {
-  -webkit-appearance: listbox;
-}
 textarea {
   resize: vertical;
 }
@@ -7615,9 +7607,6 @@ legend {
   margin-bottom: 0.5rem;
   font-size: 1.5rem;
   line-height: inherit;
-}
-input[type="search"] {
-  -webkit-appearance: none;
 }
 output {
   display: inline-block;
@@ -15667,8 +15656,6 @@ p img.alignright {
 }
 .owl-carousel .owl-stage {
   position: relative;
-  -ms-touch-action: pan-Y;
-  -moz-backface-visibility: hidden;
 }
 .owl-carousel .owl-stage:after {
   content: ".";
@@ -15681,22 +15668,12 @@ p img.alignright {
 .owl-carousel .owl-stage-outer {
   position: relative;
   overflow: hidden;
-  -webkit-transform: translate3d(0, 0, 0);
 }
 .owl-carousel .owl-item,
-.owl-carousel .owl-wrapper {
-  -webkit-backface-visibility: hidden;
-  -moz-backface-visibility: hidden;
-  -ms-backface-visibility: hidden;
-  -webkit-transform: translate3d(0, 0, 0);
-  -moz-transform: translate3d(0, 0, 0);
-  -ms-transform: translate3d(0, 0, 0);
-}
 .owl-carousel .owl-item {
   position: relative;
   min-height: 1px;
   float: left;
-  -webkit-backface-visibility: hidden;
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
 }
@@ -16692,7 +16669,6 @@ body .pinhole-share .meks_ess a {
   left: 20px;
   top: 20px;
   z-index: 900;
-  -webkit-backface-visibility: visible;
 }
 .pinhole-masonry .pinhole-download {
   right: 35px;

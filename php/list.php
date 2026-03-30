@@ -33,12 +33,20 @@ $cacheFile = $baseDir . '/.meta.json';
 $files = glob($baseDir . "/*.{jpg,JPG,jpeg,JPEG,png,PNG,webp,WEBP}", GLOB_BRACE) ?: [];
 natsort($files);
 
-// fingerprint por mtime máximo
+// Fingerprints para invalidar cache cuando cambian archivos.
 $maxMtime = 0;
+$signatureParts = [];
 foreach ($files as $fp) {
   $mt = @filemtime($fp);
   if ($mt && $mt > $maxMtime) $maxMtime = $mt;
+
+  $signatureParts[] = implode('|', [
+    basename($fp),
+    (string)($mt ?: 0),
+    (string)(@filesize($fp) ?: 0)
+  ]);
 }
+$filesSignature = sha1(implode(';', $signatureParts));
 
 $cache = null;
 if (file_exists($cacheFile)) {
@@ -47,8 +55,9 @@ if (file_exists($cacheFile)) {
 
 // cache válido?
 $useCache = is_array($cache)
-  && isset($cache['maxMtime'], $cache['items'])
+  && isset($cache['maxMtime'], $cache['filesSignature'], $cache['items'])
   && (int)$cache['maxMtime'] === (int)$maxMtime
+  && (string)$cache['filesSignature'] === $filesSignature
   && is_array($cache['items']);
 
 if ($useCache) {
@@ -71,6 +80,7 @@ if ($useCache) {
 
   file_put_contents($cacheFile, json_encode([
     "maxMtime" => $maxMtime,
+    "filesSignature" => $filesSignature,
     "items" => $allItems
   ], JSON_UNESCAPED_SLASHES));
 }
