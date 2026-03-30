@@ -26,6 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let io = null;
   let activeController = null;
   let activeRequestId = 0;
+  let downloadResetTimer = null;
 
   const HOME_HASHES = new Set(["", "/", "home", "inicio", "viewall"]);
 
@@ -107,6 +108,35 @@ document.addEventListener("DOMContentLoaded", () => {
     return HOME_HASHES.has(String(id || "").trim().toLowerCase());
   }
 
+  function ensureTopActions() {
+    let bar = document.querySelector(".pinhole-top-actions");
+    if (bar) return bar;
+
+    bar = document.createElement("div");
+    bar.className = "pinhole-top-actions";
+    bar.setAttribute("aria-label", "Acciones rápidas");
+    bar.innerHTML = `
+      <a class="top-action-btn download-all download-cta has-tooltip is-disabled" href="#" data-tooltip="Descargar galería" aria-label="Descargar galería" aria-disabled="true">
+        <img src="./resources/download.webp" alt="Descargar">
+      </a>
+      <a class="top-action-btn logout-action has-tooltip" href="php/logout.php" data-tooltip="Cerrar sesión" aria-label="Cerrar sesión">
+        <img src="./resources/close.webp" alt="Cerrar sesión">
+      </a>
+    `;
+
+    document.body.appendChild(bar);
+    return bar;
+  }
+
+  function setDownloadActionState({ enabled = false, loading = false } = {}) {
+    const btn = ensureTopActions().querySelector(".download-all");
+    if (!btn) return;
+
+    btn.classList.toggle("is-disabled", !enabled || loading);
+    btn.classList.toggle("is-loading", loading);
+    btn.setAttribute("aria-disabled", (!enabled || loading) ? "true" : "false");
+  }
+
   function showHomeView() {
     if (activeController) activeController.abort();
 
@@ -121,6 +151,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     titleEl.textContent = "Inicio";
     metaEl.textContent = "";
+    setDownloadActionState({ enabled: false, loading: false });
 
     galleryContainer.style.height = "auto";
     galleryContainer.style.minHeight = "0";
@@ -227,6 +258,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     titleEl.textContent = parent || titleText || "Galería vacía";
     metaEl.textContent = "0 Photos";
+    setDownloadActionState({ enabled: false, loading: false });
 
     destroyMasonry();
     disconnectIO();
@@ -317,9 +349,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
       metaEl.innerHTML = `
         <span class="photo-count">${totalItems} Photos</span>
-        <a class="download-all" title="Descargar todas">⬇️</a>
-        <a class="cerrar_session" title="Cerrar sesión" href="php/logout.php">❌</a>
       `;
+
+      setDownloadActionState({ enabled: totalItems > 0, loading: false });
 
       // Infinite scroll habilitar/deshabilitar
       if (renderIndex < totalItems) {
@@ -416,17 +448,27 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ====== Delegación de eventos (más limpio) ======
-  metaEl.addEventListener("click", (e) => {
+  document.addEventListener("click", (e) => {
     const btn = e.target.closest(".download-all");
     if (!btn) return;
+    e.preventDefault();
 
     if (!HAS_TOKEN) {
       alertify.error("Necesitas token para descargar");
       return;
     }
 
-    btn.classList.add("disabled");
-    btn.textContent = "⏳";
+    if (!currentFolder || btn.classList.contains("is-disabled")) {
+      alertify.error("Selecciona una galería primero");
+      return;
+    }
+
+    if (downloadResetTimer) {
+      clearTimeout(downloadResetTimer);
+      downloadResetTimer = null;
+    }
+
+    setDownloadActionState({ enabled: true, loading: true });
 
     const url = `php/zip.php?folder=${encodeURIComponent(currentFolder)}`;
     const a = document.createElement("a");
@@ -436,9 +478,9 @@ document.addEventListener("DOMContentLoaded", () => {
     a.click();
     document.body.removeChild(a);
 
-    setTimeout(() => {
-      btn.classList.remove("disabled");
-      btn.textContent = "⬇️";
+    downloadResetTimer = setTimeout(() => {
+      setDownloadActionState({ enabled: true, loading: false });
+      downloadResetTimer = null;
     }, 5000);
   });
 
@@ -471,6 +513,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // ====== Init ======
   let id = location.hash.replace("#", "");
   if (isHomeRoute(id)) id = "home";
+
+  ensureTopActions();
+  setDownloadActionState({ enabled: false, loading: false });
 
   const link = document.querySelector(`a[href="#${id}"]`);
   const titleText = link
