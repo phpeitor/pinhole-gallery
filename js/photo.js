@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   let currentFolder = "";
   let renderIndex = 0;
   let totalItems = 0;
@@ -27,6 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let activeController = null;
   let activeRequestId = 0;
   let downloadResetTimer = null;
+  const menuRouteMap = new Map();
 
   const HOME_HASHES = new Set(["", "/", "home", "inicio", "viewall"]);
 
@@ -109,6 +110,150 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function isHomeRoute(id) {
     return HOME_HASHES.has(String(id || "").trim().toLowerCase());
+  }
+
+  function escapeHtml(value) {
+    return String(value)
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#39;");
+  }
+
+  function toRouteId(value) {
+    return String(value || "").trim().toLowerCase();
+  }
+
+  function registerRoute({ id, folder, title }) {
+    const key = toRouteId(id);
+    if (!key || !folder) return;
+    menuRouteMap.set(key, {
+      id: key,
+      folder,
+      title: title || key
+    });
+  }
+
+  function indexRoutesFromDom() {
+    menuRouteMap.clear();
+
+    document.querySelectorAll("#menu-main-menu a[href^='#'], #menu-main-menu-1 a[href^='#'], #menu-main-menu-2 a[href^='#']")
+      .forEach((link) => {
+        const rawId = (link.getAttribute("href") || "").replace("#", "");
+        if (!rawId || isHomeRoute(rawId)) return;
+
+        const folder = link.dataset.folder || fallbackIdToFolder(rawId);
+        const title = link.dataset.title || link.textContent.trim();
+        registerRoute({ id: rawId, folder, title });
+      });
+  }
+
+  function buildDesktopMenu(groups) {
+    const desktopRoots = document.querySelectorAll("#menu-main-menu, #menu-main-menu-1");
+
+    desktopRoots.forEach((desktopRoot) => {
+      const galleryLi = desktopRoot.querySelector(":scope > li.menu-item-has-children");
+      if (!galleryLi) return;
+
+      let subMenu = galleryLi.querySelector(":scope > ul.sub-menu");
+      if (!subMenu) {
+        subMenu = document.createElement("ul");
+        subMenu.className = "sub-menu";
+        galleryLi.appendChild(subMenu);
+      }
+
+      subMenu.innerHTML = groups.map((group) => {
+      const groupName = escapeHtml(group.group);
+      const groupClass = `menu-${String(group.group || "").toLowerCase().replace(/\s+/g, "-")}`;
+      const children = (group.items || []).map((item) => {
+        const id = escapeHtml(item.id);
+        const folder = escapeHtml(item.folder);
+        const title = escapeHtml(item.title);
+        return `
+          <li class="menu-item menu-item-type-custom menu-item-object-custom ${id}">
+            <a href="#${id}" data-folder="${folder}" data-title="${title}">${title}</a>
+          </li>
+        `;
+      }).join("");
+
+      return `
+        <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children ${groupClass}">
+          <a href="#">${groupName}</a>
+          <ul class="sub-menu">
+            ${children}
+          </ul>
+        </li>
+      `;
+      }).join("");
+    });
+  }
+
+  function buildResponsiveMenu(groups) {
+    const responsiveRoot = document.querySelector("#menu-main-menu-2");
+    if (!responsiveRoot) return;
+
+    const homeLi = responsiveRoot.querySelector(":scope > li a[href='#home']")?.closest("li");
+    const homeHtml = homeLi
+      ? homeLi.outerHTML
+      : `<li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="#home">Inicio</a></li>`;
+
+    const groupHtml = groups.map((group) => {
+      const groupName = escapeHtml(group.group);
+      const groupClass = `menu-${String(group.group || "").toLowerCase().replace(/\s+/g, "-")}`;
+      const children = (group.items || []).map((item) => {
+        const id = escapeHtml(item.id);
+        const folder = escapeHtml(item.folder);
+        const title = escapeHtml(item.title);
+        return `
+          <li class="menu-item menu-item-type-custom menu-item-object-custom ${id}">
+            <a href="#${id}" data-folder="${folder}" data-title="${title}">${title}</a>
+          </li>
+        `;
+      }).join("");
+
+      return `
+        <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children ${groupClass}">
+          <a href="#">${groupName}</a>
+          <ul class="sub-menu">
+            ${children}
+          </ul>
+        </li>
+      `;
+    }).join("");
+
+    responsiveRoot.innerHTML = `${homeHtml}${groupHtml}`;
+  }
+
+  async function loadDynamicMenus() {
+    try {
+      const res = await fetch("php/menu.php", { cache: "no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      const data = await res.json();
+      const groups = Array.isArray(data?.groups) ? data.groups : [];
+      if (groups.length > 0) {
+        buildDesktopMenu(groups);
+        buildResponsiveMenu(groups);
+      }
+    } catch (err) {
+      console.error("No se pudo construir el menú dinámico", err);
+    } finally {
+      indexRoutesFromDom();
+    }
+  }
+
+  function resolveRouteInfo(id, fallbackTitle = "") {
+    const key = toRouteId(id);
+    const mapped = menuRouteMap.get(key);
+    if (mapped) {
+      return { folder: mapped.folder, title: mapped.title || fallbackTitle || key };
+    }
+
+    return {
+      folder: fallbackIdToFolder(id),
+      title: fallbackTitle || id.replace(/\d+/g, m => " " + m + " ").trim()
+    };
   }
 
   function ensureTopActions() {
@@ -499,32 +644,42 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ====== Navegación de menú ======
-  document.querySelectorAll("a[href^='#']").forEach(link => {
-    link.addEventListener("click", (e) => {
-      const id = link.getAttribute("href").replace("#", "");
-      if (!id) return;
+  document.addEventListener("click", (e) => {
+    const link = e.target.closest("#menu-main-menu a[href^='#'], #menu-main-menu-1 a[href^='#'], #menu-main-menu-2 a[href^='#'], .pinhole-site-branding a[rel='home']");
+    if (!link) return;
 
-      if (isHomeRoute(id)) {
-        e.preventDefault();
-        history.replaceState(null, "", "#home");
-        showHomeView();
-        return;
-      }
+    const href = link.getAttribute("href") || "";
+    const isBrandHome = link.matches(".pinhole-site-branding a[rel='home']");
+    let id = isBrandHome ? "home" : href.replace("#", "");
 
-      if (!HAS_TOKEN) {
-        e.preventDefault();
-        return;
-      }
-
+    if (!id) {
       e.preventDefault();
-      history.replaceState(null, "", "#" + id);
+      return;
+    }
 
-      const folder = fallbackIdToFolder(id);
-      fetchAndRender(folder, link.textContent.trim());
-    });
+    if (isHomeRoute(id)) {
+      e.preventDefault();
+      history.replaceState(null, "", "#home");
+      showHomeView();
+      return;
+    }
+
+    if (!HAS_TOKEN) {
+      e.preventDefault();
+      return;
+    }
+
+    e.preventDefault();
+    history.replaceState(null, "", "#" + id);
+
+    const fallbackTitle = link.dataset.title || link.textContent.trim();
+    const route = resolveRouteInfo(id, fallbackTitle);
+    fetchAndRender(route.folder, route.title);
   });
 
   // ====== Init ======
+  await loadDynamicMenus();
+
   let id = location.hash.replace("#", "");
   if (isHomeRoute(id)) id = "home";
 
@@ -534,7 +689,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const link = document.querySelector(`a[href="#${id}"]`);
   const titleText = link
-    ? link.textContent.trim()
+    ? (link.dataset.title || link.textContent.trim())
     : id.replace(/\d+/g, m => " " + m + " ").trim();
 
   checkToken().then(() => {
@@ -545,7 +700,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (HAS_TOKEN) {
-      fetchAndRender(fallbackIdToFolder(id), titleText);
+      const route = resolveRouteInfo(id, titleText);
+      fetchAndRender(route.folder, route.title);
       return;
     }
 
