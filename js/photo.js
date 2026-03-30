@@ -178,9 +178,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         const id = escapeHtml(item.id);
         const folder = escapeHtml(item.folder);
         const title = escapeHtml(item.title);
+        const fullTitle = escapeHtml(`${group.group} ${item.title}`.trim());
         return `
           <li class="menu-item menu-item-type-custom menu-item-object-custom ${id}">
-            <a href="#${id}" data-folder="${folder}" data-title="${title}">${title}</a>
+            <a href="#${id}" data-folder="${folder}" data-title="${fullTitle}">${title}</a>
           </li>
         `;
       }).join("");
@@ -227,9 +228,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         const id = escapeHtml(item.id);
         const folder = escapeHtml(item.folder);
         const title = escapeHtml(item.title);
+        const fullTitle = escapeHtml(`${group.group} ${item.title}`.trim());
         return `
           <li class="menu-item menu-item-type-custom menu-item-object-custom ${id}">
-            <a href="#${id}" data-folder="${folder}" data-title="${title}">${title}</a>
+            <a href="#${id}" data-folder="${folder}" data-title="${fullTitle}">${title}</a>
           </li>
         `;
       }).join("");
@@ -442,7 +444,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const id = folder.replace(/\//g, ""); // fix
     const parent = getParentFromMenu(id);
 
-    titleEl.textContent = parent || titleText || "Galería vacía";
+    titleEl.textContent = titleText || parent || "Galería vacía";
     metaEl.textContent = "0 Photos";
     setDownloadActionState({ enabled: false, loading: false });
 
@@ -529,9 +531,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
 
       // Title
-      const id = folder.replace(/\//g, ""); // fix
-      const parent = getParentFromMenu(id);
-      titleEl.textContent = parent ? `${parent} – ${titleText}` : titleText;
+      titleEl.textContent = titleText || folder;
 
       metaEl.innerHTML = `
         <span class="photo-count">${totalItems} Photos</span>
