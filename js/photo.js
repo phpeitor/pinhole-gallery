@@ -47,7 +47,6 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!token) {
         input.classList.add("input-error");
         input.focus();
-        alertify.error("Debes ingresar el token");
         return;
       }
 
