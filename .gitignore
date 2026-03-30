@@ -1,5 +1,4 @@
 .env
-/img/emma/
-/img/alaia/
+/img
 /vendor
 /node_modules
