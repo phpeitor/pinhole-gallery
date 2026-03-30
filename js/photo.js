@@ -27,6 +27,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let activeController = null;
   let activeRequestId = 0;
 
+  const HOME_HASHES = new Set(["", "/", "home", "inicio", "viewall"]);
+
   // Evita que el script del tema vuelva a tomar control del layout de esta galería.
   galleryContainer?.classList.remove("pinhole-masonry", "pinhole-grid");
 
@@ -100,6 +102,41 @@ document.addEventListener("DOMContentLoaded", () => {
     const m = id.match(/^([a-zA-Z]+)(\d+)(.*)$/);
     if (m) return `${m[1]}/${m[2]}${m[3] || ""}`;
     return id.replace(/_/g, "/");
+  }
+
+  function isHomeRoute(id) {
+    return HOME_HASHES.has(String(id || "").trim().toLowerCase());
+  }
+
+  function showHomeView() {
+    if (activeController) activeController.abort();
+
+    disconnectIO();
+    destroyMasonry();
+    showLoader(false);
+
+    currentFolder = "";
+    renderIndex = 0;
+    totalItems = 0;
+    isLoading = false;
+
+    titleEl.textContent = "Inicio";
+    metaEl.textContent = "";
+
+    galleryContainer.style.height = "auto";
+    galleryContainer.style.minHeight = "0";
+    galleryContainer.style.paddingBottom = "0";
+    galleryContainer.classList.add("pinhole-gallery-loaded");
+
+    galleryContainer.innerHTML = `
+      <section class="home-hero" aria-label="Presentación del proyecto">
+        <div class="home-hero-video-wrap">
+          <video class="home-hero-video" src="./resources/video.mp4" autoplay muted loop playsinline preload="metadata" aria-label="Video de presentación"></video>
+        </div>
+        <p class="home-hero-description">Proyecto de galería de imágenes con carga infinita, navegación por álbumes y visualización optimizada para desktop y móvil.</p>
+        <cite>– Pinhole Gallery</cite>
+      </section>
+    `;
   }
 
   function getParentFromMenu(id) {
@@ -409,12 +446,20 @@ document.addEventListener("DOMContentLoaded", () => {
   // ====== Navegación de menú ======
   document.querySelectorAll("a[href^='#']").forEach(link => {
     link.addEventListener("click", (e) => {
+      const id = link.getAttribute("href").replace("#", "");
+      if (!id) return;
+
+      if (isHomeRoute(id)) {
+        e.preventDefault();
+        history.replaceState(null, "", "#home");
+        showHomeView();
+        return;
+      }
+
       if (!HAS_TOKEN) {
         e.preventDefault();
         return;
       }
-      const id = link.getAttribute("href").replace("#", "");
-      if (!id) return;
 
       e.preventDefault();
       history.replaceState(null, "", "#" + id);
@@ -426,10 +471,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ====== Init ======
   let id = location.hash.replace("#", "");
-  if (!id || id === "/" || id === "home" || id === "viewall") {
-    id = "emma5th";
-    history.replaceState(null, "", "#emma5th");
-  }
+  if (isHomeRoute(id)) id = "home";
 
   const link = document.querySelector(`a[href="#${id}"]`);
   const titleText = link
@@ -437,6 +479,12 @@ document.addEventListener("DOMContentLoaded", () => {
     : id.replace(/\d+/g, m => " " + m + " ").trim();
 
   checkToken().then(() => {
+    if (isHomeRoute(id)) {
+      history.replaceState(null, "", "#home");
+      showHomeView();
+      return;
+    }
+
     if (HAS_TOKEN) fetchAndRender(fallbackIdToFolder(id), titleText);
   });
 
