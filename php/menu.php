@@ -25,10 +25,14 @@ function makeLabel(string $value): string {
   return trim($label);
 }
 
+function makeSlug(string $value): string {
+  $slug = strtolower($value);
+  $slug = preg_replace('/[^a-z0-9]+/', '_', $slug);
+  return trim((string)$slug, '_');
+}
+
 function makeId(string $parent, string $child): string {
-  $raw = strtolower($parent . '_' . $child);
-  $id = preg_replace('/[^a-z0-9]+/', '_', $raw);
-  return trim((string)$id, '_');
+  return makeSlug($parent . '_' . $child);
 }
 
 $entries = scandir($imgRoot) ?: [];
@@ -44,6 +48,7 @@ $usedIds = [];
 
 foreach ($parentDirs as $parent) {
   $parentPath = $imgRoot . DIRECTORY_SEPARATOR . $parent;
+  $parentHasImages = hasGalleryImages($parentPath);
 
   $children = scandir($parentPath) ?: [];
   $childDirs = [];
@@ -54,6 +59,21 @@ foreach ($parentDirs as $parent) {
   natcasesort($childDirs);
 
   $items = [];
+  $directId = null;
+  if ($parentHasImages) {
+    $id = makeSlug($parent);
+    if ($id !== '') {
+      $baseId = $id;
+      $suffix = 2;
+      while (isset($usedIds[$id])) {
+        $id = $baseId . '_' . $suffix;
+        $suffix++;
+      }
+      $usedIds[$id] = true;
+      $directId = $id;
+    }
+  }
+
   foreach ($childDirs as $child) {
     $childPath = $parentPath . DIRECTORY_SEPARATOR . $child;
     if (!hasGalleryImages($childPath)) continue;
@@ -77,10 +97,12 @@ foreach ($parentDirs as $parent) {
     ];
   }
 
-  if (count($items) === 0) continue;
+  if (!$parentHasImages && count($items) === 0) continue;
 
   $groups[] = [
     'group' => makeLabel($parent),
+    'id' => $directId,
+    'folder' => $parentHasImages ? $parent : null,
     'items' => array_values($items),
   ];
 }

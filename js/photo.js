@@ -166,6 +166,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       subMenu.innerHTML = groups.map((group) => {
       const groupName = escapeHtml(group.group);
       const groupClass = `menu-${String(group.group || "").toLowerCase().replace(/\s+/g, "-")}`;
+      const groupId = group.id ? escapeHtml(group.id) : "";
+      const groupFolder = group.folder ? escapeHtml(group.folder) : "";
+      const hasChildren = Array.isArray(group.items) && group.items.length > 0;
+      const groupHref = groupId ? `#${groupId}` : "#";
+      const groupData = groupId
+        ? ` data-folder="${groupFolder}" data-title="${groupName}"`
+        : "";
+
       const children = (group.items || []).map((item) => {
         const id = escapeHtml(item.id);
         const folder = escapeHtml(item.folder);
@@ -177,12 +185,18 @@ document.addEventListener("DOMContentLoaded", async () => {
         `;
       }).join("");
 
+      const liClasses = [
+        "menu-item",
+        "menu-item-type-custom",
+        "menu-item-object-custom",
+        groupClass,
+        hasChildren ? "menu-item-has-children" : ""
+      ].filter(Boolean).join(" ");
+
       return `
-        <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children ${groupClass}">
-          <a href="#">${groupName}</a>
-          <ul class="sub-menu">
-            ${children}
-          </ul>
+        <li class="${liClasses}">
+          <a href="${groupHref}"${groupData}>${groupName}</a>
+          ${hasChildren ? `<ul class="sub-menu">${children}</ul>` : ""}
         </li>
       `;
       }).join("");
@@ -201,6 +215,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     const groupHtml = groups.map((group) => {
       const groupName = escapeHtml(group.group);
       const groupClass = `menu-${String(group.group || "").toLowerCase().replace(/\s+/g, "-")}`;
+      const groupId = group.id ? escapeHtml(group.id) : "";
+      const groupFolder = group.folder ? escapeHtml(group.folder) : "";
+      const hasChildren = Array.isArray(group.items) && group.items.length > 0;
+      const groupHref = groupId ? `#${groupId}` : "#";
+      const groupData = groupId
+        ? ` data-folder="${groupFolder}" data-title="${groupName}"`
+        : "";
+
       const children = (group.items || []).map((item) => {
         const id = escapeHtml(item.id);
         const folder = escapeHtml(item.folder);
@@ -212,12 +234,18 @@ document.addEventListener("DOMContentLoaded", async () => {
         `;
       }).join("");
 
+      const liClasses = [
+        "menu-item",
+        "menu-item-type-custom",
+        "menu-item-object-custom",
+        groupClass,
+        hasChildren ? "menu-item-has-children" : ""
+      ].filter(Boolean).join(" ");
+
       return `
-        <li class="menu-item menu-item-type-custom menu-item-object-custom menu-item-has-children ${groupClass}">
-          <a href="#">${groupName}</a>
-          <ul class="sub-menu">
-            ${children}
-          </ul>
+        <li class="${liClasses}">
+          <a href="${groupHref}"${groupData}>${groupName}</a>
+          ${hasChildren ? `<ul class="sub-menu">${children}</ul>` : ""}
         </li>
       `;
     }).join("");
