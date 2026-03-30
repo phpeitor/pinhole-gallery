@@ -291,6 +291,30 @@ body {
     color: #383838;
 }
 
+.locked-icon {
+    display: block;
+    margin: 10px auto 0;
+    transform-origin: center;
+    animation: lockFloat 2.8s ease-in-out infinite;
+    filter: drop-shadow(0 8px 14px rgba(0, 0, 0, 0.2));
+    transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.locked-icon:hover {
+    transform: translateY(-2px) scale(1.03);
+    filter: drop-shadow(0 12px 16px rgba(0, 0, 0, 0.24));
+}
+
+@keyframes lockFloat {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-6px);
+    }
+}
+
 .pinhole-top-actions {
     position: fixed;
     top: 18px;
