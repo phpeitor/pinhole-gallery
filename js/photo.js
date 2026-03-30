@@ -4,33 +4,31 @@ document.addEventListener("DOMContentLoaded", () => {
   let totalItems = 0;
   let isLoading = false;
   let msnry = null;
-
   let HAS_TOKEN = false;
-
   const THUMB_WIDTH = 378;
+  const FALLBACK_WIDTH = 1920;
+  const FALLBACK_HEIGHT = 1280;
   const CHUNK = 10;
-
   const galleryContainer = document.querySelector(".pinhole-gallery");
   const titleEl = document.querySelector(".entry-title");
   const metaEl = document.querySelector(".entry-meta");
-
   const loader = document.querySelector(".infiniteLoader");
 
-  // Sentinel (nuevo): si no existe, lo creamos
   let sentinel = document.querySelector(".infiniteSentinel");
   if (!sentinel) {
     sentinel = document.createElement("div");
     sentinel.className = "infiniteSentinel";
     sentinel.style.height = "1px";
     sentinel.style.width = "100%";
-    loader?.parentNode?.insertBefore(sentinel, loader); // sentinel antes del loader o donde convenga
+    loader?.parentNode?.insertBefore(sentinel, loader); 
   }
 
   let io = null;
-
-  // Para cancelar fetches al cambiar de galería (nuevo)
   let activeController = null;
   let activeRequestId = 0;
+
+  // Evita que el script del tema vuelva a tomar control del layout de esta galería.
+  galleryContainer?.classList.remove("pinhole-masonry", "pinhole-grid");
 
   document.querySelectorAll(".current-year").forEach(el => {
     el.textContent = new Date().getFullYear();
@@ -123,13 +121,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (typeof itemData === "string") {
       filename = itemData;
-      realW = 1920;
-      realH = 1280;
+      realW = FALLBACK_WIDTH;
+      realH = FALLBACK_HEIGHT;
     } else {
       filename = itemData.filename;
-      realW = itemData.width || 1920;
-      realH = itemData.height || 1280;
+      realW = Number(itemData.width) || FALLBACK_WIDTH;
+      realH = Number(itemData.height) || FALLBACK_HEIGHT;
     }
+
+    // Si la metadata viene corrupta (0/NaN), evita alturas gigantes que rompen Masonry.
+    if (!Number.isFinite(realW) || realW <= 0) realW = FALLBACK_WIDTH;
+    if (!Number.isFinite(realH) || realH <= 0) realH = FALLBACK_HEIGHT;
 
     const url = `./img/${folder}/${filename}`;
     const thumbH = Math.round(THUMB_WIDTH * (realH / realW));
@@ -156,6 +158,19 @@ document.addEventListener("DOMContentLoaded", () => {
       msnry.destroy();
       msnry = null;
     }
+
+    if (window.jQuery && typeof window.jQuery.fn?.masonry === "function") {
+      try {
+          const $gallery = window.jQuery(galleryContainer);
+          if ($gallery.data("masonry")) {
+            $gallery.masonry("destroy");
+          }
+      } catch (_) {
+        // Ignorar: puede no existir una instancia previa de jQuery Masonry.
+      }
+    }
+
+    galleryContainer?.classList.remove("masonry", "pinhole-gallery-loaded");
   }
 
   function disconnectIO() {
@@ -184,11 +199,12 @@ document.addEventListener("DOMContentLoaded", () => {
     galleryContainer.style.height = "auto";
     galleryContainer.style.minHeight = "0";
     galleryContainer.style.paddingBottom = "40px";
-    galleryContainer.innerHTML = `
-      <div style="padding:40px 0; text-align:center; opacity:.6;">
-        No hay fotos en esta galería.
-      </div>
-    `;
+      galleryContainer.classList.add("pinhole-gallery-loaded");
+      galleryContainer.innerHTML = `
+        <div style="padding:40px 0; text-align:center; opacity:.6;">
+          No hay fotos en esta galería.
+        </div>
+      `;
   }
 
   async function fetchList({ folder, offset, limit, signal }) {
@@ -252,7 +268,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const imgLoad = imagesLoaded(newElems);
       imgLoad.on("progress", () => msnry.layout());
-      imgLoad.on("always", () => msnry.layout());
+      imgLoad.on("always", () => {
+        msnry.reloadItems();
+        msnry.layout();
+          galleryContainer.classList.add("pinhole-gallery-loaded");
+      });
 
       // Title
       const id = folder.replace(/\//g, ""); // fix
@@ -335,11 +355,14 @@ document.addEventListener("DOMContentLoaded", () => {
       renderIndex += data.items.length;
 
       msnry.appended(newElems);
-      msnry.layout(); 
+      msnry.layout();
 
       const imgLoad = imagesLoaded(newElems);
       imgLoad.on("progress", () => msnry.layout());
-      imgLoad.on("always", () => msnry.layout());
+      imgLoad.on("always", () => {
+        msnry.reloadItems();
+        msnry.layout();
+      });
 
       if (renderIndex >= totalItems) {
         showLoader(false);
