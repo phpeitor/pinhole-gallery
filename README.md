@@ -12,7 +12,7 @@ Galeria de imagenes privada con autenticacion por token, carga infinita por lote
 
 ## Resumen
 
-Este proyecto corre sobre PHP y frontend vanilla JS. El acceso a las galerias esta protegido por token de sesion y las imagenes se cargan de forma progresiva para mejorar rendimiento.
+Este proyecto corre sobre PHP y JS. El acceso a las galerias esta protegido por token de sesion y las imagenes se cargan de forma progresiva para mejorar rendimiento.
 
 Flujo principal:
 
