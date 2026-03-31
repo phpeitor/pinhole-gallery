@@ -1,7 +1,17 @@
 <?php
 declare(strict_types=1);
 
+session_start();
 header('Content-Type: application/json; charset=utf-8');
+
+// Validar token antes de mostrar menú
+if (
+    empty($_SESSION['gallery_token']) ||
+    $_SESSION['gallery_token']['expires'] < time()
+) {
+    echo json_encode(['groups' => []], JSON_UNESCAPED_SLASHES);
+    exit;
+}
 
 $imgRoot = realpath(__DIR__ . '/../img');
 if (!$imgRoot || !is_dir($imgRoot)) {
