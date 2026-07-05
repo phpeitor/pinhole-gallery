@@ -399,26 +399,47 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     slider.classList.remove("is-loading");
-    slider.innerHTML = items.map((item, index) => {
+    const slideHtml = items.map((item, index) => {
       const src = escapeHtml(item.thumb || item.url || "");
-      const activeClass = index === 0 ? " is-active" : "";
       return `
-        <div class="home-hero-slide${activeClass}" aria-hidden="${index === 0 ? "false" : "true"}">
+        <div class="home-hero-slide" aria-hidden="true">
+          <span class="home-story-bars" aria-hidden="true"><i></i><i></i><i></i></span>
           <img src="${src}" alt="" loading="${index === 0 ? "eager" : "lazy"}" decoding="async">
+          <span class="home-slide-reaction" aria-hidden="true">♡</span>
+          <span class="home-slide-pill" aria-hidden="true"></span>
         </div>
       `;
     }).join("");
 
-    if (items.length < 2) return;
+    slider.innerHTML = `
+      <span class="home-slider-emoji emoji-eyes" aria-hidden="true">👀</span>
+      <span class="home-slider-emoji emoji-party" aria-hidden="true">🥳</span>
+      <span class="home-slider-emoji emoji-heart" aria-hidden="true">💖</span>
+      <span class="home-slider-emoji emoji-star" aria-hidden="true">⭐</span>
+      <div class="home-slider-deck">${slideHtml}</div>
+    `;
 
     let activeIndex = 0;
     const slides = Array.from(slider.querySelectorAll(".home-hero-slide"));
+
+    const updateSlides = () => {
+      const prevIndex = (activeIndex - 1 + slides.length) % slides.length;
+      const nextIndex = (activeIndex + 1) % slides.length;
+
+      slides.forEach((slide, index) => {
+        slide.classList.toggle("is-active", index === activeIndex);
+        slide.classList.toggle("is-prev", slides.length > 1 && index === prevIndex);
+        slide.classList.toggle("is-next", slides.length > 1 && index === nextIndex);
+        slide.setAttribute("aria-hidden", index === activeIndex ? "false" : "true");
+      });
+    };
+
+    updateSlides();
+    if (items.length < 2) return;
+
     homeSliderTimer = setInterval(() => {
-      slides[activeIndex]?.classList.remove("is-active");
-      slides[activeIndex]?.setAttribute("aria-hidden", "true");
       activeIndex = (activeIndex + 1) % slides.length;
-      slides[activeIndex]?.classList.add("is-active");
-      slides[activeIndex]?.setAttribute("aria-hidden", "false");
+      updateSlides();
     }, 3600);
   }
 
