@@ -336,6 +336,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (activeController) activeController.abort();
     activeController = new AbortController();
     const requestId = ++activeRequestId;
+    const guestVideos = ["1.mp4", "2.mp4", "3.mp4", "4.mp4", "5.mp4"];
+    const homeVideo = guestVideos[Math.floor(Math.random() * guestVideos.length)];
 
     stopHomeSlider();
     disconnectIO();
@@ -360,14 +362,23 @@ document.addEventListener("DOMContentLoaded", async () => {
     galleryContainer.innerHTML = `
       <section class="home-hero" aria-label="Presentación del proyecto">
         <div class="home-hero-slider is-loading" aria-label="Imágenes destacadas aleatorias">
-          <div class="home-hero-slider-loader">Cargando recuerdos...</div>
+          ${HAS_TOKEN
+            ? `<div class="home-hero-slider-loader">Cargando recuerdos...</div>`
+            : `<video class="home-guest-video" src="./resources/${homeVideo}" autoplay muted loop playsinline preload="metadata" aria-label="Video de presentación"></video>`
+          }
         </div>
-        <p class="home-hero-description">Proyecto de galería de imágenes con carga infinita, navegación por álbumes y visualización optimizada para desktop y móvil.</p>
+        <p class="home-hero-description">Galería de imágenes con scroll infinito, navegación por álbumes, visualización optimizada para desktop y móvil.</p>
         <cite>– Phpeitor</cite>
       </section>
     `;
 
-    loadHomeSlider(requestId, activeController.signal);
+    if (HAS_TOKEN) {
+      loadHomeSlider(requestId, activeController.signal);
+    } else {
+      const slider = galleryContainer.querySelector(".home-hero-slider");
+      slider?.classList.remove("is-loading");
+      slider?.classList.add("is-guest-video");
+    }
   }
 
   async function loadHomeSlider(requestId, signal) {
