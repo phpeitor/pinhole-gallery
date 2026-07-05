@@ -19,6 +19,8 @@
 3. Las sesiones deben expirar y ser verificables por `check_token.php`.
 4. Cualquier endpoint que lea o descargue imagenes debe validar sesion si el contenido es privado.
 5. Las descargas ZIP deben impedir path traversal y limitarse a imagenes permitidas.
+6. El frontend debe consumir imagenes privadas mediante `php/media.php`, no rutas directas a `/img`.
+7. Mantener `img/.htaccess` con acceso directo denegado.
 
 ## Archivos y cache
 
@@ -26,3 +28,5 @@
 2. No eliminar cache de usuario salvo que la tarea lo pida.
 3. Si se modifica deteccion de imagenes, mantener extensiones actuales: jpg, jpeg, png, webp en mayusculas y minusculas.
 4. Tratar archivos inexistentes o metadata invalida como caso normal, no como fatal.
+5. `php/gallery_media.php` genera thumbnails WebP automaticos en `.thumbs/`; no versionar esos archivos.
+6. `php/media.php` usa cache privado con `ETag`/`Last-Modified`; conservar respuesta `304` cuando sea posible.

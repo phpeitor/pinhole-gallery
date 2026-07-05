@@ -18,6 +18,7 @@ Revisar que la galeria privada siga protegida por token/sesion y que el filesyst
 3. Nunca enviar `.env`, token o detalles internos al cliente.
 4. Escapar texto antes de usar `innerHTML`.
 5. No relajar validaciones para mejorar UX sin alternativa segura.
+6. Verificar que imagenes privadas salgan por `php/media.php` y no por `/img` directo.
 
 ## Checklist rapido
 
@@ -25,3 +26,4 @@ Revisar que la galeria privada siga protegida por token/sesion y que el filesyst
 2. Usuario sin sesion no obtiene contenido privado.
 3. JSON de error no filtra secretos.
 4. Textos dinamicos estan escapados.
+5. `/img/...` queda bloqueado por `.htaccess`.

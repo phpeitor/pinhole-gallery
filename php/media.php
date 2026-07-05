@@ -40,9 +40,24 @@ if (!isset($types[$extension])) {
   exit;
 }
 
-header('Content-Type: ' . $types[$extension]);
-header('Content-Length: ' . (string)filesize($targetPath));
+$mtime = (int)filemtime($targetPath);
+$size = (int)filesize($targetPath);
+$etag = '"' . sha1($path . '|' . $mtime . '|' . $size) . '"';
+$lastModified = gmdate('D, d M Y H:i:s', $mtime) . ' GMT';
+
 header('Cache-Control: private, max-age=86400');
+header('ETag: ' . $etag);
+header('Last-Modified: ' . $lastModified);
 header('X-Content-Type-Options: nosniff');
+
+$ifNoneMatch = trim((string)($_SERVER['HTTP_IF_NONE_MATCH'] ?? ''));
+$ifModifiedSince = strtotime((string)($_SERVER['HTTP_IF_MODIFIED_SINCE'] ?? ''));
+if ($ifNoneMatch === $etag || ($ifModifiedSince && $ifModifiedSince >= $mtime)) {
+  http_response_code(304);
+  exit;
+}
+
+header('Content-Type: ' . $types[$extension]);
+header('Content-Length: ' . (string)$size);
 
 readfile($targetPath);

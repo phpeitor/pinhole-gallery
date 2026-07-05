@@ -12,6 +12,7 @@
 8. Si se toca Masonry, verificar que no queden instancias duplicadas ni espacios blancos tras lazy load.
 9. Si se toca PhotoSwipe, validar navegacion, boton de descarga y dimensiones `data-size`.
 10. Preferir cambios pequenos en funciones existentes antes que crear utilidades generales.
+11. No usar rutas directas `./img/...`; construir imagenes privadas mediante `php/media.php?path=...`.
 
 ## CSS
 
@@ -29,6 +30,7 @@
 2. No renombrar IDs/clases usados por `photo.js` sin actualizar todos los consumidores.
 3. Usar atributos `aria-*` cuando se agreguen controles interactivos.
 4. Mantener rutas relativas a recursos locales.
+5. No enlazar archivos privados de `img/` directamente desde markup.
 
 ## Performance UX
 

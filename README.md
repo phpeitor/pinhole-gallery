@@ -6,9 +6,9 @@
   <img src="https://cdn.dribbble.com/userupload/36814701/file/original-f485756c337f78411c0767aba0f6596f.jpg" alt="Instagram" width="600">
 </a>
 
-Galeria de imagenes privada con autenticacion por token, carga infinita por lotes, layout masonry y visor de imagenes tipo lightbox.
-
 `Hello Everyone 🙌`
+
+Galeria de imagenes privada con autenticacion por token, carga infinita por lotes, layout masonry y visor de imagenes tipo lightbox.
 
 ## Resumen
 

@@ -1,4 +1,5 @@
 .env
-/img
+/img/*
+!/img/.htaccess
 /vendor
 /node_modules
