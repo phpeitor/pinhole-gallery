@@ -363,7 +363,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           <div class="home-hero-slider-loader">Cargando recuerdos...</div>
         </div>
         <p class="home-hero-description">Proyecto de galería de imágenes con carga infinita, navegación por álbumes y visualización optimizada para desktop y móvil.</p>
-        <cite>– Pinhole Gallery</cite>
+        <cite>– Phpeitor</cite>
       </section>
     `;
 
@@ -401,12 +401,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     slider.classList.remove("is-loading");
     slider.innerHTML = items.map((item, index) => {
       const src = escapeHtml(item.thumb || item.url || "");
-      const full = escapeHtml(item.url || src);
       const activeClass = index === 0 ? " is-active" : "";
       return `
-        <a class="home-hero-slide${activeClass}" href="${full}" aria-label="Abrir imagen destacada ${index + 1}">
+        <div class="home-hero-slide${activeClass}" aria-hidden="${index === 0 ? "false" : "true"}">
           <img src="${src}" alt="" loading="${index === 0 ? "eager" : "lazy"}" decoding="async">
-        </a>
+        </div>
       `;
     }).join("");
 
@@ -416,8 +415,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     const slides = Array.from(slider.querySelectorAll(".home-hero-slide"));
     homeSliderTimer = setInterval(() => {
       slides[activeIndex]?.classList.remove("is-active");
+      slides[activeIndex]?.setAttribute("aria-hidden", "true");
       activeIndex = (activeIndex + 1) % slides.length;
       slides[activeIndex]?.classList.add("is-active");
+      slides[activeIndex]?.setAttribute("aria-hidden", "false");
     }, 3600);
   }
 

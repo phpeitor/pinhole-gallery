@@ -282,13 +282,13 @@ body {
     opacity: 0;
     transform: scale(1.035);
     transition: opacity 0.7s ease, transform 1.8s ease;
+    cursor: default;
     pointer-events: none;
 }
 
 .home-hero-slide.is-active {
     opacity: 1;
     transform: scale(1);
-    pointer-events: auto;
 }
 
 .home-hero-slide img {
@@ -326,6 +326,10 @@ body {
     font-size: 14px;
     line-height: 1.55;
     color: #383838;
+}
+
+.home-hero cite {
+    color: #000;
 }
 
 .locked-icon {
