@@ -56,15 +56,16 @@ foreach ($candidates as $filePath) {
   $size = @getimagesize($filePath);
   if (!$size) continue;
 
-  $dirPath = $file->getPath();
+  $dirPath = dirname($filePath);
   $thumb = createGalleryThumb($filePath, $dirPath . DIRECTORY_SEPARATOR . '.thumbs');
   $relative = galleryRelativePath($imgRoot, $filePath);
   $folder = dirname($relative);
   $folder = $folder === '.' ? '' : $folder;
+  $thumbPath = $thumb && $folder !== '' ? $folder . '/' . $thumb : $relative;
 
   $images[] = [
-    'url' => 'img/' . $relative,
-    'thumb' => $thumb && $folder !== '' ? 'img/' . $folder . '/' . $thumb : 'img/' . $relative,
+    'url' => 'php/media.php?path=' . rawurlencode($relative),
+    'thumb' => 'php/media.php?path=' . rawurlencode($thumbPath),
     'width' => (int)$size[0],
     'height' => (int)$size[1],
   ];

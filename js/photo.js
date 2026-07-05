@@ -476,8 +476,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!Number.isFinite(realW) || realW <= 0) realW = FALLBACK_WIDTH;
     if (!Number.isFinite(realH) || realH <= 0) realH = FALLBACK_HEIGHT;
 
-    const url = `./img/${folder}/${filename}`;
-    const imgSrc = thumb ? `./img/${folder}/${thumb}` : url;
+    const sourcePath = `${folder}/${filename}`;
+    const thumbPath = thumb ? `${folder}/${thumb}` : sourcePath;
+    const url = `php/media.php?path=${encodeURIComponent(sourcePath)}`;
+    const imgSrc = `php/media.php?path=${encodeURIComponent(thumbPath)}`;
     const thumbH = Math.round(THUMB_WIDTH * (realH / realW));
 
     const wrap = document.createElement("div");

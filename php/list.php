@@ -5,6 +5,19 @@ header('Content-Type: application/json; charset=utf-8');
 
 require_once __DIR__ . '/gallery_media.php';
 
+if (session_status() !== PHP_SESSION_ACTIVE) {
+  session_start();
+}
+
+if (
+  empty($_SESSION['gallery_token']) ||
+  $_SESSION['gallery_token']['expires'] < time()
+) {
+  http_response_code(401);
+  echo json_encode(["total" => 0, "items" => []], JSON_UNESCAPED_SLASHES);
+  exit;
+}
+
 $folder = trim($_GET['folder'] ?? '', '/');
 if ($folder === '' || str_contains($folder, '..')) {
   http_response_code(400);
