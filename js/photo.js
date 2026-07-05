@@ -372,14 +372,16 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   function buildPinholeItem(folder, itemData) {
-    let filename, realW, realH;
+    let filename, thumb, realW, realH;
 
     if (typeof itemData === "string") {
       filename = itemData;
+      thumb = "";
       realW = FALLBACK_WIDTH;
       realH = FALLBACK_HEIGHT;
     } else {
       filename = itemData.filename;
+      thumb = itemData.thumb || "";
       realW = Number(itemData.width) || FALLBACK_WIDTH;
       realH = Number(itemData.height) || FALLBACK_HEIGHT;
     }
@@ -389,6 +391,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!Number.isFinite(realH) || realH <= 0) realH = FALLBACK_HEIGHT;
 
     const url = `./img/${folder}/${filename}`;
+    const imgSrc = thumb ? `./img/${folder}/${thumb}` : url;
     const thumbH = Math.round(THUMB_WIDTH * (realH / realW));
 
     const wrap = document.createElement("div");
@@ -396,7 +399,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     wrap.innerHTML = `
       <a class="item-link" href="${url}" data-size='{"width":${realW},"height":${realH}}'>
         <img
-          src="${url}"
+          src="${imgSrc}"
           alt=""
           width="${THUMB_WIDTH}"
           height="${thumbH}"
