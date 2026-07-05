@@ -441,6 +441,63 @@ body {
     to { transform: rotate(360deg); }
 }
 
+.pinhole-gallery .pinhole-item .item-link {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    background: #f2f2f2;
+}
+
+.pinhole-gallery .pinhole-item.is-loading-image .item-link::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: linear-gradient(90deg, #eeeeee 0%, #f8f8f8 45%, #eeeeee 90%);
+    background-size: 220% 100%;
+    animation: galleryImageShimmer 1.2s ease-in-out infinite;
+}
+
+.pinhole-gallery .pinhole-item img {
+    position: relative;
+    z-index: 1;
+    display: block;
+    width: 100%;
+    height: auto;
+    opacity: 0;
+    transform: scale(1.01);
+    transition: opacity 0.28s ease, transform 0.28s ease;
+}
+
+.pinhole-gallery .pinhole-item.is-loaded-image img,
+.pinhole-gallery .pinhole-item.is-error-image img {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.infiniteLoader {
+    padding: 24px 0 30px;
+    text-align: center;
+}
+
+.infiniteLoader .lds-dual-ring {
+    width: 28px;
+    height: 28px;
+    opacity: 0.55;
+}
+
+.infiniteLoader .lds-dual-ring::after {
+    width: 24px;
+    height: 24px;
+    margin: 2px;
+    border-width: 2px;
+}
+
+@keyframes galleryImageShimmer {
+    0% { background-position: 120% 0; }
+    100% { background-position: -120% 0; }
+}
+
 @media (max-width: 767px) {
     .home-hero {
         margin-top: 12px;

@@ -8,7 +8,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const THUMB_WIDTH = 378;
   const FALLBACK_WIDTH = 1920;
   const FALLBACK_HEIGHT = 1280;
-  const CHUNK = 10;
+  const CHUNK = 12;
   const galleryContainer = document.querySelector(".pinhole-gallery");
   const titleEl = document.querySelector(".entry-title");
   const metaEl = document.querySelector(".entry-meta");
@@ -392,11 +392,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     const thumbH = Math.round(THUMB_WIDTH * (realH / realW));
 
     const wrap = document.createElement("div");
-    wrap.className = "pinhole-item col-lg-4 col-md-4 col-sm-6";
+    wrap.className = "pinhole-item col-lg-4 col-md-4 col-sm-6 is-loading-image";
     wrap.innerHTML = `
       <a class="item-link" href="${url}" data-size='{"width":${realW},"height":${realH}}'>
         <img
           src="${url}"
+          alt=""
           width="${THUMB_WIDTH}"
           height="${thumbH}"
           loading="lazy"
@@ -405,6 +406,23 @@ document.addEventListener("DOMContentLoaded", async () => {
         >
       </a>
     `;
+
+    const img = wrap.querySelector("img");
+    const markLoaded = () => {
+      wrap.classList.remove("is-loading-image");
+      wrap.classList.add("is-loaded-image");
+    };
+
+    if (img.complete) {
+      markLoaded();
+    } else {
+      img.addEventListener("load", markLoaded, { once: true });
+      img.addEventListener("error", () => {
+        wrap.classList.remove("is-loading-image");
+        wrap.classList.add("is-error-image");
+      }, { once: true });
+    }
+
     return wrap;
   }
 
@@ -570,7 +588,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (renderIndex >= totalItems) return;
         renderMore();
       },
-      { rootMargin: "600px 0px" } // más anticipación
+      { rootMargin: "900px 0px" } // Precarga antes de que el usuario llegue al final.
     );
 
     io.observe(sentinel);
