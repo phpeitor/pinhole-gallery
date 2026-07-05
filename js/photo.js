@@ -27,6 +27,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   let activeController = null;
   let activeRequestId = 0;
   let downloadResetTimer = null;
+  let homeSliderTimer = null;
   const menuRouteMap = new Map();
 
   const HOME_HASHES = new Set(["", "/", "home", "inicio", "viewall"]);
@@ -324,9 +325,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     setTopActionsVisibility(HAS_TOKEN && !isHomeRoute(currentId));
   }
 
+  function stopHomeSlider() {
+    if (homeSliderTimer) {
+      clearInterval(homeSliderTimer);
+      homeSliderTimer = null;
+    }
+  }
+
   function showHomeView() {
     if (activeController) activeController.abort();
+    activeController = new AbortController();
+    const requestId = ++activeRequestId;
 
+    stopHomeSlider();
     disconnectIO();
     destroyMasonry();
     showLoader(false);
@@ -348,13 +359,66 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     galleryContainer.innerHTML = `
       <section class="home-hero" aria-label="Presentación del proyecto">
-        <div class="home-hero-video-wrap">
-          <video class="home-hero-video" src="./resources/video.mp4" autoplay muted loop playsinline preload="metadata" aria-label="Video de presentación"></video>
+        <div class="home-hero-slider is-loading" aria-label="Imágenes destacadas aleatorias">
+          <div class="home-hero-slider-loader">Cargando recuerdos...</div>
         </div>
         <p class="home-hero-description">Proyecto de galería de imágenes con carga infinita, navegación por álbumes y visualización optimizada para desktop y móvil.</p>
         <cite>– Pinhole Gallery</cite>
       </section>
     `;
+
+    loadHomeSlider(requestId, activeController.signal);
+  }
+
+  async function loadHomeSlider(requestId, signal) {
+    try {
+      const res = await fetch("php/home_slider.php?limit=5", { signal, cache: "no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+      const data = await res.json();
+      if (requestId !== activeRequestId) return;
+
+      renderHomeSlider(Array.isArray(data.items) ? data.items : []);
+    } catch (e) {
+      if (e.name === "AbortError") return;
+      console.error(e);
+      renderHomeSlider([]);
+    }
+  }
+
+  function renderHomeSlider(items) {
+    const slider = galleryContainer.querySelector(".home-hero-slider");
+    if (!slider) return;
+
+    stopHomeSlider();
+
+    if (!items.length) {
+      slider.classList.remove("is-loading");
+      slider.innerHTML = `<div class="home-hero-slider-empty">No hay imágenes disponibles para mostrar.</div>`;
+      return;
+    }
+
+    slider.classList.remove("is-loading");
+    slider.innerHTML = items.map((item, index) => {
+      const src = escapeHtml(item.thumb || item.url || "");
+      const full = escapeHtml(item.url || src);
+      const activeClass = index === 0 ? " is-active" : "";
+      return `
+        <a class="home-hero-slide${activeClass}" href="${full}" aria-label="Abrir imagen destacada ${index + 1}">
+          <img src="${src}" alt="" loading="${index === 0 ? "eager" : "lazy"}" decoding="async">
+        </a>
+      `;
+    }).join("");
+
+    if (items.length < 2) return;
+
+    let activeIndex = 0;
+    const slides = Array.from(slider.querySelectorAll(".home-hero-slide"));
+    homeSliderTimer = setInterval(() => {
+      slides[activeIndex]?.classList.remove("is-active");
+      activeIndex = (activeIndex + 1) % slides.length;
+      slides[activeIndex]?.classList.add("is-active");
+    }, 3600);
   }
 
   function getParentFromMenu(id) {
@@ -496,6 +560,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   // ====== Render principal ======
   async function fetchAndRender(folder, titleText = "") {
     if (!HAS_TOKEN) return;
+
+    stopHomeSlider();
 
     // cancela request previo
     if (activeController) activeController.abort();
