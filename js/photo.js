@@ -940,13 +940,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   const uploadTokenStatus = document.getElementById("upload-token-status");
   const uploadForm = document.getElementById("upload-form");
   const folderSelect = document.getElementById("upload-folder");
+  const newAlbumName = document.getElementById("new-album-name");
+  const subfolderField = document.getElementById("subfolder-field");
+  const newFolderName = document.getElementById("new-folder-name");
   const fileInput = document.getElementById("upload-files");
   const preview = document.getElementById("upload-preview");
   const status = document.getElementById("upload-status");
   const btnUpload = document.getElementById("btn-upload");
-  const btnNewFolder = document.getElementById("btn-new-folder");
-  const newFolderField = document.getElementById("new-folder-field");
-  const newFolderName = document.getElementById("new-folder-name");
 
   let uploadTokenValid = false;
 
@@ -1035,22 +1035,23 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   async function loadFolderList() {
     if (!folderSelect) return;
-    folderSelect.innerHTML = '<option value="">Cargando...</option>';
+    folderSelect.innerHTML = '<option value="">-- Seleccionar existente --</option>';
     folderSelect.disabled = true;
     try {
       const res = await fetch("php/menu.php", { cache: "no-store" });
       const data = await res.json();
       const groups = Array.isArray(data?.groups) ? data.groups : [];
-      folderSelect.innerHTML = "";
-      if (groups.length === 0) {
-        folderSelect.innerHTML = '<option value="">Sin albums</option>';
-        return;
+      if (groups.length > 0) {
+        const separator = document.createElement("option");
+        separator.disabled = true;
+        separator.textContent = "╌ Albums existentes ╌";
+        folderSelect.appendChild(separator);
       }
       groups.forEach(g => {
         if (g.folder) {
           const opt = document.createElement("option");
           opt.value = g.folder;
-          opt.textContent = g.group + " (directo)";
+          opt.textContent = g.group;
           folderSelect.appendChild(opt);
         }
         if (g.items) {
@@ -1063,19 +1064,32 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
       });
     } catch {
-      folderSelect.innerHTML = '<option value="">Error al cargar</option>';
+      // ignore
     } finally {
       folderSelect.disabled = false;
     }
   }
 
+  // Show subfolder field when an album is selected or new album name is entered
+  function updateSubfolderField() {
+    if (!subfolderField || !folderSelect || !newAlbumName) return;
+    const hasExisting = folderSelect.value !== "";
+    const hasNew = newAlbumName.value.trim() !== "";
+    subfolderField.style.display = (hasExisting || hasNew) ? "block" : "none";
+  }
+
+  if (folderSelect) folderSelect.addEventListener("change", updateSubfolderField);
+  if (newAlbumName) newAlbumName.addEventListener("input", updateSubfolderField);
+
   function clearUploadForm() {
     if (fileInput) fileInput.value = "";
     if (preview) preview.innerHTML = "";
     if (status) status.innerHTML = "";
-    if (newFolderField) newFolderField.style.display = "none";
+    if (newAlbumName) newAlbumName.value = "";
     if (newFolderName) newFolderName.value = "";
+    if (subfolderField) subfolderField.style.display = "none";
     if (btnUpload) btnUpload.disabled = false;
+    if (folderSelect) folderSelect.value = "";
   }
 
   if (fileInput) {
@@ -1093,55 +1107,83 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  if (btnNewFolder) {
-    btnNewFolder.addEventListener("click", () => {
-      if (!newFolderField) return;
-      const show = newFolderField.style.display === "none";
-      newFolderField.style.display = show ? "block" : "none";
-    });
-  }
-
   if (uploadForm) {
     uploadForm.addEventListener("submit", async (e) => {
       e.preventDefault();
-      if (!folderSelect || !fileInput || !status || !btnUpload) return;
+      if (!folderSelect || !newAlbumName || !fileInput || !status || !btnUpload) return;
 
-      const folder = folderSelect.value;
-      if (!folder) {
-        status.innerHTML = '<span class="error">Selecciona un album</span>';
+      const selectedFolder = folderSelect.value;
+      const newAlbum = newAlbumName.value.trim();
+      const subfolder = newFolderName?.value.trim() || "";
+      const files = fileInput.files;
+
+      if (!selectedFolder && !newAlbum) {
+        status.innerHTML = '<span class="error">Selecciona un album existente o crea uno nuevo</span>';
         return;
       }
 
-      let targetFolder = folder;
-
-      // Crear subcarpeta si se pide
-      if (newFolderField?.style.display === "block" && newFolderName?.value.trim()) {
-        try {
-          const formData = new FormData();
-          formData.append("parent", folder);
-          formData.append("name", newFolderName.value.trim());
-          const res = await fetch("php/create_folder.php", {
-            method: "POST",
-            body: formData,
-          });
-          const data = await res.json();
-          if (data.ok) {
-            targetFolder = data.folder;
-          } else {
-            status.innerHTML = '<span class="error">Error: ' + (data.error || "No se pudo crear") + '</span>';
-            return;
-          }
-        } catch {
-          status.innerHTML = '<span class="error">Error de conexion</span>';
-          return;
-        }
-      }
-
-      if (fileInput.files.length === 0) {
+      if (files.length === 0) {
         status.innerHTML = '<span class="error">Selecciona al menos un archivo</span>';
         return;
       }
 
+      // === Construir ruta destino (max 2 niveles) ===
+      let targetFolder = "";
+
+      if (newAlbum) {
+        // Nuevo album principal (nivel 1)
+        targetFolder = newAlbum.replace(/[^\w\- ]/g, "").trim().replace(/\s+/g, "_");
+        if (subfolder) {
+          // Album + subcarpeta (nivel 2)
+          targetFolder += "/" + subfolder.replace(/[^\w\- ]/g, "").trim().replace(/\s+/g, "_");
+        }
+      } else {
+        // Album existente
+        targetFolder = selectedFolder;
+        if (subfolder) {
+          // Subcarpeta dentro del existente (nivel 2)
+          // Verificar que no sea mas profundo que 2 niveles
+          const parts = targetFolder.split("/");
+          if (parts.length >= 2) {
+            status.innerHTML = '<span class="error">Solo se permiten 2 niveles (album / subcarpeta)</span>';
+            return;
+          }
+          targetFolder += "/" + subfolder.replace(/[^\w\- ]/g, "").trim().replace(/\s+/g, "_");
+        }
+      }
+
+      // === Confirmacion ===
+      const fileCount = files.length;
+      const fileNames = Array.from(files).map(f => f.name).join("\n");
+      const msg = "Destino: " + targetFolder + "\n"
+                + "Archivos: " + fileCount + "\n\n"
+                + fileNames;
+      if (!confirm("Confirmar subida:\n\n" + msg + "\n\n¿Proceder?")) return;
+
+      // === Crear carpeta si es nuevo ===
+      if (newAlbum || (subfolder && selectedFolder)) {
+        try {
+          const formData = new FormData();
+          if (targetFolder.includes("/")) {
+            formData.append("parent", targetFolder.split("/")[0]);
+            formData.append("name", targetFolder.split("/")[1]);
+          } else {
+            formData.append("parent", "");
+            formData.append("name", targetFolder);
+          }
+          const res = await fetch("php/create_folder.php", { method: "POST", body: formData });
+          const data = await res.json();
+          if (!data.ok) {
+            status.innerHTML = '<span class="error">Error al crear carpeta: ' + (data.error || "") + '</span>';
+            return;
+          }
+        } catch {
+          status.innerHTML = '<span class="error">Error de conexion al crear carpeta</span>';
+          return;
+        }
+      }
+
+      // === Subir archivos ===
       btnUpload.disabled = true;
       btnUpload.textContent = "Subiendo...";
       status.innerHTML = '<span class="info">Subiendo archivos...</span>';
@@ -1149,14 +1191,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       try {
         const formData = new FormData();
         formData.append("folder", targetFolder);
-        for (const f of fileInput.files) {
+        for (const f of files) {
           formData.append("files[]", f);
         }
 
-        const res = await fetch("php/upload.php", {
-          method: "POST",
-          body: formData,
-        });
+        const res = await fetch("php/upload.php", { method: "POST", body: formData });
         const data = await res.json();
 
         if (data.ok) {
@@ -1165,7 +1204,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             status.innerHTML += '<br><span class="error">' + data.errors.join("<br>") + '</span>';
           }
           clearUploadForm();
-          // Refresh menu and current view
           loadDynamicMenus();
           if (currentFolder && currentTitle) {
             fetchAndRender(currentFolder, currentTitle);

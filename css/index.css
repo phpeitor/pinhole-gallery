@@ -902,3 +902,19 @@ body.pinhole-lock .pinhole-gallery {
 .upload-status .info {
     color: #555;
 }
+
+.upload-divider {
+    text-align: center;
+    margin: 18px 0;
+    border-top: 1px solid #ddd;
+    position: relative;
+}
+
+.upload-divider span {
+    position: relative;
+    top: -10px;
+    background: #fff;
+    padding: 0 12px;
+    font-size: 13px;
+    color: #999;
+}

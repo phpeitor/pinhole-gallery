@@ -38,7 +38,18 @@ if ($name === '' || preg_match('/[^\w\- ]/', $name)) {
   exit;
 }
 
+// Limpiar nombre: espacios a guion bajo
+$name = trim(preg_replace('/\s+/', '_', $name));
+
 $folder = $parent !== '' ? $parent . '/' . $name : $name;
+
+// Restringir a maximo 2 niveles (album/subcarpeta)
+$parts = explode('/', $folder);
+if (count($parts) > 2) {
+  http_response_code(400);
+  echo json_encode(['ok' => false, 'error' => 'Solo se permiten 2 niveles (album / subcarpeta)']);
+  exit;
+}
 
 if (str_contains($folder, '..')) {
   http_response_code(400);
@@ -47,7 +58,7 @@ if (str_contains($folder, '..')) {
 }
 
 $targetDir = $imgRoot . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $folder);
-$targetReal = realpath(dirname($targetDir));
+$targetReal = $parent !== '' ? realpath(dirname($targetDir)) : $imgRoot;
 
 if (!$targetReal || !str_starts_with($targetReal, $imgRoot)) {
   http_response_code(403);
