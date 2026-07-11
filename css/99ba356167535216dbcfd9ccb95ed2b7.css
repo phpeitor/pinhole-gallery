@@ -17711,31 +17711,7 @@ _:-ms-fullscreen,
   font-size: 24px;
 }
 
-.pswp__button--arrow--left:hover::after,
-.pswp__button--arrow--right:hover::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    white-space: nowrap;
-    background: rgba(0,0,0,0.85);
-    color: #fff;
-    padding: 5px 10px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-family: sans-serif;
-    pointer-events: none;
-    z-index: 1000;
-    line-height: 1.4;
-}
 
-.pswp__button--arrow--left:hover::after {
-    left: 55px;
-}
-
-.pswp__button--arrow--right:hover::after {
-    right: 55px;
-}
 .pswp__button--arrow--left:before {
   left: 6px;
   content: "\f104";
@@ -22173,9 +22149,17 @@ body .meks_ess.outline a:hover {
     position: relative;
 }
 
-.pswp__top-bar .pswp__button:hover::after,
-.pswp-bottom-container-action:hover::before {
-    content: attr(data-tooltip);
+.pswp__button--fs:before,
+.pswp__button--zoom:before,
+.pswp__button--download:before {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+}
+
+.pswp-tooltip {
     position: absolute;
     bottom: -30px;
     left: 50%;
@@ -22188,22 +22172,32 @@ body .meks_ess.outline a:hover {
     font-size: 12px;
     font-family: sans-serif;
     pointer-events: none;
-    z-index: 1000;
+    z-index: 10000;
     line-height: 1.4;
 }
 
-.pswp-bottom-container-action:hover::before {
+.pswp-bottom-container-action .pswp-tooltip {
     bottom: -28px;
 }
 
-.pswp__button--fs:before,
-.pswp__button--zoom:before,
-.pswp__button--download:before {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 100%;
+.pswp__button--arrow--left,
+.pswp__button--arrow--right {
+    position: relative;
+}
+
+.pswp__button--arrow--left .pswp-tooltip {
+    left: 55px;
+    bottom: auto;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.pswp__button--arrow--right .pswp-tooltip {
+    right: 55px;
+    left: auto;
+    bottom: auto;
+    top: 50%;
+    transform: translateY(-50%);
 }
 
 .pinhole-item {

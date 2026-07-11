@@ -905,6 +905,21 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     });
 
+    pswp.listen("afterInit", () => {
+      document.querySelectorAll("[data-tooltip]").forEach(el => {
+        el.addEventListener("mouseenter", function () {
+          const tip = document.createElement("span");
+          tip.className = "pswp-tooltip";
+          tip.textContent = this.dataset.tooltip;
+          this.appendChild(tip);
+        });
+        el.addEventListener("mouseleave", function () {
+          const tip = this.querySelector(".pswp-tooltip");
+          if (tip) tip.remove();
+        });
+      });
+    });
+
     pswp.init();
   });
 
