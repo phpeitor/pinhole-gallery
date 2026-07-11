@@ -990,9 +990,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   if (modalClose) modalClose.addEventListener("click", closeUploadModal);
-  if (uploadModal) uploadModal.addEventListener("click", (e) => {
-    if (e.target === uploadModal) closeUploadModal();
-  });
 
   if (btnUploadToken) {
     btnUploadToken.addEventListener("click", async () => {
