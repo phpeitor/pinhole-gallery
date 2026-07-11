@@ -379,22 +379,31 @@
             </div>
             <div id="upload-form-section" style="display:none">
                 <form id="upload-form">
-                    <div class="upload-field">
-                        <label for="upload-folder">Album destino</label>
-                        <select id="upload-folder" name="folder" required>
-                            <option value="">-- Seleccionar existente --</option>
-                        </select>
+                    <div class="upload-tabs">
+                        <button type="button" class="upload-tab active" data-mode="existing">Album existente</button>
+                        <button type="button" class="upload-tab" data-mode="new">Crear nuevo</button>
                     </div>
-                    <div class="upload-divider"><span>o crear nuevo</span></div>
-                    <div class="upload-field">
-                        <label for="new-album-name">Nuevo album principal</label>
-                        <input type="text" id="new-album-name" placeholder="ej: Mi Nuevo Album">
-                        <div class="upload-hint">Se creara como album de primer nivel</div>
+
+                    <div id="upload-mode-existing" class="upload-mode-panel active">
+                        <div class="upload-field">
+                            <label for="upload-folder">Seleccionar album</label>
+                            <select id="upload-folder">
+                                <option value="">-- Elige un album --</option>
+                            </select>
+                        </div>
                     </div>
-                    <div class="upload-field" id="subfolder-field" style="display:none">
-                        <label for="new-folder-name">Subcarpeta dentro del album</label>
+
+                    <div id="upload-mode-new" class="upload-mode-panel">
+                        <div class="upload-field">
+                            <label for="new-album-name">Nombre del nuevo album</label>
+                            <input type="text" id="new-album-name" placeholder="ej: Mi Nuevo Album">
+                        </div>
+                    </div>
+
+                    <div class="upload-field" id="subfolder-field">
+                        <label for="new-folder-name">Subcarpeta (opcional)</label>
                         <input type="text" id="new-folder-name" placeholder="ej: 6ta sesion">
-                        <div class="upload-hint">Opcional: crea una subcarpeta dentro del album seleccionado o nuevo</div>
+                        <div class="upload-hint">Segundo nivel dentro del album</div>
                     </div>
                     <div class="upload-field">
                         <label for="upload-files">Archivos</label>

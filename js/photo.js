@@ -1070,16 +1070,21 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  // Show subfolder field when an album is selected or new album name is entered
-  function updateSubfolderField() {
-    if (!subfolderField || !folderSelect || !newAlbumName) return;
-    const hasExisting = folderSelect.value !== "";
-    const hasNew = newAlbumName.value.trim() !== "";
-    subfolderField.style.display = (hasExisting || hasNew) ? "block" : "none";
-  }
+  // Upload mode tabs
+  const uploadTabs = document.querySelectorAll(".upload-tab");
+  const modeExisting = document.getElementById("upload-mode-existing");
+  const modeNew = document.getElementById("upload-mode-new");
+  let uploadMode = "existing";
 
-  if (folderSelect) folderSelect.addEventListener("change", updateSubfolderField);
-  if (newAlbumName) newAlbumName.addEventListener("input", updateSubfolderField);
+  uploadTabs.forEach(tab => {
+    tab.addEventListener("click", () => {
+      uploadTabs.forEach(t => t.classList.remove("active"));
+      tab.classList.add("active");
+      uploadMode = tab.dataset.mode;
+      if (modeExisting) modeExisting.classList.toggle("active", uploadMode === "existing");
+      if (modeNew) modeNew.classList.toggle("active", uploadMode === "new");
+    });
+  });
 
   function clearUploadForm() {
     if (fileInput) fileInput.value = "";
@@ -1087,9 +1092,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (status) status.innerHTML = "";
     if (newAlbumName) newAlbumName.value = "";
     if (newFolderName) newFolderName.value = "";
-    if (subfolderField) subfolderField.style.display = "none";
     if (btnUpload) btnUpload.disabled = false;
     if (folderSelect) folderSelect.value = "";
+    // Reset mode to "Album existente"
+    uploadMode = "existing";
+    uploadTabs.forEach(t => t.classList.remove("active"));
+    if (uploadTabs[0]) uploadTabs[0].classList.add("active");
+    if (modeExisting) modeExisting.classList.add("active");
+    if (modeNew) modeNew.classList.remove("active");
   }
 
   if (fileInput) {
@@ -1112,15 +1122,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       e.preventDefault();
       if (!folderSelect || !newAlbumName || !fileInput || !status || !btnUpload) return;
 
-      const selectedFolder = folderSelect.value;
-      const newAlbum = newAlbumName.value.trim();
-      const subfolder = newFolderName?.value.trim() || "";
       const files = fileInput.files;
-
-      if (!selectedFolder && !newAlbum) {
-        status.innerHTML = '<span class="error">Selecciona un album existente o crea uno nuevo</span>';
-        return;
-      }
 
       if (files.length === 0) {
         status.innerHTML = '<span class="error">Selecciona al menos un archivo</span>';
@@ -1129,20 +1131,26 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       // === Construir ruta destino (max 2 niveles) ===
       let targetFolder = "";
+      const subfolder = newFolderName?.value.trim() || "";
 
-      if (newAlbum) {
-        // Nuevo album principal (nivel 1)
+      if (uploadMode === "new") {
+        const newAlbum = newAlbumName.value.trim();
+        if (!newAlbum) {
+          status.innerHTML = '<span class="error">Escribe el nombre del nuevo album</span>';
+          return;
+        }
         targetFolder = newAlbum.replace(/[^\w\- ]/g, "").trim().replace(/\s+/g, "_");
         if (subfolder) {
-          // Album + subcarpeta (nivel 2)
           targetFolder += "/" + subfolder.replace(/[^\w\- ]/g, "").trim().replace(/\s+/g, "_");
         }
       } else {
-        // Album existente
+        const selectedFolder = folderSelect.value;
+        if (!selectedFolder) {
+          status.innerHTML = '<span class="error">Selecciona un album de la lista</span>';
+          return;
+        }
         targetFolder = selectedFolder;
         if (subfolder) {
-          // Subcarpeta dentro del existente (nivel 2)
-          // Verificar que no sea mas profundo que 2 niveles
           const parts = targetFolder.split("/");
           if (parts.length >= 2) {
             status.innerHTML = '<span class="error">Solo se permiten 2 niveles (album / subcarpeta)</span>';
@@ -1161,7 +1169,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (!confirm("Confirmar subida:\n\n" + msg + "\n\n¿Proceder?")) return;
 
       // === Crear carpeta si es nuevo ===
-      if (newAlbum || (subfolder && selectedFolder)) {
+      if (uploadMode === "new" || (subfolder && uploadMode === "existing")) {
         try {
           const formData = new FormData();
           if (targetFolder.includes("/")) {
