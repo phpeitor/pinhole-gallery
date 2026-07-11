@@ -367,7 +367,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             : `<video class="home-guest-video" src="./resources/${homeVideo}" autoplay muted loop playsinline preload="metadata" aria-label="Video de presentación"></video>`
           }
         </div>
-        <p class="home-hero-description">Galería de imágenes con scroll infinito, navegación por álbumes, visualización optimizada para desktop y móvil.</p>
+        <p class="home-hero-description">WebApp de imágenes estilo Instagram con feed dinámico, scroll infinito, navegación por álbumes, carga optimizada y una experiencia fluida en dispositivos móviles y escritorio.</p>
         <cite>– Phpeitor</cite>
       </section>
     `;

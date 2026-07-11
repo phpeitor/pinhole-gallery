@@ -259,6 +259,10 @@ body {
     text-align: center;
 }
 
+body.pinhole-lock .pinhole-gallery {
+    visibility: visible !important;
+}
+
 .home-hero-slider {
     position: relative;
     width: 100%;
