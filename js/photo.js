@@ -82,6 +82,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.body.classList.add("pinhole-lock", "pinhole-sidebar-open");
     setDownloadActionState({ enabled: false, loading: false });
     refreshTopActionsVisibility();
+    document.querySelectorAll(".pinhole-upload-trigger").forEach(el => el.style.display = "none");
   }
 
   function unlockGallery() {
@@ -89,6 +90,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.body.classList.add("has-token");
     document.body.classList.remove("pinhole-lock", "pinhole-sidebar-open");
     refreshTopActionsVisibility();
+    document.querySelectorAll(".pinhole-upload-trigger").forEach(el => el.style.display = "");
   }
 
   async function checkToken() {
@@ -593,8 +595,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // ====== Render principal ======
+  let currentTitle = "";
+
   async function fetchAndRender(folder, titleText = "") {
     if (!HAS_TOKEN) return;
+
+    currentFolder = folder;
+    currentTitle = titleText;
 
     stopHomeSlider();
 
@@ -922,5 +929,194 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     pswp.init();
   });
+
+  // ====== Upload modal ======
+  const uploadModal = document.getElementById("upload-modal");
+  const uploadTrigger = document.querySelectorAll(".pinhole-upload-trigger");
+  const modalClose = uploadModal?.querySelector(".upload-modal-close");
+  const uploadForm = document.getElementById("upload-form");
+  const folderSelect = document.getElementById("upload-folder");
+  const fileInput = document.getElementById("upload-files");
+  const preview = document.getElementById("upload-preview");
+  const status = document.getElementById("upload-status");
+  const btnUpload = document.getElementById("btn-upload");
+  const btnNewFolder = document.getElementById("btn-new-folder");
+  const newFolderField = document.getElementById("new-folder-field");
+  const newFolderName = document.getElementById("new-folder-name");
+
+  uploadTrigger.forEach(el => el.style.display = "");
+
+  function openUploadModal() {
+    if (!uploadModal) return;
+    uploadModal.classList.add("open");
+    loadFolderList();
+    clearUploadForm();
+  }
+
+  function closeUploadModal() {
+    if (!uploadModal) return;
+    uploadModal.classList.remove("open");
+  }
+
+  uploadTrigger.forEach(el => {
+    el.addEventListener("click", openUploadModal);
+  });
+
+  if (modalClose) modalClose.addEventListener("click", closeUploadModal);
+  if (uploadModal) uploadModal.addEventListener("click", (e) => {
+    if (e.target === uploadModal) closeUploadModal();
+  });
+
+  async function loadFolderList() {
+    if (!folderSelect) return;
+    folderSelect.innerHTML = '<option value="">Cargando...</option>';
+    folderSelect.disabled = true;
+    try {
+      const res = await fetch("php/menu.php", { cache: "no-store" });
+      const data = await res.json();
+      const groups = Array.isArray(data?.groups) ? data.groups : [];
+      folderSelect.innerHTML = "";
+      if (groups.length === 0) {
+        folderSelect.innerHTML = '<option value="">Sin albums</option>';
+        return;
+      }
+      groups.forEach(g => {
+        if (g.folder) {
+          const opt = document.createElement("option");
+          opt.value = g.folder;
+          opt.textContent = g.group + " (directo)";
+          folderSelect.appendChild(opt);
+        }
+        if (g.items) {
+          g.items.forEach(item => {
+            const opt = document.createElement("option");
+            opt.value = item.folder;
+            opt.textContent = g.group + " / " + item.title;
+            folderSelect.appendChild(opt);
+          });
+        }
+      });
+    } catch {
+      folderSelect.innerHTML = '<option value="">Error al cargar</option>';
+    } finally {
+      folderSelect.disabled = false;
+    }
+  }
+
+  function clearUploadForm() {
+    if (fileInput) fileInput.value = "";
+    if (preview) preview.innerHTML = "";
+    if (status) status.innerHTML = "";
+    if (newFolderField) newFolderField.style.display = "none";
+    if (newFolderName) newFolderName.value = "";
+    if (btnUpload) btnUpload.disabled = false;
+  }
+
+  if (fileInput) {
+    fileInput.addEventListener("change", () => {
+      if (!preview) return;
+      preview.innerHTML = "";
+      const files = fileInput.files;
+      if (!files) return;
+      for (const f of files) {
+        if (!f.type.startsWith("image/")) continue;
+        const img = document.createElement("img");
+        img.src = URL.createObjectURL(f);
+        preview.appendChild(img);
+      }
+    });
+  }
+
+  if (btnNewFolder) {
+    btnNewFolder.addEventListener("click", () => {
+      if (!newFolderField) return;
+      const show = newFolderField.style.display === "none";
+      newFolderField.style.display = show ? "block" : "none";
+    });
+  }
+
+  if (uploadForm) {
+    uploadForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!folderSelect || !fileInput || !status || !btnUpload) return;
+
+      const folder = folderSelect.value;
+      if (!folder) {
+        status.innerHTML = '<span class="error">Selecciona un album</span>';
+        return;
+      }
+
+      let targetFolder = folder;
+
+      // Crear subcarpeta si se pide
+      if (newFolderField?.style.display === "block" && newFolderName?.value.trim()) {
+        try {
+          const formData = new FormData();
+          formData.append("parent", folder);
+          formData.append("name", newFolderName.value.trim());
+          const res = await fetch("php/create_folder.php", {
+            method: "POST",
+            body: formData,
+          });
+          const data = await res.json();
+          if (data.ok) {
+            targetFolder = data.folder;
+          } else {
+            status.innerHTML = '<span class="error">Error: ' + (data.error || "No se pudo crear") + '</span>';
+            return;
+          }
+        } catch {
+          status.innerHTML = '<span class="error">Error de conexion</span>';
+          return;
+        }
+      }
+
+      if (fileInput.files.length === 0) {
+        status.innerHTML = '<span class="error">Selecciona al menos un archivo</span>';
+        return;
+      }
+
+      btnUpload.disabled = true;
+      btnUpload.textContent = "Subiendo...";
+      status.innerHTML = '<span class="info">Subiendo archivos...</span>';
+
+      try {
+        const formData = new FormData();
+        formData.append("folder", targetFolder);
+        for (const f of fileInput.files) {
+          formData.append("files[]", f);
+        }
+
+        const res = await fetch("php/upload.php", {
+          method: "POST",
+          body: formData,
+        });
+        const data = await res.json();
+
+        if (data.ok) {
+          status.innerHTML = '<span class="success">' + data.uploaded + ' archivo(s) subido(s) correctamente</span>';
+          if (data.errors?.length) {
+            status.innerHTML += '<br><span class="error">' + data.errors.join("<br>") + '</span>';
+          }
+          clearUploadForm();
+          // Refresh menu and current view
+          loadDynamicMenus();
+          if (currentFolder && currentTitle) {
+            fetchAndRender(currentFolder, currentTitle);
+          }
+        } else {
+          status.innerHTML = '<span class="error">' + (data.error || "Error al subir") + '</span>';
+          if (data.errors?.length) {
+            status.innerHTML += '<br><span class="error">' + data.errors.join("<br>") + '</span>';
+          }
+        }
+      } catch {
+        status.innerHTML = '<span class="error">Error de conexion</span>';
+      } finally {
+        btnUpload.disabled = false;
+        btnUpload.textContent = "Subir";
+      }
+    });
+  }
 
 });

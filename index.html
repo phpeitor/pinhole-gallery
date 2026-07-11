@@ -41,6 +41,9 @@
                             <a href="#">Galeria</a>
                             <ul class="sub-menu"></ul>
                         </li>
+                        <li class="menu-item pinhole-upload-trigger" style="display:none">
+                            <a href="javascript:void(0)">Subir</a>
+                        </li>
                     </ul>
                     <div class="pinhole-site-branding">
                         <span class="site-title h1">
@@ -207,6 +210,8 @@
             <ul id="menu-main-menu-2" class="pinhole-nav-responsive">
                 <li class="menu-item menu-item-type-post_type menu-item-object-page">
                     <a href="#home">Inicio</a></li>
+                <li class="menu-item menu-item-type-custom pinhole-upload-trigger" style="display:none">
+                    <a href="javascript:void(0)">Subir imagenes</a></li>
             </ul>
         </div>
 
@@ -357,6 +362,33 @@
 
         <label class="show-rtl"><input type="checkbox" id="show-rtl"
                 data-url="./css/rtl.css">RTL (right to left) mode</label>
+    </div>
+
+    <div id="upload-modal" class="upload-modal">
+        <div class="upload-modal-content">
+            <span class="upload-modal-close">&times;</span>
+            <h3>Subir imagenes</h3>
+            <form id="upload-form">
+                <div class="upload-field">
+                    <label for="upload-folder">Album</label>
+                    <select id="upload-folder" name="folder" required></select>
+                    <button type="button" id="btn-new-folder" class="upload-btn-small">+ Nueva carpeta</button>
+                </div>
+                <div id="new-folder-field" class="upload-field" style="display:none">
+                    <label for="new-folder-name">Nombre de la nueva carpeta</label>
+                    <input type="text" id="new-folder-name" placeholder="ej: 6ta sesion">
+                    <div class="upload-hint">Se creara dentro del album seleccionado</div>
+                </div>
+                <div class="upload-field">
+                    <label for="upload-files">Archivos</label>
+                    <input type="file" id="upload-files" name="files[]" multiple accept=".jpg,.jpeg,.png,.webp" required>
+                    <div class="upload-hint">Formatos permitidos: JPG, PNG, WebP</div>
+                </div>
+                <div id="upload-preview" class="upload-preview"></div>
+                <button type="submit" id="btn-upload" class="upload-btn">Subir</button>
+            </form>
+            <div id="upload-status" class="upload-status"></div>
+        </div>
     </div>
 
     <script type='text/javascript' src='./js/3db7b96f0fed40b32895b2f114cc7756.js'></script>

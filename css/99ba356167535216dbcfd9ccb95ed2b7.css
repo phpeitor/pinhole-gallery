@@ -17696,39 +17696,52 @@ _:-ms-fullscreen,
   transition: all 0.2s ease-in-out;
 }
 .pswp__button--arrow--left {
-  padding-left: 45px;
-  left: 0;
-  text-align: left;
+  left: 15px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  text-align: center;
+  background: rgba(0,0,0,0.4);
+  padding: 0;
+  -webkit-transition: all 0.2s ease-in-out;
+  -moz-transition: all 0.2s ease-in-out;
+  -ms-transition: all 0.2s ease-in-out;
+  -o-transition: all 0.2s ease-in-out;
+  transition: all 0.2s ease-in-out;
 }
 .pswp__button--arrow--right {
-  padding-right: 45px;
-  right: 0;
-  text-align: right;
+  right: 15px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  text-align: center;
+  background: rgba(0,0,0,0.4);
+  padding: 0;
+  -webkit-transition: all 0.2s ease-in-out;
+  -moz-transition: all 0.2s ease-in-out;
+  -ms-transition: all 0.2s ease-in-out;
+  -o-transition: all 0.2s ease-in-out;
+  transition: all 0.2s ease-in-out;
 }
 .pswp__button--arrow--left:before,
 .pswp__button--arrow--right:before {
   font-family: FontAwesome;
-  font-size: 24px;
+  font-size: 22px;
+  line-height: 50px;
+  display: block;
 }
 
-
-.pswp__button--arrow--left:before {
-  left: 6px;
-  content: "\f104";
-}
-.pswp__button--arrow--right:before {
-  right: 6px;
-  content: "\f105";
-}
 .pswp__button--arrow--left:hover,
 .pswp__button--arrow--right:hover {
   opacity: 1;
+  background: rgba(0,0,0,0.7);
 }
-.pswp__button--arrow--right:active {
-  right: -3px;
+
+.pswp__button--arrow--left:before {
+  content: "\f104";
 }
-.pswp__button--arrow--left:active {
-  left: -3px;
+.pswp__button--arrow--right:before {
+  content: "\f105";
 }
 .pswp-bottom-wrap-open .pswp__ui > .pswp__button {
   margin-top: -50px;
@@ -18834,12 +18847,6 @@ body .entry-content .blocks-gallery-item a:hover {
   }
   .pswp-bottom-wrap-open .pswp__item img {
     padding: 0;
-  }
-  .pswp__button--arrow--left {
-    padding-left: 15px;
-  }
-  .pswp__button--arrow--right {
-    padding-right: 15px;
   }
   .pswp__top-bar {
     padding: 0 10px;
@@ -22180,20 +22187,15 @@ body .meks_ess.outline a:hover {
     bottom: -28px;
 }
 
-.pswp__button--arrow--left,
-.pswp__button--arrow--right {
-    position: relative;
-}
-
 .pswp__button--arrow--left .pswp-tooltip {
-    left: 55px;
+    left: 60px;
     bottom: auto;
     top: 50%;
     transform: translateY(-50%);
 }
 
 .pswp__button--arrow--right .pswp-tooltip {
-    right: 55px;
+    right: 60px;
     left: auto;
     bottom: auto;
     top: 50%;

@@ -753,3 +753,152 @@ body.pinhole-lock .pinhole-gallery {
         border-radius: 10px;
     }
 }
+
+/* ---- Upload Modal ---- */
+.upload-modal {
+    display: none;
+    position: fixed;
+    z-index: 99999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    align-items: center;
+    justify-content: center;
+}
+
+.upload-modal.open {
+    display: flex;
+}
+
+.upload-modal-content {
+    background: #fff;
+    color: #333;
+    padding: 30px;
+    border-radius: 12px;
+    max-width: 520px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+}
+
+.upload-modal-content h3 {
+    margin: 0 0 20px;
+    font-size: 22px;
+}
+
+.upload-modal-close {
+    position: absolute;
+    right: 20px;
+    top: 15px;
+    font-size: 28px;
+    cursor: pointer;
+    opacity: 0.6;
+}
+
+.upload-modal-close:hover {
+    opacity: 1;
+}
+
+.upload-field {
+    margin-bottom: 18px;
+}
+
+.upload-field label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 6px;
+    font-size: 14px;
+}
+
+.upload-field select,
+.upload-field input[type="text"],
+.upload-field input[type="file"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+.upload-field select:focus,
+.upload-field input:focus {
+    border-color: #666;
+    outline: none;
+}
+
+.upload-hint {
+    font-size: 12px;
+    color: #888;
+    margin-top: 4px;
+}
+
+.upload-btn {
+    width: 100%;
+    padding: 12px;
+    background: #333;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.upload-btn:hover {
+    background: #555;
+}
+
+.upload-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.upload-btn-small {
+    margin-top: 8px;
+    padding: 8px 14px;
+    background: #eee;
+    color: #333;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.upload-btn-small:hover {
+    background: #ddd;
+}
+
+.upload-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 18px;
+}
+
+.upload-preview img {
+    width: 72px;
+    height: 72px;
+    object-fit: cover;
+    border-radius: 6px;
+}
+
+.upload-status {
+    margin-top: 15px;
+    font-size: 14px;
+}
+
+.upload-status .success {
+    color: #2e7d32;
+}
+
+.upload-status .error {
+    color: #c62828;
+}
+
+.upload-status .info {
+    color: #555;
+}
