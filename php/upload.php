@@ -8,11 +8,11 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 header('Content-Type: application/json; charset=utf-8');
 
 if (
-  empty($_SESSION['gallery_token']) ||
-  $_SESSION['gallery_token']['expires'] < time()
+  empty($_SESSION['upload_token']) ||
+  $_SESSION['upload_token']['expires'] < time()
 ) {
   http_response_code(401);
-  echo json_encode(['ok' => false, 'error' => 'Token invalido o expirado']);
+  echo json_encode(['ok' => false, 'error' => 'Token de subida invalido o expirado']);
   exit;
 }
 

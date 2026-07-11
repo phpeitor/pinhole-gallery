@@ -932,8 +932,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // ====== Upload modal ======
   const uploadModal = document.getElementById("upload-modal");
-  const uploadTrigger = document.querySelectorAll(".pinhole-upload-trigger");
   const modalClose = uploadModal?.querySelector(".upload-modal-close");
+  const uploadTokenSection = document.getElementById("upload-token-section");
+  const uploadFormSection = document.getElementById("upload-form-section");
+  const uploadTokenInput = document.getElementById("upload-token-input");
+  const btnUploadToken = document.getElementById("btn-upload-token");
+  const uploadTokenStatus = document.getElementById("upload-token-status");
   const uploadForm = document.getElementById("upload-form");
   const folderSelect = document.getElementById("upload-folder");
   const fileInput = document.getElementById("upload-files");
@@ -944,13 +948,33 @@ document.addEventListener("DOMContentLoaded", async () => {
   const newFolderField = document.getElementById("new-folder-field");
   const newFolderName = document.getElementById("new-folder-name");
 
-  uploadTrigger.forEach(el => el.style.display = "");
+  let uploadTokenValid = false;
 
-  function openUploadModal() {
+  async function checkUploadToken() {
+    try {
+      const res = await fetch("php/check_upload_token.php", { cache: "no-store" });
+      const data = await res.json();
+      uploadTokenValid = data.valid;
+    } catch {
+      uploadTokenValid = false;
+    }
+  }
+
+  async function openUploadModal() {
     if (!uploadModal) return;
     uploadModal.classList.add("open");
-    loadFolderList();
-    clearUploadForm();
+    if (uploadTokenInput) uploadTokenInput.value = "";
+    if (uploadTokenStatus) uploadTokenStatus.innerHTML = "";
+    await checkUploadToken();
+    if (uploadTokenValid) {
+      if (uploadTokenSection) uploadTokenSection.style.display = "none";
+      if (uploadFormSection) uploadFormSection.style.display = "block";
+      loadFolderList();
+      clearUploadForm();
+    } else {
+      if (uploadTokenSection) uploadTokenSection.style.display = "block";
+      if (uploadFormSection) uploadFormSection.style.display = "none";
+    }
   }
 
   function closeUploadModal() {
@@ -958,14 +982,56 @@ document.addEventListener("DOMContentLoaded", async () => {
     uploadModal.classList.remove("open");
   }
 
-  uploadTrigger.forEach(el => {
-    el.addEventListener("click", openUploadModal);
+  document.addEventListener("click", (e) => {
+    if (e.target.closest(".pinhole-upload-trigger")) {
+      e.preventDefault();
+      openUploadModal();
+    }
   });
 
   if (modalClose) modalClose.addEventListener("click", closeUploadModal);
   if (uploadModal) uploadModal.addEventListener("click", (e) => {
     if (e.target === uploadModal) closeUploadModal();
   });
+
+  if (btnUploadToken) {
+    btnUploadToken.addEventListener("click", async () => {
+      if (!uploadTokenInput || !uploadTokenStatus) return;
+      const token = uploadTokenInput.value.trim();
+      if (!token) {
+        uploadTokenStatus.innerHTML = '<span class="error">Ingresa el token</span>';
+        return;
+      }
+      uploadTokenStatus.innerHTML = '<span class="info">Validando...</span>';
+      try {
+        const res = await fetch("php/upload_token_validate.php", {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: "token=" + encodeURIComponent(token),
+        });
+        const data = await res.json();
+        if (data.ok) {
+          uploadTokenValid = true;
+          uploadTokenStatus.innerHTML = '<span class="success">Token valido</span>';
+          if (uploadTokenSection) uploadTokenSection.style.display = "none";
+          if (uploadFormSection) uploadFormSection.style.display = "block";
+          loadFolderList();
+          clearUploadForm();
+        } else {
+          uploadTokenStatus.innerHTML = '<span class="error">Token incorrecto</span>';
+        }
+      } catch {
+        uploadTokenStatus.innerHTML = '<span class="error">Error de conexion</span>';
+      }
+    });
+
+    uploadTokenInput.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        btnUploadToken.click();
+      }
+    });
+  }
 
   async function loadFolderList() {
     if (!folderSelect) return;
