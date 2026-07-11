@@ -866,6 +866,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!link) return;
 
     e.preventDefault();
+    e.stopPropagation();
 
     const allLinks = Array.from(galleryContainer.querySelectorAll("a.item-link"));
     const index = allLinks.indexOf(link);
@@ -883,7 +884,16 @@ document.addEventListener("DOMContentLoaded", async () => {
       document.querySelector(".pswp"),
       PhotoSwipeUI_Default,
       items,
-      { index, history: false, shareEl: true }
+      {
+        index,
+        history: false,
+        shareEl: true,
+        fullscreenEl: true,
+        zoomEl: true,
+        closeEl: true,
+        counterEl: true,
+        captionEl: false
+      }
     );
 
     // Botón download

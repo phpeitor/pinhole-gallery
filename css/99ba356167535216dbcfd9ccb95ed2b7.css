@@ -17709,7 +17709,32 @@ _:-ms-fullscreen,
 .pswp__button--arrow--right:before {
   font-family: FontAwesome;
   font-size: 24px;
-  line-height: 44px;
+}
+
+.pswp__button--arrow--left:hover::after,
+.pswp__button--arrow--right:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    white-space: nowrap;
+    background: rgba(0,0,0,0.85);
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: sans-serif;
+    pointer-events: none;
+    z-index: 1000;
+    line-height: 1.4;
+}
+
+.pswp__button--arrow--left:hover::after {
+    left: 55px;
+}
+
+.pswp__button--arrow--right:hover::after {
+    right: 55px;
 }
 .pswp__button--arrow--left:before {
   left: 6px;
@@ -17920,7 +17945,6 @@ _:-ms-fullscreen,
   content: "\f106";
   font-family: FontAwesome;
   font-size: 18px;
-  display: block;
   -webkit-transition: all 0.2s ease-in-out;
   -moz-transition: all 0.2s ease-in-out;
   -ms-transition: all 0.2s ease-in-out;
@@ -17939,13 +17963,21 @@ _:-ms-fullscreen,
   margin-left: -25px;
   border-radius: 50%;
   z-index: 8999;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 18px;
   cursor: pointer;
 }
-.pswp__caption,
+.pswp__caption {
+  background: 0 0;
+}
+
 .pswp__top-bar {
   background: 0 0;
+  display: flex;
+  align-items: center;
+  padding: 0 22px;
 }
 .pswp .pswp__item img {
   -o-object-fit: contain;
@@ -17958,28 +17990,31 @@ _:-ms-fullscreen,
   padding: 0 0 90px;
 }
 .pswp__counter {
-  top: 22px;
-  left: 22px;
+  position: relative;
+  top: auto;
+  left: auto;
   font-size: 1.2rem;
   opacity: 0.7;
   width: auto;
+  margin-right: auto;
 }
 .pswp__button--close {
   width: 44px;
   height: 44px;
   min-width: 44px;
-  line-height: 44px;
-  position: absolute;
-  right: 22px;
-  top: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  right: auto;
+  top: auto;
   text-decoration: none;
-  text-align: center;
   opacity: 0.5;
   background: 0 0;
   z-index: 900;
-  background: 0 0;
   font-style: normal;
   font-size: 24px;
+  margin-left: auto;
   -webkit-transition: all 0.2s ease-in-out;
   -moz-transition: all 0.2s ease-in-out;
   -ms-transition: all 0.2s ease-in-out;
@@ -18830,11 +18865,8 @@ body .entry-content .blocks-gallery-item a:hover {
   .pswp__button--arrow--right {
     padding-right: 15px;
   }
-  .pswp__button--close {
-    right: 0;
-  }
-  .pswp__counter {
-    left: 0;
+  .pswp__top-bar {
+    padding: 0 10px;
   }
 }
 @media (max-width: 809px) {
@@ -22091,11 +22123,21 @@ body .meks_ess.outline a:hover {
   border-color: #eaeaea !important;
 }
 
-.pswp__button--share,
+.pswp__button--share {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    opacity: 1 !important;
+    width: 44px;
+    height: 44px;
+}
+
 .pswp__button--fs,
 .pswp__button--zoom,
 .pswp__button--download {
-    display: block !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
     opacity: 1 !important;
     width: 44px;
     height: 44px;
@@ -22105,28 +22147,63 @@ body .meks_ess.outline a:hover {
     font-family: FontAwesome;
     content: "\f065";
     font-size: 20px;
-    line-height: 44px;
 }
 
 .pswp__button--zoom:before {
     font-family: FontAwesome;
     content: "\f00e";
     font-size: 20px;
-    line-height: 44px;
 }
 
 .pswp__button--download:before {
     font-family: FontAwesome;
     content: "\f019";
     font-size: 20px;
-    line-height: 44px;
 }
 
 .pswp__button--share,
 .pswp__button--fs,
 .pswp__button--zoom,
-.pswp__button--download {
+.pswp__button--download,
+.pswp__button--close {
     background: none !important;
+}
+
+.pswp__top-bar .pswp__button:not(.pswp__button--close) {
+    position: relative;
+}
+
+.pswp__top-bar .pswp__button:hover::after,
+.pswp-bottom-container-action:hover::before {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    background: rgba(0,0,0,0.85);
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: sans-serif;
+    pointer-events: none;
+    z-index: 1000;
+    line-height: 1.4;
+}
+
+.pswp-bottom-container-action:hover::before {
+    bottom: -28px;
+}
+
+.pswp__button--fs:before,
+.pswp__button--zoom:before,
+.pswp__button--download:before {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
 }
 
 .pinhole-item {
