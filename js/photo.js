@@ -996,9 +996,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (!uploadTokenInput || !uploadTokenStatus) return;
       const token = uploadTokenInput.value.trim();
       if (!token) {
-        uploadTokenStatus.innerHTML = '<span class="error">Ingresa el token</span>';
+        uploadTokenInput.classList.add("input-error");
         return;
       }
+      uploadTokenInput.classList.remove("input-error");
       uploadTokenStatus.innerHTML = '<span class="info">Validando...</span>';
       try {
         const res = await fetch("php/upload_token_validate.php", {
@@ -1015,10 +1016,14 @@ document.addEventListener("DOMContentLoaded", async () => {
           loadFolderList();
           clearUploadForm();
         } else {
-          uploadTokenStatus.innerHTML = '<span class="error">Token incorrecto</span>';
+          uploadTokenInput.classList.add("input-error");
+          uploadTokenInput.focus();
+          uploadTokenStatus.innerHTML = '';
         }
       } catch {
-        uploadTokenStatus.innerHTML = '<span class="error">Error de conexion</span>';
+        uploadTokenInput.classList.add("input-error");
+        uploadTokenInput.focus();
+        uploadTokenStatus.innerHTML = '';
       }
     });
 
@@ -1119,7 +1124,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       e.preventDefault();
       if (!folderSelect || !newAlbumName || !fileInput || !status || !btnUpload) return;
 
-      const files = fileInput.files;
+      const files = Array.from(fileInput.files);
 
       if (files.length === 0) {
         status.innerHTML = '<span class="error">Selecciona al menos un archivo</span>';
@@ -1157,74 +1162,84 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
       }
 
-      // === Confirmacion ===
+      // === Confirmacion con Alertify ===
       const fileCount = files.length;
-      const fileNames = Array.from(files).map(f => f.name).join("\n");
-      const msg = "Destino: " + targetFolder + "\n"
-                + "Archivos: " + fileCount + "\n\n"
-                + fileNames;
-      if (!confirm("Confirmar subida:\n\n" + msg + "\n\n¿Proceder?")) return;
+      const fileNames = Array.from(files).map(f => "• " + f.name).join("\n");
+      const msg = "<b>Destino:</b> " + targetFolder + "<br>"
+                + "<b>Archivos:</b> " + fileCount + "<br><br>"
+                + fileNames.replace(/\n/g, "<br>");
 
-      // === Crear carpeta si es nuevo ===
-      if (uploadMode === "new" || (subfolder && uploadMode === "existing")) {
-        try {
-          const formData = new FormData();
-          if (targetFolder.includes("/")) {
-            formData.append("parent", targetFolder.split("/")[0]);
-            formData.append("name", targetFolder.split("/")[1]);
-          } else {
-            formData.append("parent", "");
-            formData.append("name", targetFolder);
-          }
-          const res = await fetch("php/create_folder.php", { method: "POST", body: formData });
-          const data = await res.json();
-          if (!data.ok) {
-            status.innerHTML = '<span class="error">Error al crear carpeta: ' + (data.error || "") + '</span>';
+      alertify.confirm("Confirmar subida", msg, async () => {
+        await doUpload();
+      }, () => {})
+      .set({
+        'closable': false,
+        'closableByDimmer': false
+      });
+
+      async function doUpload() {
+        if (uploadMode === "new" || (subfolder && uploadMode === "existing")) {
+          try {
+            const formData = new FormData();
+            if (targetFolder.includes("/")) {
+              formData.append("parent", targetFolder.split("/")[0]);
+              formData.append("name", targetFolder.split("/")[1]);
+            } else {
+              formData.append("parent", "");
+              formData.append("name", targetFolder);
+            }
+            const res = await fetch("php/create_folder.php", { method: "POST", body: formData });
+            const data = await res.json();
+            if (!data.ok) {
+              status.innerHTML = '<span class="error">Error al crear carpeta: ' + (data.error || "") + '</span>';
+              return;
+            }
+          } catch {
+            status.innerHTML = '<span class="error">Error de conexion al crear carpeta</span>';
             return;
           }
-        } catch {
-          status.innerHTML = '<span class="error">Error de conexion al crear carpeta</span>';
-          return;
+        }
+
+        // === Subir archivos ===
+        btnUpload.disabled = true;
+        btnUpload.textContent = "Subiendo...";
+        status.innerHTML = '<span class="info">Subiendo archivos...</span>';
+
+        try {
+          const formData = new FormData();
+          formData.append("folder", targetFolder);
+          for (const f of files) {
+            formData.append("files[]", f);
+          }
+
+          const res = await fetch("php/upload.php", { method: "POST", body: formData });
+          const data = await res.json();
+
+          if (data.ok) {
+            status.innerHTML = '<span class="success">' + data.uploaded + ' archivo(s) subido(s) correctamente</span>';
+            if (data.errors?.length) {
+              status.innerHTML += '<br><span class="error">' + data.errors.join("<br>") + '</span>';
+            }
+            clearUploadForm();
+            loadDynamicMenus();
+            if (currentFolder && currentTitle) {
+              fetchAndRender(currentFolder, currentTitle);
+            }
+          } else {
+            status.innerHTML = '<span class="error">' + (data.error || "Error al subir") + '</span>';
+            if (data.errors?.length) {
+              status.innerHTML += '<br><span class="error">' + data.errors.join("<br>") + '</span>';
+            }
+          }
+        } catch (e) {
+          status.innerHTML = '<span class="error">Error: ' + e.message + '</span>';
+          console.error(e);
+        } finally {
+          btnUpload.disabled = false;
+          btnUpload.innerHTML = '<i class="fa fa-upload"></i> Subir';
         }
       }
 
-      // === Subir archivos ===
-      btnUpload.disabled = true;
-      btnUpload.textContent = "Subiendo...";
-      status.innerHTML = '<span class="info">Subiendo archivos...</span>';
-
-      try {
-        const formData = new FormData();
-        formData.append("folder", targetFolder);
-        for (const f of files) {
-          formData.append("files[]", f);
-        }
-
-        const res = await fetch("php/upload.php", { method: "POST", body: formData });
-        const data = await res.json();
-
-        if (data.ok) {
-          status.innerHTML = '<span class="success">' + data.uploaded + ' archivo(s) subido(s) correctamente</span>';
-          if (data.errors?.length) {
-            status.innerHTML += '<br><span class="error">' + data.errors.join("<br>") + '</span>';
-          }
-          clearUploadForm();
-          loadDynamicMenus();
-          if (currentFolder && currentTitle) {
-            fetchAndRender(currentFolder, currentTitle);
-          }
-        } else {
-          status.innerHTML = '<span class="error">' + (data.error || "Error al subir") + '</span>';
-          if (data.errors?.length) {
-            status.innerHTML += '<br><span class="error">' + data.errors.join("<br>") + '</span>';
-          }
-        }
-      } catch {
-        status.innerHTML = '<span class="error">Error de conexion</span>';
-      } finally {
-        btnUpload.disabled = false;
-        btnUpload.textContent = "Subir";
-      }
     });
   }
 
