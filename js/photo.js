@@ -49,29 +49,80 @@ document.addEventListener("DOMContentLoaded", async () => {
     window.refreshInteractiveBackground?.();
   }
 
-  applyColorTheme(document.querySelector(".switcher_items.colors a.active")?.dataset.id || "default");
+  function applySwitcherStylesheet(type, themeId, url) {
+    document.querySelectorAll(".pinhole-switcher-" + type).forEach(el => el.remove());
+    if (themeId === "default" || !url) return;
+
+    const stylesheet = document.createElement("link");
+    stylesheet.media = "all";
+    stylesheet.type = "text/css";
+    stylesheet.href = url;
+    stylesheet.className = "pinhole-switcher-" + type;
+    stylesheet.rel = "stylesheet";
+    document.head.appendChild(stylesheet);
+  }
+
+  function setSwitcherActive(type, themeId) {
+    const selector = `.switcher_items a[data-type='${type}']`;
+    document.querySelectorAll(selector).forEach(item => {
+      item.classList.toggle("active", item.dataset.id === themeId);
+    });
+  }
+
+  function restoreSwitcherPreference(type, storageKey) {
+    const savedId = localStorage.getItem(storageKey) || "default";
+    const savedLink = document.querySelector(`.switcher_items a[data-type='${type}'][data-id='${savedId}']`);
+    if (!savedLink) return "default";
+
+    applySwitcherStylesheet(type, savedId, savedLink.dataset.url || "");
+    setSwitcherActive(type, savedId);
+    return savedId;
+  }
+
+  const restoredColorTheme = restoreSwitcherPreference("color", "galleryColorTheme");
+  restoreSwitcherPreference("font", "galleryFontTheme");
+  applyColorTheme(restoredColorTheme);
+
+  const savedRtl = localStorage.getItem("galleryRtl") === "1";
+  const rtlInput = document.getElementById("show-rtl");
+  if (rtlInput) {
+    rtlInput.checked = savedRtl;
+    if (savedRtl) {
+      const stylesheet = document.createElement("link");
+      stylesheet.media = "all";
+      stylesheet.type = "text/css";
+      stylesheet.href = rtlInput.dataset.url || "";
+      stylesheet.id = "pinhole-rtl-css-custom";
+      stylesheet.rel = "stylesheet";
+      document.head.appendChild(stylesheet);
+    }
+  }
 
   document.querySelectorAll(".switcher_items.colors a[data-type='color']").forEach(link => {
     link.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopImmediatePropagation();
-
-      document.querySelectorAll(".pinhole-switcher-color").forEach(el => el.remove());
-      if (link.dataset.id !== "default") {
-        const stylesheet = document.createElement("link");
-        stylesheet.media = "all";
-        stylesheet.type = "text/css";
-        stylesheet.href = link.dataset.url || "";
-        stylesheet.className = "pinhole-switcher-color";
-        stylesheet.rel = "stylesheet";
-        document.head.appendChild(stylesheet);
-      }
-
-      link.closest(".switcher_items")?.querySelectorAll("a").forEach(item => item.classList.remove("active"));
-      link.classList.add("active");
+      applySwitcherStylesheet("color", link.dataset.id || "default", link.dataset.url || "");
+      setSwitcherActive("color", link.dataset.id || "default");
+      localStorage.setItem("galleryColorTheme", link.dataset.id || "default");
       applyColorTheme(link.dataset.id || "default");
     }, true);
   });
+
+  document.querySelectorAll(".switcher_items.fonts a[data-type='font']").forEach(link => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      applySwitcherStylesheet("font", link.dataset.id || "default", link.dataset.url || "");
+      setSwitcherActive("font", link.dataset.id || "default");
+      localStorage.setItem("galleryFontTheme", link.dataset.id || "default");
+    }, true);
+  });
+
+  rtlInput?.addEventListener("change", (e) => {
+    e.stopImmediatePropagation();
+    localStorage.setItem("galleryRtl", rtlInput.checked ? "1" : "0");
+  }, true);
 
   // ====== Token ======
   document.getElementById("mc-embedded-subscribe-form")
