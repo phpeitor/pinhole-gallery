@@ -42,15 +42,35 @@ document.addEventListener("DOMContentLoaded", async () => {
   function applyColorTheme(themeId = "default") {
     document.body.classList.remove("theme-default", "theme-color-1", "theme-color-2", "theme-color-3", "theme-color-4");
     document.body.classList.add("theme-" + themeId);
+    document.querySelectorAll(".pinhole-site-branding img").forEach(img => {
+      img.src = "./resources/pinhole_logo.png";
+      img.removeAttribute("srcset");
+    });
     window.refreshInteractiveBackground?.();
   }
 
   applyColorTheme(document.querySelector(".switcher_items.colors a.active")?.dataset.id || "default");
 
   document.querySelectorAll(".switcher_items.colors a[data-type='color']").forEach(link => {
-    link.addEventListener("click", () => {
-      setTimeout(() => applyColorTheme(link.dataset.id || "default"), 0);
-    });
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+
+      document.querySelectorAll(".pinhole-switcher-color").forEach(el => el.remove());
+      if (link.dataset.id !== "default") {
+        const stylesheet = document.createElement("link");
+        stylesheet.media = "all";
+        stylesheet.type = "text/css";
+        stylesheet.href = link.dataset.url || "";
+        stylesheet.className = "pinhole-switcher-color";
+        stylesheet.rel = "stylesheet";
+        document.head.appendChild(stylesheet);
+      }
+
+      link.closest(".switcher_items")?.querySelectorAll("a").forEach(item => item.classList.remove("active"));
+      link.classList.add("active");
+      applyColorTheme(link.dataset.id || "default");
+    }, true);
   });
 
   // ====== Token ======
@@ -356,12 +376,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  function setInteractiveBackgroundVisible(visible) {
-    document.body.classList.toggle("show-interactive-background", visible);
+  function showInteractiveBackground() {
+    document.body.classList.toggle("show-interactive-background", true);
   }
 
   function showHomeView() {
-    setInteractiveBackgroundVisible(true);
+    showInteractiveBackground();
     if (activeController) activeController.abort();
     activeController = new AbortController();
     const requestId = ++activeRequestId;
@@ -593,7 +613,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   function showEmptyGallery(folder, titleText) {
-    setInteractiveBackgroundVisible(false);
+    showInteractiveBackground();
     const id = folder.replace(/\//g, ""); // fix
     const parent = getParentFromMenu(id);
 
@@ -630,7 +650,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   async function fetchAndRender(folder, titleText = "") {
     if (!HAS_TOKEN) return;
-    setInteractiveBackgroundVisible(false);
+    showInteractiveBackground();
 
     currentFolder = folder;
     currentTitle = titleText;

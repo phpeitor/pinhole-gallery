@@ -885,16 +885,31 @@ body.theme-color-4 {
     --interactive-opacity: 0.16;
 }
 
+body.theme-color-1 .pinhole-logo,
+body.theme-color-2 .pinhole-logo,
+body.theme-color-3 .pinhole-logo,
+body.theme-color-4 .pinhole-logo {
+    filter: brightness(0) invert(1);
+}
+
+body.theme-default .pinhole-logo {
+    filter: none;
+}
+
 .pinhole-header,
 .pinhole-section,
 .pinhole-site-content,
 .pinhole-sidebar,
 .pinhole-sidebar-overlay,
-.pinhole-top-actions,
 .pswp,
 .pinhole-hidden-overlay {
     position: relative;
     z-index: 1;
+}
+
+.pinhole-top-actions {
+    position: fixed;
+    z-index: 1200;
 }
 
 .upload-modal,
