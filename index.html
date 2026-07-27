@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='75'>📷</text></svg>" />
-    <title>Pinhole Gallery</title>
-    <link rel='stylesheet' href='./css/index.css?v=3.3' type='text/css' media='all' />
+    <title>Pixitor Gallery</title>
+    <link rel='stylesheet' href='./css/index.css?v=3.4' type='text/css' media='all' />
     <link rel='stylesheet' href='./css/99ba356167535216dbcfd9ccb95ed2b7.css?v=3.3' type='text/css' media='all' />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/css/alertify.min.css"/>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/css/themes/default.min.css"/>
@@ -378,7 +378,7 @@
                 <div id="upload-token-status" class="upload-status" style="margin-top:10px"></div>
             </div>
             <div id="upload-form-section" style="display:none">
-                <form id="upload-form">
+                <form id="upload-form" novalidate>
                     <div class="upload-tabs">
                         <button type="button" class="upload-tab active" data-mode="existing"><i class="fa fa-folder-open"></i> Album existente</button>
                         <button type="button" class="upload-tab" data-mode="new"><i class="fa fa-plus-circle"></i> Crear nuevo</button>
@@ -387,27 +387,45 @@
                     <div id="upload-mode-existing" class="upload-mode-panel active">
                         <div class="upload-field">
                             <label for="upload-folder">Seleccionar album</label>
-                            <select id="upload-folder">
+                            <select id="upload-folder" class="upload-native-select" aria-hidden="true" tabindex="-1">
                                 <option value="">-- Elige un album --</option>
                             </select>
+                            <div class="upload-combobox" data-upload-combobox>
+                                <button type="button" class="upload-combobox-trigger" id="upload-folder-trigger" aria-haspopup="listbox" aria-expanded="false">
+                                    <span class="upload-combobox-value">Buscar o seleccionar album</span>
+                                    <i class="fa fa-chevron-down" aria-hidden="true"></i>
+                                </button>
+                                <div class="upload-combobox-panel" id="upload-folder-panel">
+                                    <div class="upload-combobox-search-wrap">
+                                        <i class="fa fa-search" aria-hidden="true"></i>
+                                        <input type="search" id="upload-folder-search" class="upload-combobox-search" placeholder="Buscar album..." autocomplete="off">
+                                    </div>
+                                    <div id="upload-folder-results" class="upload-combobox-results" role="listbox" aria-label="Albums existentes"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
                     <div id="upload-mode-new" class="upload-mode-panel">
                         <div class="upload-field">
                             <label for="new-album-name">Nombre del nuevo album</label>
-                            <input type="text" id="new-album-name" placeholder="ej: Mi Nuevo Album">
+                            <input type="text" id="new-album-name" placeholder="ej: Emma">
                         </div>
                     </div>
 
                     <div class="upload-field" id="subfolder-field">
                         <label for="new-folder-name">Subcarpeta (opcional)</label>
-                        <input type="text" id="new-folder-name" placeholder="ej: 6ta sesion">
+                        <input type="text" id="new-folder-name" placeholder="ej: 1th">
                         <div class="upload-hint">Segundo nivel dentro del album</div>
                     </div>
                     <div class="upload-field">
                         <label for="upload-files">Archivos</label>
-                        <input type="file" id="upload-files" name="files[]" multiple accept=".jpg,.jpeg,.png,.webp" required>
+                        <label class="upload-dropzone" for="upload-files" id="upload-dropzone">
+                            <input type="file" id="upload-files" name="files[]" multiple accept=".jpg,.jpeg,.png,.webp" required>
+                            <span class="upload-dropzone-icon"><i class="fa fa-cloud-upload"></i></span>
+                            <span class="upload-dropzone-title">Arrastra imagenes aqui o haz clic para elegir</span>
+                            <span class="upload-dropzone-subtitle" id="upload-file-summary">Sin archivos seleccionados</span>
+                        </label>
                         <div class="upload-hint">Formatos permitidos: JPG, PNG, WebP</div>
                     </div>
                     <div id="upload-preview" class="upload-preview"></div>
@@ -419,7 +437,7 @@
     </div>
 
     <script type='text/javascript' src='./js/3db7b96f0fed40b32895b2f114cc7756.js'></script>
-    <script type='text/javascript' src='./js/photo.js?v=3.4'></script>
+    <script type='text/javascript' src='./js/photo.js?v=3.5'></script>
     <script src="https://cdn.jsdelivr.net/npm/alertifyjs@1.14.0/build/alertify.min.js"></script>
 </body>
 </html>

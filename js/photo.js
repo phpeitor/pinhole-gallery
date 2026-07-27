@@ -289,6 +289,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
   }
 
+  function getRouteIdByFolder(folder) {
+    const normalizedFolder = String(folder || "").trim();
+    for (const route of menuRouteMap.values()) {
+      if (route.folder === normalizedFolder) return route.id;
+    }
+    return "";
+  }
+
   function ensureTopActions() {
     let bar = document.querySelector(".pinhole-top-actions");
     if (bar) return bar;
@@ -940,15 +948,24 @@ document.addEventListener("DOMContentLoaded", async () => {
   const uploadTokenStatus = document.getElementById("upload-token-status");
   const uploadForm = document.getElementById("upload-form");
   const folderSelect = document.getElementById("upload-folder");
+  const folderCombobox = document.querySelector("[data-upload-combobox]");
+  const folderTrigger = document.getElementById("upload-folder-trigger");
+  const folderTriggerValue = folderTrigger?.querySelector(".upload-combobox-value");
+  const folderSearch = document.getElementById("upload-folder-search");
+  const folderResults = document.getElementById("upload-folder-results");
   const newAlbumName = document.getElementById("new-album-name");
   const subfolderField = document.getElementById("subfolder-field");
   const newFolderName = document.getElementById("new-folder-name");
   const fileInput = document.getElementById("upload-files");
+  const fileDropzone = document.getElementById("upload-dropzone");
+  const fileSummary = document.getElementById("upload-file-summary");
   const preview = document.getElementById("upload-preview");
   const status = document.getElementById("upload-status");
   const btnUpload = document.getElementById("btn-upload");
 
   let uploadTokenValid = false;
+  let uploadAlbumOptions = [];
+  let selectedUploadFiles = [];
 
   async function checkUploadToken() {
     try {
@@ -1039,22 +1056,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!folderSelect) return;
     folderSelect.innerHTML = '<option value="">-- Seleccionar existente --</option>';
     folderSelect.disabled = true;
+    uploadAlbumOptions = [];
+    renderUploadAlbumOptions();
     try {
       const res = await fetch("php/menu.php", { cache: "no-store" });
       const data = await res.json();
       const groups = Array.isArray(data?.groups) ? data.groups : [];
-      if (groups.length > 0) {
-        const separator = document.createElement("option");
-        separator.disabled = true;
-        separator.textContent = "╌ Albums existentes ╌";
-        folderSelect.appendChild(separator);
-      }
       groups.forEach(g => {
         if (g.folder) {
           const opt = document.createElement("option");
           opt.value = g.folder;
           opt.textContent = g.group;
           folderSelect.appendChild(opt);
+          uploadAlbumOptions.push({ value: g.folder, label: g.group, meta: "" });
         }
         if (g.items) {
           g.items.forEach(item => {
@@ -1062,6 +1076,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             opt.value = item.folder;
             opt.textContent = g.group + " / " + item.title;
             folderSelect.appendChild(opt);
+            uploadAlbumOptions.push({ value: item.folder, label: g.group + " / " + item.title, meta: g.group });
           });
         }
       });
@@ -1069,8 +1084,98 @@ document.addEventListener("DOMContentLoaded", async () => {
       // ignore
     } finally {
       folderSelect.disabled = false;
+      renderUploadAlbumOptions();
     }
   }
+
+  function closeUploadAlbumCombobox() {
+    folderCombobox?.classList.remove("open");
+    folderTrigger?.setAttribute("aria-expanded", "false");
+  }
+
+  function openUploadAlbumCombobox() {
+    if (!folderCombobox || !folderTrigger) return;
+    folderCombobox.classList.add("open");
+    folderTrigger.setAttribute("aria-expanded", "true");
+    renderUploadAlbumOptions();
+    setTimeout(() => folderSearch?.focus(), 0);
+  }
+
+  function selectUploadAlbum(value, label) {
+    if (folderSelect) folderSelect.value = value;
+    if (folderTriggerValue) folderTriggerValue.textContent = label || "Buscar o seleccionar album";
+    if (folderSearch) folderSearch.value = "";
+    setUploadInvalid(folderTrigger, false);
+    closeUploadAlbumCombobox();
+
+    const routeId = getRouteIdByFolder(value);
+    if (HAS_TOKEN && routeId) {
+      history.replaceState(null, "", "#" + routeId);
+      fetchAndRender(value, label);
+    }
+  }
+
+  function renderUploadAlbumOptions() {
+    if (!folderResults) return;
+    const query = (folderSearch?.value || "").trim().toLowerCase();
+    const filtered = uploadAlbumOptions.filter(option => {
+      return option.label.toLowerCase().includes(query) || option.value.toLowerCase().includes(query);
+    });
+
+    if (filtered.length === 0) {
+      folderResults.innerHTML = '<div class="upload-combobox-empty">No hay albums que coincidan</div>';
+      return;
+    }
+
+    folderResults.innerHTML = "";
+    filtered.forEach(option => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "upload-combobox-option";
+      button.setAttribute("role", "option");
+      button.setAttribute("aria-selected", folderSelect?.value === option.value ? "true" : "false");
+      button.dataset.value = option.value;
+      button.innerHTML = '<span>' + escapeHtml(option.label) + '</span>'
+        + (option.meta ? '<small>' + escapeHtml(option.meta) + '</small>' : '');
+      button.addEventListener("click", () => selectUploadAlbum(option.value, option.label));
+      folderResults.appendChild(button);
+    });
+  }
+
+  function setUploadInvalid(el, invalid) {
+    el?.classList.toggle("upload-invalid", invalid);
+  }
+
+  function clearUploadValidation() {
+    setUploadInvalid(folderTrigger, false);
+    setUploadInvalid(newAlbumName, false);
+    setUploadInvalid(fileDropzone, false);
+  }
+
+  if (folderTrigger) {
+    folderTrigger.addEventListener("click", () => {
+      setUploadInvalid(folderTrigger, false);
+      folderCombobox?.classList.contains("open") ? closeUploadAlbumCombobox() : openUploadAlbumCombobox();
+    });
+  }
+
+  if (folderSearch) {
+    folderSearch.addEventListener("input", renderUploadAlbumOptions);
+    folderSearch.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeUploadAlbumCombobox();
+      if (e.key === "Enter") {
+        const firstOption = folderResults?.querySelector(".upload-combobox-option");
+        if (firstOption) {
+          e.preventDefault();
+          selectUploadAlbum(firstOption.dataset.value || "", firstOption.querySelector("span")?.textContent || "");
+        }
+      }
+    });
+  }
+
+  document.addEventListener("click", (e) => {
+    if (folderCombobox && !folderCombobox.contains(e.target)) closeUploadAlbumCombobox();
+  });
 
   // Upload mode tabs
   const uploadTabs = document.querySelectorAll(".upload-tab");
@@ -1085,17 +1190,24 @@ document.addEventListener("DOMContentLoaded", async () => {
       uploadMode = tab.dataset.mode;
       if (modeExisting) modeExisting.classList.toggle("active", uploadMode === "existing");
       if (modeNew) modeNew.classList.toggle("active", uploadMode === "new");
+      clearUploadValidation();
     });
   });
 
   function clearUploadForm() {
     if (fileInput) fileInput.value = "";
+    selectedUploadFiles = [];
     if (preview) preview.innerHTML = "";
+    if (fileSummary) fileSummary.textContent = "Sin archivos seleccionados";
     if (status) status.innerHTML = "";
     if (newAlbumName) newAlbumName.value = "";
     if (newFolderName) newFolderName.value = "";
     if (btnUpload) btnUpload.disabled = false;
     if (folderSelect) folderSelect.value = "";
+    if (folderTriggerValue) folderTriggerValue.textContent = "Buscar o seleccionar album";
+    if (folderSearch) folderSearch.value = "";
+    closeUploadAlbumCombobox();
+    clearUploadValidation();
     // Reset mode to "Album existente"
     uploadMode = "existing";
     uploadTabs.forEach(t => t.classList.remove("active"));
@@ -1105,18 +1217,80 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   if (fileInput) {
-    fileInput.addEventListener("change", () => {
+    const syncUploadFileInput = (files) => {
+      const transfer = new DataTransfer();
+      selectedUploadFiles = files;
+      selectedUploadFiles.forEach(file => transfer.items.add(file));
+      fileInput.files = transfer.files;
+    };
+
+    const renderSelectedFiles = () => {
       if (!preview) return;
       preview.innerHTML = "";
-      const files = fileInput.files;
-      if (!files) return;
+      const files = selectedUploadFiles;
+      if (fileSummary) {
+        const totalMb = files.reduce((sum, file) => sum + file.size, 0) / 1024 / 1024;
+        fileSummary.textContent = files.length
+          ? files.length + " archivo(s) seleccionados · " + totalMb.toFixed(1) + " MB"
+          : "Sin archivos seleccionados";
+      }
+      if (files.length === 0) return;
       for (const f of files) {
         if (!f.type.startsWith("image/")) continue;
+        const item = document.createElement("div");
+        item.className = "upload-preview-item";
         const img = document.createElement("img");
         img.src = URL.createObjectURL(f);
-        preview.appendChild(img);
+        img.alt = f.name;
+        img.onload = () => URL.revokeObjectURL(img.src);
+        const name = document.createElement("span");
+        name.textContent = f.name;
+        const removeBtn = document.createElement("button");
+        removeBtn.type = "button";
+        removeBtn.className = "upload-preview-remove";
+        removeBtn.innerHTML = '<i class="fa fa-trash" aria-hidden="true"></i>';
+        removeBtn.setAttribute("aria-label", "Quitar " + f.name);
+        removeBtn.addEventListener("click", () => {
+          syncUploadFileInput(selectedUploadFiles.filter(file => file !== f));
+          renderSelectedFiles();
+        });
+        item.appendChild(img);
+        item.appendChild(removeBtn);
+        item.appendChild(name);
+        preview.appendChild(item);
       }
+    };
+
+    fileInput.addEventListener("change", () => {
+      selectedUploadFiles = Array.from(fileInput.files || []);
+      renderSelectedFiles();
+      setUploadInvalid(fileDropzone, false);
     });
+
+    newAlbumName?.addEventListener("input", () => setUploadInvalid(newAlbumName, false));
+    folderSelect?.addEventListener("change", () => setUploadInvalid(folderTrigger, false));
+
+    if (fileDropzone) {
+      ["dragenter", "dragover"].forEach(eventName => {
+        fileDropzone.addEventListener(eventName, (e) => {
+          e.preventDefault();
+          fileDropzone.classList.add("dragging");
+        });
+      });
+      ["dragleave", "drop"].forEach(eventName => {
+        fileDropzone.addEventListener(eventName, (e) => {
+          e.preventDefault();
+          fileDropzone.classList.remove("dragging");
+        });
+      });
+      fileDropzone.addEventListener("drop", (e) => {
+        const files = Array.from(e.dataTransfer?.files || []).filter(file => file.type.startsWith("image/"));
+        if (!files.length) return;
+        syncUploadFileInput(files);
+        setUploadInvalid(fileDropzone, false);
+        renderSelectedFiles();
+      });
+    }
   }
 
   if (uploadForm) {
@@ -1124,34 +1298,34 @@ document.addEventListener("DOMContentLoaded", async () => {
       e.preventDefault();
       if (!folderSelect || !newAlbumName || !fileInput || !status || !btnUpload) return;
 
-      const files = Array.from(fileInput.files);
-
-      if (files.length === 0) {
-        status.innerHTML = '<span class="error">Selecciona al menos un archivo</span>';
-        return;
-      }
+      const files = selectedUploadFiles;
+      clearUploadValidation();
 
       // === Construir ruta destino (max 2 niveles) ===
       let targetFolder = "";
       const subfolder = newFolderName?.value.trim() || "";
+      const missingFiles = files.length === 0;
+      let missingDestination = false;
 
       if (uploadMode === "new") {
         const newAlbum = newAlbumName.value.trim();
         if (!newAlbum) {
-          status.innerHTML = '<span class="error">Escribe el nombre del nuevo album</span>';
-          return;
+          missingDestination = true;
+          setUploadInvalid(newAlbumName, true);
+        } else {
+          targetFolder = newAlbum.replace(/[^\w\- ]/g, "").trim().replace(/\s+/g, "_");
         }
-        targetFolder = newAlbum.replace(/[^\w\- ]/g, "").trim().replace(/\s+/g, "_");
         if (subfolder) {
           targetFolder += "/" + subfolder.replace(/[^\w\- ]/g, "").trim().replace(/\s+/g, "_");
         }
       } else {
         const selectedFolder = folderSelect.value;
         if (!selectedFolder) {
-          status.innerHTML = '<span class="error">Selecciona un album de la lista</span>';
-          return;
+          missingDestination = true;
+          setUploadInvalid(folderTrigger, true);
+        } else {
+          targetFolder = selectedFolder;
         }
-        targetFolder = selectedFolder;
         if (subfolder) {
           const parts = targetFolder.split("/");
           if (parts.length >= 2) {
@@ -1160,6 +1334,12 @@ document.addEventListener("DOMContentLoaded", async () => {
           }
           targetFolder += "/" + subfolder.replace(/[^\w\- ]/g, "").trim().replace(/\s+/g, "_");
         }
+      }
+
+      if (missingFiles) setUploadInvalid(fileDropzone, true);
+      if (missingFiles || missingDestination) {
+        status.innerHTML = '<span class="error"><i class="fa fa-info-circle" aria-hidden="true"></i> Completa los campos marcados antes de subir</span>';
+        return;
       }
 
       // === Confirmacion con Alertify ===
