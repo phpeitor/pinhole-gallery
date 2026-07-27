@@ -342,7 +342,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
+  function setInteractiveBackgroundVisible(visible) {
+    document.body.classList.toggle("show-interactive-background", visible);
+  }
+
   function showHomeView() {
+    setInteractiveBackgroundVisible(true);
     if (activeController) activeController.abort();
     activeController = new AbortController();
     const requestId = ++activeRequestId;
@@ -517,6 +522,9 @@ document.addEventListener("DOMContentLoaded", async () => {
           fetchpriority="low"
         >
       </a>
+      <button type="button" class="gallery-delete-image" data-path="${escapeHtml(sourcePath)}" aria-label="Eliminar imagen">
+        <i class="fa fa-trash" aria-hidden="true"></i>
+      </button>
     `;
 
     const img = wrap.querySelector("img");
@@ -571,6 +579,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   function showEmptyGallery(folder, titleText) {
+    setInteractiveBackgroundVisible(false);
     const id = folder.replace(/\//g, ""); // fix
     const parent = getParentFromMenu(id);
 
@@ -607,6 +616,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   async function fetchAndRender(folder, titleText = "") {
     if (!HAS_TOKEN) return;
+    setInteractiveBackgroundVisible(false);
 
     currentFolder = folder;
     currentTitle = titleText;
@@ -877,6 +887,42 @@ document.addEventListener("DOMContentLoaded", async () => {
   galleryContainer.addEventListener("click", (e) => {
     if (!HAS_TOKEN) return;
 
+    const deleteBtn = e.target.closest(".gallery-delete-image");
+    if (deleteBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (!uploadTokenValid) {
+        alertify.error("Valida el token de subida para eliminar imagenes");
+        return;
+      }
+
+      const path = deleteBtn.dataset.path || "";
+      if (!path) return;
+
+      alertify.confirm("Eliminar imagen", "Esta accion eliminara la imagen del album. ¿Continuar?", async () => {
+        deleteBtn.disabled = true;
+        try {
+          const formData = new FormData();
+          formData.append("path", path);
+          const res = await fetch("php/delete_image.php", { method: "POST", body: formData });
+          const data = await res.json();
+          if (!data.ok) {
+            alertify.error(data.error || "No se pudo eliminar");
+            deleteBtn.disabled = false;
+            return;
+          }
+          alertify.success("Imagen eliminada");
+          if (currentFolder && currentTitle) fetchAndRender(currentFolder, currentTitle);
+        } catch (err) {
+          console.error(err);
+          alertify.error("Error eliminando imagen");
+          deleteBtn.disabled = false;
+        }
+      }, () => {}).set({ closable: true });
+      return;
+    }
+
     const link = e.target.closest("a.item-link");
     if (!link) return;
 
@@ -921,7 +967,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     pswp.listen("afterInit", () => {
-      document.querySelectorAll("[data-tooltip]").forEach(el => {
+      document.querySelectorAll(".pswp [data-tooltip]").forEach(el => {
+        if (el.dataset.pswpTooltipReady === "1") return;
+        el.dataset.pswpTooltipReady = "1";
         el.addEventListener("mouseenter", function () {
           const tip = document.createElement("span");
           tip.className = "pswp-tooltip";
@@ -967,13 +1015,18 @@ document.addEventListener("DOMContentLoaded", async () => {
   let uploadAlbumOptions = [];
   let selectedUploadFiles = [];
 
+  function setUploadTokenState(valid) {
+    uploadTokenValid = valid;
+    document.body.classList.toggle("has-upload-token", valid);
+  }
+
   async function checkUploadToken() {
     try {
       const res = await fetch("php/check_upload_token.php", { cache: "no-store" });
       const data = await res.json();
-      uploadTokenValid = data.valid;
+      setUploadTokenState(Boolean(data.valid));
     } catch {
-      uploadTokenValid = false;
+      setUploadTokenState(false);
     }
   }
 
@@ -1026,7 +1079,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
         const data = await res.json();
         if (data.ok) {
-          uploadTokenValid = true;
+          setUploadTokenState(true);
           uploadTokenStatus.innerHTML = '<span class="success">Token valido</span>';
           if (uploadTokenSection) uploadTokenSection.style.display = "none";
           if (uploadFormSection) uploadFormSection.style.display = "block";
@@ -1422,5 +1475,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     });
   }
+
+  checkUploadToken();
 
 });

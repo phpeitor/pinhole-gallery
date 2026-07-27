@@ -823,6 +823,99 @@ body.pinhole-lock .pinhole-gallery {
     box-sizing: border-box;
 }
 
+#interactive-background {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    contain: strict;
+    transition: opacity 0.25s ease;
+}
+
+body.show-interactive-background #interactive-background {
+    opacity: 1;
+    visibility: visible;
+}
+
+#interactive-background canvas {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    opacity: 0.22;
+}
+
+.pinhole-header,
+.pinhole-section,
+.pinhole-site-content,
+.pinhole-sidebar,
+.pinhole-sidebar-overlay,
+.pinhole-top-actions,
+.pswp,
+.pinhole-hidden-overlay {
+    position: relative;
+    z-index: 1;
+}
+
+.upload-modal,
+.upload-modal.open {
+    position: fixed;
+    z-index: 99999;
+}
+
+.gallery-delete-image {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 3;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    min-width: 34px;
+    height: 34px;
+    min-height: 34px;
+    padding: 0;
+    border: 1px solid rgba(255,255,255,0.35);
+    border-radius: 50%;
+    background: rgba(20, 20, 28, 0.55);
+    color: #fff;
+    font-size: 14px;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(-3px);
+    transition: opacity 0.2s, transform 0.2s, background 0.2s;
+    backdrop-filter: blur(8px);
+    box-shadow: none;
+}
+
+.pinhole-item {
+    position: relative;
+}
+
+body.has-upload-token .pinhole-item:hover .gallery-delete-image,
+body.has-upload-token .gallery-delete-image:focus {
+    display: inline-flex;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.gallery-delete-image:hover {
+    background: rgba(217, 48, 37, 0.88);
+}
+
+.gallery-delete-image:disabled {
+    cursor: wait;
+    opacity: 0.5;
+}
+
 .upload-field input:focus {
     border-color: #666;
     outline: none;
@@ -833,7 +926,7 @@ body.pinhole-lock .pinhole-gallery {
 .upload-combobox-trigger.upload-invalid,
 .upload-dropzone.upload-invalid {
     border-color: #d93025 !important;
-    box-shadow: 0 0 0 3px rgba(217, 48, 37, 0.12) !important;
+    box-shadow: 0 0 0 1px rgba(217, 48, 37, 0.12) !important;
 }
 
 .upload-native-select {
@@ -1067,16 +1160,21 @@ body.pinhole-lock .pinhole-gallery {
     align-items: center;
     justify-content: center;
     width: 26px;
+    min-width: 26px;
     height: 26px;
+    min-height: 26px;
+    padding: 0;
     border: 0;
     border-radius: 50%;
     background: rgba(26, 26, 46, 0.86);
     color: #fff;
     font-size: 12px;
+    line-height: 1;
     cursor: pointer;
     opacity: 0;
     transform: translateY(-2px);
     transition: opacity 0.2s, transform 0.2s, background 0.2s;
+    box-shadow: none;
 }
 
 .upload-preview-item:hover .upload-preview-remove,

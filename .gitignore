@@ -1,4 +1,5 @@
 .env
+.htaccess
 /img/*
 !/img/.htaccess
 /vendor
