@@ -20,6 +20,10 @@ const getViewportWidth = () => Math.max(320, container.clientWidth || window.inn
 const getViewportHeight = () => Math.max(320, container.clientHeight || window.innerHeight);
 const w = getViewportWidth(), h = getViewportHeight();
 
+function getInteractiveCodeColor() {
+  return getComputedStyle(document.body).getPropertyValue('--interactive-code').trim() || '#333';
+}
+
 // DPR - Cap at 2 to protect fill-rate on 3x screens; drop the cap for max sharpness.
 const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
@@ -72,6 +76,7 @@ function main() {
   const { awidth: width, aheight: height, gridW, gridH, gravity, damping, iterationsPerFrame, compressFactor, stretchFactor, cellWidth, cellHeight } = CONFIG;
 
   const charCanvases = {};
+  const codeColor = getInteractiveCodeColor();
   const fontSize = Math.max(12, cellHeight * 1.2); // logical px
   const box = Math.ceil(fontSize * 1.4);           // logical px, glyph cell size
   for (const ch of new Set(fullCode)) {
@@ -83,7 +88,7 @@ function main() {
     octx.font = `bold ${fontSize}px monospace`;
     octx.textAlign = 'center';
     octx.textBaseline = 'middle';
-    octx.fillStyle = '#333';
+    octx.fillStyle = codeColor;
     octx.fillText(ch, box / 2, box / 2);           // logical center (no double-dpr)
     off.logicalSize = box;                         // stash for drawImage
     charCanvases[ch] = off;
@@ -487,5 +492,7 @@ class Constraint {
     }
   }
 }
+
+window.refreshInteractiveBackground = main;
 
 setTimeout(() => main(), 500);

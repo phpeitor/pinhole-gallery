@@ -39,6 +39,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     el.textContent = new Date().getFullYear();
   });
 
+  function applyColorTheme(themeId = "default") {
+    document.body.classList.remove("theme-default", "theme-color-1", "theme-color-2", "theme-color-3", "theme-color-4");
+    document.body.classList.add("theme-" + themeId);
+    window.refreshInteractiveBackground?.();
+  }
+
+  applyColorTheme(document.querySelector(".switcher_items.colors a.active")?.dataset.id || "default");
+
+  document.querySelectorAll(".switcher_items.colors a[data-type='color']").forEach(link => {
+    link.addEventListener("click", () => {
+      setTimeout(() => applyColorTheme(link.dataset.id || "default"), 0);
+    });
+  });
+
   // ====== Token ======
   document.getElementById("mc-embedded-subscribe-form")
     ?.addEventListener("submit", async (e) => {

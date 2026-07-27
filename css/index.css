@@ -1,4 +1,7 @@
 body {
+    --interactive-bg: #ffffff;
+    --interactive-code: #333333;
+    --interactive-opacity: 0.22;
     --wp--preset--color--black: #000000;
     --wp--preset--color--cyan-bluish-gray: #abb8c3;
     --wp--preset--color--white: #ffffff;
@@ -835,6 +838,7 @@ body.pinhole-lock .pinhole-gallery {
     visibility: hidden;
     contain: strict;
     transition: opacity 0.25s ease;
+    background: var(--interactive-bg);
 }
 
 body.show-interactive-background #interactive-background {
@@ -848,7 +852,37 @@ body.show-interactive-background #interactive-background {
     display: block;
     width: 100%;
     height: 100%;
-    opacity: 0.22;
+    opacity: var(--interactive-opacity);
+}
+
+body.theme-default {
+    --interactive-bg: #ffffff;
+    --interactive-code: #333333;
+    --interactive-opacity: 0.18;
+}
+
+body.theme-color-1 {
+    --interactive-bg: #222222;
+    --interactive-code: #ffffff;
+    --interactive-opacity: 0.12;
+}
+
+body.theme-color-2 {
+    --interactive-bg: linear-gradient(to left bottom, #1e0187, #3e0791, #5a0791, #9d0ac1, #c414c4);
+    --interactive-code: #111827;
+    --interactive-opacity: 0.16;
+}
+
+body.theme-color-3 {
+    --interactive-bg: linear-gradient(to right bottom, #cc0000, #cc3300, #ff7b00, #ffbb00, #fffa00);
+    --interactive-code: #3b1600;
+    --interactive-opacity: 0.14;
+}
+
+body.theme-color-4 {
+    --interactive-bg: #003344;
+    --interactive-code: #d8f6ff;
+    --interactive-opacity: 0.16;
 }
 
 .pinhole-header,
