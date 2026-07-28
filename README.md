@@ -8,42 +8,36 @@
 
 `Hello Everyone 🙌`
 
-Galeria privada de imágenes, el proyecto prioriza acceso protegido por token, carga progresiva, thumbnails automaticos, UX tipo instagram en home y visualización optimizada con masonry + photoswipe.
+## Resumen
 
-## Flujo principal:
-
-1. El usuario abre `index.html`.
-2. `js/photo.js` consulta `php/check_token.php` para saber si existe sesion valida.
-3. Si no hay sesion, se muestra el bloqueo y el formulario de token.
-4. `php/token_validate.php` valida el token contra `GALLERY_TOKEN` en `.env`.
-5. `php/menu.php` construye el menu desde carpetas dentro de `img/`.
-6. `php/list.php` devuelve imágenes paginadas por galeria y genera metadata cacheada.
-7. `php/gallery_media.php` genera thumbnails WebP automaticos en `.thumbs/`.
-8. `js/photo.js` renderiza thumbnails por lotes, usa Masonry para layout y PhotoSwipe para lightbox.
-9. Las imágenes privadas se sirven mediante `php/media.php`, no directamente desde `/img`.
-10. `php/zip.php` permite descargar la galeria activa como ZIP bajo sesion valida.
+1. `index.html` es la entrada publica de la aplicacion.
+2. `js/photo.js` orquesta sesion, menus, Home, galerias, subida, borrado, descarga, temas y lightbox.
+3. Los albums viven en `img/`, pero el frontend no debe enlazar esa carpeta directamente.
+4. Las imagenes se sirven por `php/media.php` con sesion valida.
+5. La metadata y thumbnails se generan bajo demanda para mantener el sitio rapido.
+6. El proyecto corre actualmente bajo `/gallery/`, por eso se usan rutas relativas o absolutas con ese prefijo cuando aplica.
 
 ## Stack
 
-1. PHP 8+.
-2. Composer.
-3. `vlucas/phpdotenv` para variables de entorno.
-4. JS.
-5. CSS tradicional sin preprocesador.
-6. Masonry para layout de galeria.
-7. PhotoSwipe para lightbox.
-8. GD de PHP para generar thumbnails WebP.
+1. PHP 8+ procedural.
+2. Composer con `vlucas/phpdotenv`.
+3. JavaScript vanilla.
+4. CSS tradicional sin build step.
+5. Masonry para layout de galeria.
+6. PhotoSwipe para lightbox.
+7. GD de PHP para thumbnails WebP.
+8. Extension `zip` de PHP para descargas masivas.
 
 ## Requisitos
 
 1. PHP 8 o superior.
 2. Composer.
 3. Extension PHP `gd` habilitada.
-4. Extension PHP `zip` habilitada para descargas masivas.
-5. Un servidor compatible con PHP apuntando al directorio del proyecto.
-6. Regla equivalente para bloquear acceso directo a `img/` si el servidor no interpreta `.htaccess`.
+4. Extension PHP `zip` habilitada.
+5. Apache con `.htaccess` habilitado para este directorio, o reglas equivalentes en el virtual host.
+6. Un DocumentRoot que permita servir el proyecto bajo `/gallery/`.
 
-## Instalación
+## Instalacion
 
 1. Instalar dependencias PHP:
 
@@ -51,179 +45,178 @@ Galeria privada de imágenes, el proyecto prioriza acceso protegido por token, c
 composer install
 ```
 
-2. Crear `.env` en la raiz del proyecto:
+2. Crear `.env` en la raiz:
 
 ```env
-GALLERY_TOKEN=tu_token_secreto
+GALLERY_TOKEN=token_para_ver_galeria
+UPLOAD_TOKEN=token_para_subir_y_eliminar
 ```
 
-3. Publicar la carpeta en el servidor PHP elegido.
+3. Verificar extensiones PHP:
 
-4. Abrir la URL configurada para el proyecto.
+```bash
+php -m
+```
+
+4. Abrir `http://127.0.0.1/gallery/` o la URL configurada en Apache.
+
+## Flujo Principal
+
+1. El usuario abre `index.html`.
+2. `js/photo.js` consulta `php/check_token.php`.
+3. Si no hay sesion valida, se muestra el bloqueo y el formulario de token.
+4. `php/token_validate.php` valida `GALLERY_TOKEN` y crea una sesion temporal.
+5. `php/menu.php` detecta carpetas visibles en `img/` y construye el menu.
+6. `php/list.php` pagina imagenes por album y mantiene `.meta.json`.
+7. `php/gallery_media.php` genera thumbnails WebP en `.thumbs/`.
+8. `php/media.php` sirve imagenes y thumbnails privados con cache HTTP.
+9. `php/zip.php` descarga la galeria activa como ZIP bajo sesion valida.
 
 ## Estructura
 
 ```txt
-index.html
-css/
-js/
-php/
-img/
-resources/
-vendor/
-.ia-context/
+index.html                  Entrada principal
+404.html                    Pagina de error 404
+403.html                    Pagina de error 403
+css/                        Estilos del tema y customizaciones
+js/                         Scripts del tema, galeria y fondo interactivo
+php/                        Endpoints PHP procedurales
+img/                        Albums privados
+resources/                  Iconos, logos y recursos estaticos
+vendor/                     Dependencias Composer
+.ia-context/                Contexto tecnico para futuras iteraciones
 ```
 
-Archivos clave:
+## Archivos Clave
 
-1. `index.html`: estructura base, menus, contenedor de galeria y sidebar de token.
-2. `js/photo.js`: orquestacion frontend de sesion, Home, menus, galeria, scroll infinito, Masonry, PhotoSwipe y descarga.
-3. `css/index.css`: estilos custom, Home slider, placeholders, acciones superiores y responsive.
-4. `php/bootstrap.php`: carga Composer y `.env`.
-5. `php/token_validate.php`: valida token y crea sesion temporal.
-6. `php/check_token.php`: confirma sesion vigente.
-7. `php/menu.php`: genera menu desde carpetas visibles en `img/`.
-8. `php/list.php`: lista imágenes por carpeta, pagina resultados y genera `.meta.json`.
-9. `php/gallery_media.php`: helper compartido para thumbnails WebP y rutas relativas.
-10. `php/media.php`: sirve imágenes privadas bajo sesion valida con cache HTTP privado.
-11. `php/home_slider.php`: devuelve hasta 5 imágenes aleatorias para el Home.
-12. `php/zip.php`: genera ZIP de la galeria activa.
-13. `img/.htaccess`: bloquea acceso directo a imágenes cuando el servidor lo soporta.
+1. `js/photo.js`: controlador principal del frontend.
+2. `css/index.css`: estilos propios, modal de subida, fondo interactivo, acciones superiores y responsive.
+3. `js/script.js`: fondo interactivo usado como capa visual.
+4. `php/bootstrap.php`: carga Composer y variables de entorno.
+5. `php/token_validate.php`: login de galeria con bloqueo por intentos.
+6. `php/upload_token_validate.php`: token de subida/eliminacion con bloqueo por intentos.
+7. `php/token_rate_limit.php`: rate limit de tokens por sesion.
+8. `php/list.php`: listado paginado, metadata y thumbnails.
+9. `php/media.php`: entrega privada de medios.
+10. `php/upload.php`: carga de imagenes al album destino.
+11. `php/delete_image.php`: eliminacion de imagenes con token de subida valido.
+12. `php/create_folder.php`: creacion controlada de albums/subcarpetas.
+13. `php/zip.php`: descarga masiva del album activo.
 
-## Galerias
+## Albums
 
-Las galerias se organizan por carpetas dentro de `img/`.
-
-Ejemplo:
+Los albums se organizan por carpetas dentro de `img/`.
 
 ```txt
 img/
-  Emma/
-    5th/
-      1.JPG
-      2.JPG
+  Alejandro/
+    foto-1.jpg
+    foto-2.webp
   Alaia/
     1th/
-      1.JPG
+      foto-1.jpg
+  Emma/
+    5th/
+      foto-1.png
 ```
 
-`php/menu.php` detecta carpetas visibles y genera grupos/items de menu automaticamente.
+Reglas operativas:
 
-## Rendimiento
+1. Se soportan maximo dos niveles: `album/subcarpeta`.
+2. Las extensiones soportadas son `jpg`, `jpeg`, `png`, `webp`.
+3. `php/menu.php` ignora carpetas internas como `.thumbs`.
+4. `php/list.php` crea o actualiza `.meta.json` cuando detecta cambios.
+5. El frontend debe usar siempre `php/media.php?path=...` para imagenes privadas.
 
-### Carga por lotes
+## Subida Y Eliminacion
 
-La galeria no carga todas las imágenes al inicio. `js/photo.js` usa lotes de 12 imágenes y `IntersectionObserver` para cargar mas antes de que el usuario llegue al final.
+El modal de subida permite:
 
-Esto evita:
+1. Validar `UPLOAD_TOKEN`.
+2. Buscar albums existentes con combobox.
+3. Crear album nuevo.
+4. Crear subcarpeta opcional.
+5. Seleccionar o arrastrar imagenes.
+6. Quitar imagenes antes de subir.
+7. Eliminar imagenes ya subidas desde la galeria.
 
-1. Saturar la red.
-2. Crear demasiados nodos DOM al mismo tiempo.
-3. Bloquear Masonry con muchas imágenes grandes.
-4. Penalizar galerias pesadas como `Emma/5th`.
-
-### Thumbnails automaticos
-
-Cuando `php/list.php` reconstruye metadata, tambien genera thumbnails WebP en `.thumbs/`.
-
-La verificacion usa:
-
-1. Nombre del archivo original.
-2. `filemtime`.
-3. `filesize`.
-4. Ancho configurado del thumbnail.
-
-Si el thumbnail existe y la imagen no cambio, se reutiliza. Si agregas o reemplazas una imagen, se genera solo lo necesario.
-
-### Cache de imágenes privadas
-
-`php/media.php` sirve imágenes bajo sesion valida y agrega:
-
-1. `Cache-Control: private, max-age=86400`.
-2. `ETag`.
-3. `Last-Modified`.
-4. Respuesta `304 Not Modified` cuando aplica.
-
-Esto mantiene privacidad sin perder cache del navegador.
-
-## Home
-
-El Home usa `php/home_slider.php` para mostrar hasta 5 imágenes aleatorias desde `img/`.
-
-Caracteristicas:
-
-1. Slider visual tipo Instagram.
-2. Tarjeta central y tarjetas laterales rotadas.
-3. Barras estilo stories.
-4. Emojis decorativos minimalistas.
-5. imágenes no clickeables.
-6. Uso de thumbnails protegidos por `php/media.php`.
+La eliminacion requiere sesion de `UPLOAD_TOKEN` activa y pasa por `php/delete_image.php`. Al eliminar, se borra el archivo original, el thumbnail asociado si existe y `.meta.json` para forzar regeneracion.
 
 ## Seguridad
 
-El proyecto aplica varias capas de proteccion:
+1. `GALLERY_TOKEN` y `UPLOAD_TOKEN` viven solo en `.env`.
+2. El frontend nunca recibe tokens reales.
+3. Los tokens tienen bloqueo por intentos: 3 fallos bloquean 5 minutos.
+4. `php/list.php`, `php/media.php`, `php/zip.php`, `php/upload.php` y `php/delete_image.php` validan sesion segun corresponda.
+5. Las rutas se normalizan con `trim`, se bloquea `..` y se valida con `realpath`.
+6. `img/.htaccess` bloquea acceso directo a medios privados.
+7. `.htaccess` bloquea listados de directorios sensibles como `css/`, `js/`, `php/`, `resources/` y `vendor/`.
+8. Las paginas `403.html` y `404.html` estan configuradas con `ErrorDocument` bajo `/gallery/`.
+9. Si el servidor no respeta `.htaccess`, estas reglas deben moverse al VirtualHost.
 
-1. El token real vive solo en `.env`.
-2. El frontend nunca recibe `GALLERY_TOKEN`.
-3. Los endpoints privados validan sesion.
-4. `php/list.php` no entrega metadata sin sesion.
-5. `php/media.php` no sirve imágenes sin sesion.
-6. `php/zip.php` no genera descargas sin sesion.
-7. Las rutas se validan con `realpath` y bloqueo de `..`.
-8. El acceso directo a `img/` queda bloqueado por `img/.htaccess` en servidores compatibles.
-9. El frontend no debe enlazar `./img/...`; debe usar `php/media.php?path=...`.
-10. Los ZIP solo incluyen extensiones permitidas: `jpg`, `jpeg`, `png`, `webp`.
+## Rendimiento
 
-Importante: si usas un servidor que no interpreta `.htaccess`, configura una regla equivalente para denegar acceso directo a `img/`.
+1. La galeria carga por lotes con `IntersectionObserver`.
+2. Masonry se recalcula despues de insertar imagenes y lazy loads.
+3. Los thumbnails se generan en WebP con ancho definido por `GALLERY_THUMB_WIDTH`.
+4. La metadata se invalida por firma de archivos: nombre, `filemtime`, `filesize` y version de cache.
+5. `php/media.php` usa `Cache-Control: private`, `ETag`, `Last-Modified` y respuestas `304`.
 
-## Uso
+## UI Y Preferencias
 
-1. Abrir la URL del proyecto.
-2. Ingresar token.
-3. Navegar desde el menu de galerias.
-4. Hacer scroll para cargar mas imágenes.
-5. Abrir imágenes en lightbox.
-6. Descargar la galeria activa con el boton superior.
-7. Cerrar sesion con el boton de logout.
+1. El Home usa slider visual tipo Instagram con imagenes protegidas.
+2. El fondo interactivo se renderiza en `#interactive-background` y se adapta al tema activo.
+3. Los temas de color, fuentes y RTL se persisten en `localStorage`.
+4. La barra superior muestra cerrar sesion en Home y agrega descarga cuando hay album activo.
+5. El logo se mantiene como Pixitor y cambia de contraste por CSS segun tema.
 
 ## Operacion
 
-### Agregar imágenes
+### Agregar Imagenes Manualmente
 
-1. Copiar imágenes dentro de la carpeta de galeria correspondiente.
-2. Abrir la galeria desde el menu.
+1. Copiar archivos dentro de `img/<album>/` o `img/<album>/<subcarpeta>/`.
+2. Abrir el album desde el menu.
 3. `php/list.php` detecta cambios y actualiza `.meta.json`.
 4. Los thumbnails faltantes se generan automaticamente.
 
-### Reemplazar imágenes
+### Reemplazar Imagenes
 
-Si reemplazas una imagen manteniendo el mismo nombre, cambia `filemtime` o `filesize`, por lo que se genera un thumbnail nuevo.
+Si reemplazas una imagen manteniendo el nombre, cambia `filemtime` o `filesize`; eso invalida la metadata y fuerza nuevo thumbnail.
 
-### Cache local
+### Limpiar Cache De Album
 
-Si el navegador no refleja cambios de JS/CSS, hacer recarga forzada.
+Para forzar regeneracion manual de un album, elimina su `.meta.json`. No borres `.thumbs/` salvo que necesites regenerar thumbnails completos.
 
-Si una imagen fue reemplazada y el navegador mantiene cache, cambiar el archivo o limpiar cache del navegador deberia forzar la actualizacion por `ETag`/`Last-Modified`.
+## Desarrollo
 
-## Contexto IA
+1. Mantener PHP procedural simple; no introducir frameworks.
+2. Mantener JS vanilla; no agregar bundlers para cambios puntuales.
+3. Preferir cambios pequenos y verificables.
+4. No enlazar `/img` directamente desde HTML/JS.
+5. No versionar `.env`, `vendor/`, imagenes privadas, thumbnails ni caches generados.
+6. Ejecutar `php -l php/<archivo>.php` al modificar endpoints PHP.
+7. Ejecutar `node --check js/<archivo>.js` al modificar JS.
+8. Revisar `.ia-context/` antes de cambios grandes.
 
-`.ia-context/` contiene contexto operativo para futuras iteraciones:
+## Verificacion Recomendada
 
-1. Roles de agentes por area.
-2. Estandares frontend/backend.
-3. Checklist QA.
-4. Flujo de iteracion.
-5. Reglas de seguridad del proyecto.
+```bash
+php -l php/token_validate.php
+php -l php/upload_token_validate.php
+php -l php/delete_image.php
+node --check js/photo.js
+node --check js/script.js
+```
 
-Antes de cambios grandes, revisar esa carpeta para mantener consistencia tecnica.
+Validaciones manuales:
 
-## Notas de Desarrollo
-
-1. No agregar frameworks si el cambio se puede resolver con PHP y JS.
-2. No usar rutas directas a `img/` desde frontend.
-3. No versionar imágenes, thumbnails ni dependencias generadas.
-4. Mantener endpoints PHP pequenos y explicitos.
-5. Preferir cambios incrementales y verificables.
+1. Login correcto e incorrecto.
+2. Bloqueo por 3 intentos fallidos.
+3. Navegacion Home y albums por hash.
+4. Carga infinita y Masonry.
+5. Subida, preview y eliminacion de imagenes.
+6. Descarga ZIP de album activo.
+7. Acceso directo a `/gallery/img/`, `/gallery/js/`, `/gallery/css/` y rutas inexistentes.
 
 ## Licencia
 
