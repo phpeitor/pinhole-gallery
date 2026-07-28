@@ -126,12 +126,42 @@ document.addEventListener("DOMContentLoaded", async () => {
   }, true);
 
   // ====== Token ======
+  function showGalleryTokenLock(retryAfter) {
+    const input = document.getElementById("token");
+    const btnToken = document.getElementById("btn_token");
+    const tokenStatus = document.getElementById("mce-responses");
+
+    document.body.classList.add("pinhole-sidebar-open");
+    input?.classList.add("input-error");
+    if (btnToken) btnToken.disabled = true;
+    if (!tokenStatus) return;
+
+    tokenStatus.innerHTML = '<span class="error"><i class="fa fa-info-circle" aria-hidden="true"></i> Demasiados intentos. Intenta nuevamente en <b class="token-countdown"></b></span>';
+    const countdownEl = tokenStatus.querySelector(".token-countdown");
+
+    startTokenCountdown({
+      seconds: retryAfter,
+      timerName: "galleryTokenLockTimer",
+      render: (remaining) => {
+        if (countdownEl) countdownEl.textContent = formatRetryAfter(remaining);
+      },
+      onDone: () => {
+        if (btnToken) btnToken.disabled = false;
+        input?.classList.remove("input-error");
+        tokenStatus.innerHTML = '<span class="info">Ya puedes intentar nuevamente</span>';
+      }
+    });
+  }
+
   document.getElementById("mc-embedded-subscribe-form")
     ?.addEventListener("submit", async (e) => {
       e.preventDefault();
       const input = document.getElementById("token");
+      const btnToken = document.getElementById("btn_token");
+      const tokenStatus = document.getElementById("mce-responses");
       const token = input.value.trim();
       input.classList.remove("input-error");
+      if (tokenStatus) tokenStatus.innerHTML = "";
 
       if (!token) {
         input.classList.add("input-error");
@@ -151,20 +181,18 @@ document.addEventListener("DOMContentLoaded", async () => {
           unlockGallery();
           location.reload(); // podrías evitarlo, pero lo dejo porque tú lo usas
         } else if (data.locked) {
-          document.body.classList.remove("pinhole-sidebar-open");
-          input.classList.add("input-error");
-          startTokenCountdown({
-            seconds: data.retryAfter,
-            timerName: "galleryTokenLockTimer",
-            render: (remaining) => alertify.error("Demasiados intentos. Intenta nuevamente en " + formatRetryAfter(remaining)),
-          });
+          showGalleryTokenLock(data.retryAfter);
         } else {
           document.body.classList.remove("pinhole-sidebar-open");
           input.classList.add("input-error");
           input.focus();
-          alertify.error(data.attemptsLeft !== undefined
-            ? "Token inválido. Intentos restantes: " + data.attemptsLeft
-            : "Token inválido o expirado");
+          if (tokenStatus) {
+            tokenStatus.innerHTML = data.attemptsLeft !== undefined
+              ? '<span class="error"><i class="fa fa-info-circle" aria-hidden="true"></i> Token invalido. Intentos restantes: ' + data.attemptsLeft + '</span>'
+              : '<span class="error"><i class="fa fa-info-circle" aria-hidden="true"></i> Token invalido o expirado</span>';
+          } else {
+            alertify.error("Token inválido o expirado");
+          }
         }
       } catch (err) {
         console.error(err);
@@ -193,7 +221,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     try {
       const res = await fetch("php/check_token.php", { cache: "no-store" });
       const data = await res.json();
-      data.valid ? unlockGallery() : lockGallery();
+      if (data.valid) {
+        unlockGallery();
+      } else {
+        lockGallery();
+        if (data.locked) showGalleryTokenLock(data.retryAfter);
+      }
     } catch (e) {
       console.error(e);
       lockGallery();
