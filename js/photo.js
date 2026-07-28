@@ -1218,11 +1218,13 @@ document.addEventListener("DOMContentLoaded", async () => {
           uploadTokenInput.classList.add("input-error");
           uploadTokenInput.focus();
           btnUploadToken.disabled = true;
+          uploadTokenStatus.innerHTML = '<span class="error"><i class="fa fa-info-circle" aria-hidden="true"></i> Demasiados intentos. Intenta nuevamente en <b class="token-countdown"></b></span>';
+          const countdownEl = uploadTokenStatus.querySelector(".token-countdown");
           startTokenCountdown({
             seconds: data.retryAfter,
             timerName: "uploadTokenLockTimer",
             render: (remaining) => {
-              uploadTokenStatus.innerHTML = '<span class="error"><i class="fa fa-info-circle" aria-hidden="true"></i> Demasiados intentos. Intenta nuevamente en ' + formatRetryAfter(remaining) + '</span>';
+              if (countdownEl) countdownEl.textContent = formatRetryAfter(remaining);
             },
             onDone: () => {
               btnUploadToken.disabled = false;
