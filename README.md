@@ -30,14 +30,14 @@
 
 ## Requisitos
 
-1. PHP 8 o superior.
+1. PHP 8x o superior.
 2. Composer.
 3. Extension PHP `gd` habilitada.
 4. Extension PHP `zip` habilitada.
 5. Apache con `.htaccess` habilitado para este directorio, o reglas equivalentes en el virtual host.
 6. Un DocumentRoot que permita servir el proyecto bajo `/gallery/`.
 
-## Instalacion
+## Instalación
 
 1. Instalar dependencias PHP:
 
@@ -87,7 +87,7 @@ vendor/                     Dependencias Composer
 .ia-context/                Contexto tecnico para futuras iteraciones
 ```
 
-## Archivos Clave
+## Archivos
 
 1. `js/photo.js`: controlador principal del frontend.
 2. `css/index.css`: estilos propios, modal de subida, fondo interactivo, acciones superiores y responsive.
@@ -112,9 +112,6 @@ img/
   Alejandro/
     foto-1.jpg
     foto-2.webp
-  Alaia/
-    1th/
-      foto-1.jpg
   Emma/
     5th/
       foto-1.png
@@ -128,7 +125,7 @@ Reglas operativas:
 4. `php/list.php` crea o actualiza `.meta.json` cuando detecta cambios.
 5. El frontend debe usar siempre `php/media.php?path=...` para imagenes privadas.
 
-## Subida Y Eliminacion
+## Subida
 
 El modal de subida permite:
 
@@ -162,7 +159,7 @@ La eliminacion requiere sesion de `UPLOAD_TOKEN` activa y pasa por `php/delete_i
 4. La metadata se invalida por firma de archivos: nombre, `filemtime`, `filesize` y version de cache.
 5. `php/media.php` usa `Cache-Control: private`, `ETag`, `Last-Modified` y respuestas `304`.
 
-## UI Y Preferencias
+## UI UX
 
 1. El Home usa slider visual tipo Instagram con imagenes protegidas.
 2. El fondo interactivo se renderiza en `#interactive-background` y se adapta al tema activo.
@@ -170,20 +167,20 @@ La eliminacion requiere sesion de `UPLOAD_TOKEN` activa y pasa por `php/delete_i
 4. La barra superior muestra cerrar sesion en Home y agrega descarga cuando hay album activo.
 5. El logo se mantiene como Pixitor y cambia de contraste por CSS segun tema.
 
-## Operacion
+## Operación
 
-### Agregar Imagenes Manualmente
+### Agregar imágenes manual
 
 1. Copiar archivos dentro de `img/<album>/` o `img/<album>/<subcarpeta>/`.
 2. Abrir el album desde el menu.
 3. `php/list.php` detecta cambios y actualiza `.meta.json`.
 4. Los thumbnails faltantes se generan automaticamente.
 
-### Reemplazar Imagenes
+### Reemplazar imágenes
 
 Si reemplazas una imagen manteniendo el nombre, cambia `filemtime` o `filesize`; eso invalida la metadata y fuerza nuevo thumbnail.
 
-### Limpiar Cache De Album
+### Limpiar cache
 
 Para forzar regeneracion manual de un album, elimina su `.meta.json`. No borres `.thumbs/` salvo que necesites regenerar thumbnails completos.
 
@@ -198,7 +195,7 @@ Para forzar regeneracion manual de un album, elimina su `.meta.json`. No borres 
 7. Ejecutar `node --check js/<archivo>.js` al modificar JS.
 8. Revisar `.ia-context/` antes de cambios grandes.
 
-## Verificacion Recomendada
+## Verificacion
 
 ```bash
 php -l php/token_validate.php
