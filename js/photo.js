@@ -28,6 +28,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   let activeRequestId = 0;
   let downloadResetTimer = null;
   let homeSliderTimer = null;
+  const tokenLockTimers = {};
   const menuRouteMap = new Map();
 
   const HOME_HASHES = new Set(["", "/", "home", "inicio", "viewall"]);
@@ -152,7 +153,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         } else if (data.locked) {
           document.body.classList.remove("pinhole-sidebar-open");
           input.classList.add("input-error");
-          alertify.error("Demasiados intentos. Intenta nuevamente en " + formatRetryAfter(data.retryAfter));
+          startTokenCountdown({
+            seconds: data.retryAfter,
+            timerName: "galleryTokenLockTimer",
+            render: (remaining) => alertify.error("Demasiados intentos. Intenta nuevamente en " + formatRetryAfter(remaining)),
+          });
         } else {
           document.body.classList.remove("pinhole-sidebar-open");
           input.classList.add("input-error");
@@ -219,7 +224,23 @@ document.addEventListener("DOMContentLoaded", async () => {
     const total = Math.max(0, Number(seconds) || 0);
     const minutes = Math.floor(total / 60);
     const rest = total % 60;
-    return minutes > 0 ? `${minutes}m ${String(rest).padStart(2, "0")}s` : `${rest}s`;
+    return `${minutes}:${String(rest).padStart(2, "0")}`;
+  }
+
+  function startTokenCountdown({ seconds, render, onDone, timerName }) {
+    if (tokenLockTimers[timerName]) clearInterval(tokenLockTimers[timerName]);
+    let remaining = Math.max(0, Number(seconds) || 0);
+    render(remaining);
+
+    tokenLockTimers[timerName] = setInterval(() => {
+      remaining -= 1;
+      render(Math.max(0, remaining));
+      if (remaining <= 0) {
+        clearInterval(tokenLockTimers[timerName]);
+        tokenLockTimers[timerName] = null;
+        setTimeout(() => onDone?.(), 700);
+      }
+    }, 1000);
   }
 
   function toRouteId(value) {
@@ -1196,7 +1217,19 @@ document.addEventListener("DOMContentLoaded", async () => {
         } else if (data.locked) {
           uploadTokenInput.classList.add("input-error");
           uploadTokenInput.focus();
-          uploadTokenStatus.innerHTML = '<span class="error"><i class="fa fa-info-circle" aria-hidden="true"></i> Demasiados intentos. Intenta nuevamente en ' + formatRetryAfter(data.retryAfter) + '</span>';
+          btnUploadToken.disabled = true;
+          startTokenCountdown({
+            seconds: data.retryAfter,
+            timerName: "uploadTokenLockTimer",
+            render: (remaining) => {
+              uploadTokenStatus.innerHTML = '<span class="error"><i class="fa fa-info-circle" aria-hidden="true"></i> Demasiados intentos. Intenta nuevamente en ' + formatRetryAfter(remaining) + '</span>';
+            },
+            onDone: () => {
+              btnUploadToken.disabled = false;
+              uploadTokenInput.classList.remove("input-error");
+              uploadTokenStatus.innerHTML = '<span class="info">Ya puedes intentar nuevamente</span>';
+            }
+          });
         } else {
           uploadTokenInput.classList.add("input-error");
           uploadTokenInput.focus();
