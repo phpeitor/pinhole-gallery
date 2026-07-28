@@ -54,7 +54,9 @@ if ($zip->open($zipPath, ZipArchive::OVERWRITE) !== true) {
 
 foreach ($images as $img) {
   if (!is_file($img)) continue;
-  $zip->addFile($img, basename($img));
+  $extension = strtolower(pathinfo($img, PATHINFO_EXTENSION));
+  $id = substr(hash('sha256', $folder . '|' . basename($img) . '|' . ((string)@filesize($img)) . '|' . ((string)@filemtime($img))), 0, 16);
+  $zip->addFile($img, $id . '.' . $extension);
 }
 
 $zip->close();
