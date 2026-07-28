@@ -543,6 +543,10 @@ body.pinhole-lock .pinhole-gallery {
     pointer-events: none;
 }
 
+.top-action-btn.is-hidden-action {
+    display: none;
+}
+
 .top-action-btn.is-loading {
     pointer-events: none;
 }

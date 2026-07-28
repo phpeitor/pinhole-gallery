@@ -411,13 +411,21 @@ document.addEventListener("DOMContentLoaded", async () => {
     btn.setAttribute("aria-disabled", (!enabled || loading) ? "true" : "false");
   }
 
+  function setDownloadActionVisibility(visible) {
+    const btn = ensureTopActions().querySelector(".download-all");
+    if (!btn) return;
+    btn.classList.toggle("is-hidden-action", !visible);
+  }
+
   function setTopActionsVisibility(visible) {
     ensureTopActions().classList.toggle("is-hidden", !visible);
   }
 
   function refreshTopActionsVisibility() {
     const currentId = location.hash.replace("#", "");
-    setTopActionsVisibility(HAS_TOKEN && !isHomeRoute(currentId));
+    const isHome = isHomeRoute(currentId);
+    setTopActionsVisibility(HAS_TOKEN);
+    setDownloadActionVisibility(!isHome);
   }
 
   function stopHomeSlider() {
@@ -452,7 +460,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     titleEl.textContent = "Inicio";
     metaEl.textContent = "";
     setDownloadActionState({ enabled: false, loading: false });
-    setTopActionsVisibility(false);
+    setTopActionsVisibility(HAS_TOKEN);
+    setDownloadActionVisibility(false);
 
     galleryContainer.style.height = "auto";
     galleryContainer.style.minHeight = "0";
@@ -702,6 +711,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   async function fetchAndRender(folder, titleText = "") {
     if (!HAS_TOKEN) return;
     showInteractiveBackground();
+    setDownloadActionVisibility(true);
 
     currentFolder = folder;
     currentTitle = titleText;
