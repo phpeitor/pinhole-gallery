@@ -149,11 +149,17 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (data.ok) {
           unlockGallery();
           location.reload(); // podrías evitarlo, pero lo dejo porque tú lo usas
+        } else if (data.locked) {
+          document.body.classList.remove("pinhole-sidebar-open");
+          input.classList.add("input-error");
+          alertify.error("Demasiados intentos. Intenta nuevamente en " + formatRetryAfter(data.retryAfter));
         } else {
           document.body.classList.remove("pinhole-sidebar-open");
           input.classList.add("input-error");
           input.focus();
-          alertify.error("Token inválido o expirado");
+          alertify.error(data.attemptsLeft !== undefined
+            ? "Token inválido. Intentos restantes: " + data.attemptsLeft
+            : "Token inválido o expirado");
         }
       } catch (err) {
         console.error(err);
@@ -207,6 +213,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       .replaceAll(">", "&gt;")
       .replaceAll('"', "&quot;")
       .replaceAll("'", "&#39;");
+  }
+
+  function formatRetryAfter(seconds) {
+    const total = Math.max(0, Number(seconds) || 0);
+    const minutes = Math.floor(total / 60);
+    const rest = total % 60;
+    return minutes > 0 ? `${minutes}m ${String(rest).padStart(2, "0")}s` : `${rest}s`;
   }
 
   function toRouteId(value) {
@@ -1180,10 +1193,16 @@ document.addEventListener("DOMContentLoaded", async () => {
           if (uploadFormSection) uploadFormSection.style.display = "block";
           loadFolderList();
           clearUploadForm();
+        } else if (data.locked) {
+          uploadTokenInput.classList.add("input-error");
+          uploadTokenInput.focus();
+          uploadTokenStatus.innerHTML = '<span class="error"><i class="fa fa-info-circle" aria-hidden="true"></i> Demasiados intentos. Intenta nuevamente en ' + formatRetryAfter(data.retryAfter) + '</span>';
         } else {
           uploadTokenInput.classList.add("input-error");
           uploadTokenInput.focus();
-          uploadTokenStatus.innerHTML = '';
+          uploadTokenStatus.innerHTML = data.attemptsLeft !== undefined
+            ? '<span class="error"><i class="fa fa-info-circle" aria-hidden="true"></i> Token invalido. Intentos restantes: ' + data.attemptsLeft + '</span>'
+            : '';
         }
       } catch {
         uploadTokenInput.classList.add("input-error");
