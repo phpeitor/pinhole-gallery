@@ -9,6 +9,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const FALLBACK_WIDTH = 1920;
   const FALLBACK_HEIGHT = 1280;
   const CHUNK = 12;
+  const UNLOCK_REDIRECT_DELAY = 2200;
   const galleryContainer = document.querySelector(".pinhole-gallery");
   const titleEl = document.querySelector(".entry-title");
   const metaEl = document.querySelector(".entry-meta");
@@ -136,7 +137,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (btnToken) btnToken.disabled = true;
     if (!tokenStatus) return;
 
-    tokenStatus.innerHTML = '<span class="error"><i class="fa fa-info-circle" aria-hidden="true"></i> Demasiados intentos. Intenta nuevamente en <b class="token-countdown"></b></span>';
+    tokenStatus.innerHTML = '<span class="error"><i class="fa fa-info-circle" aria-hidden="true"></i> Demasiados intentos. Regresa en <b class="token-countdown"></b></span>';
     const countdownEl = tokenStatus.querySelector(".token-countdown");
 
     startTokenCountdown({
@@ -178,21 +179,21 @@ document.addEventListener("DOMContentLoaded", async () => {
         const data = await res.json();
 
         if (data.ok) {
-          unlockGallery();
-          location.reload(); // podrías evitarlo, pero lo dejo porque tú lo usas
+          showUnlockedLockBeforeReload(btnToken);
         } else if (data.locked) {
           showGalleryTokenLock(data.retryAfter);
+          alertify.error("Demasiados intentos. Intenta nuevamente en unos minutos");
         } else {
           document.body.classList.remove("pinhole-sidebar-open");
           input.classList.add("input-error");
           input.focus();
+          const message = data.attemptsLeft !== undefined
+            ? "Token invalido. Intentos restantes: " + data.attemptsLeft
+            : "Token invalido o expirado";
           if (tokenStatus) {
-            tokenStatus.innerHTML = data.attemptsLeft !== undefined
-              ? '<span class="error"><i class="fa fa-info-circle" aria-hidden="true"></i> Token invalido. Intentos restantes: ' + data.attemptsLeft + '</span>'
-              : '<span class="error"><i class="fa fa-info-circle" aria-hidden="true"></i> Token invalido o expirado</span>';
-          } else {
-            alertify.error("Token inválido o expirado");
+            tokenStatus.innerHTML = '<span class="error"><i class="fa fa-info-circle" aria-hidden="true"></i> ' + message + '</span>';
           }
+          alertify.error(message);
         }
       } catch (err) {
         console.error(err);
@@ -212,9 +213,23 @@ document.addEventListener("DOMContentLoaded", async () => {
   function unlockGallery() {
     HAS_TOKEN = true;
     document.body.classList.add("has-token");
-    document.body.classList.remove("pinhole-lock", "pinhole-sidebar-open");
+    document.body.classList.remove("pinhole-lock", "pinhole-sidebar-open", "pinhole-unlocking");
     refreshTopActionsVisibility();
     document.querySelectorAll(".pinhole-upload-trigger").forEach(el => el.style.display = "");
+  }
+
+  function showUnlockedLockBeforeReload(btnToken) {
+    HAS_TOKEN = true;
+    document.body.classList.add("has-token", "pinhole-unlocking", "pinhole-sidebar-open");
+    if (btnToken) {
+      btnToken.disabled = true;
+      btnToken.value = "Desbloqueado";
+    }
+    alertify.success("Token correcto. Desbloqueando galeria...");
+    setTimeout(() => {
+      unlockGallery();
+      location.reload();
+    }, UNLOCK_REDIRECT_DELAY);
   }
 
   async function checkToken() {
