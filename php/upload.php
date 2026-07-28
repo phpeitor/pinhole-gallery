@@ -68,11 +68,24 @@ $files = $_FILES['files'];
 $uploaded = 0;
 $errors = [];
 
+function uploadErrorMessage(int $code): string {
+  return match ($code) {
+    UPLOAD_ERR_INI_SIZE => 'El archivo excede upload_max_filesize configurado en PHP',
+    UPLOAD_ERR_FORM_SIZE => 'El archivo excede el limite permitido por el formulario',
+    UPLOAD_ERR_PARTIAL => 'El archivo se subio parcialmente',
+    UPLOAD_ERR_NO_FILE => 'No se recibio el archivo',
+    UPLOAD_ERR_NO_TMP_DIR => 'Falta el directorio temporal de PHP',
+    UPLOAD_ERR_CANT_WRITE => 'No se pudo escribir el archivo en disco',
+    UPLOAD_ERR_EXTENSION => 'Una extension de PHP bloqueo la subida',
+    default => 'Error al subir (codigo ' . $code . ')',
+  };
+}
+
 if (is_array($files['name'])) {
   $total = count($files['name']);
   for ($i = 0; $i < $total; $i++) {
     if ($files['error'][$i] !== UPLOAD_ERR_OK) {
-      $errors[] = $files['name'][$i] . ': Error al subir (codigo ' . $files['error'][$i] . ')';
+      $errors[] = $files['name'][$i] . ': ' . uploadErrorMessage((int)$files['error'][$i]);
       continue;
     }
 
@@ -91,7 +104,7 @@ if (is_array($files['name'])) {
   }
 } else {
   if ($files['error'] !== UPLOAD_ERR_OK) {
-    $errors[] = $files['name'] . ': Error al subir (codigo ' . $files['error'] . ')';
+    $errors[] = $files['name'] . ': ' . uploadErrorMessage((int)$files['error']);
   } else {
     $ext = strtolower(pathinfo($files['name'], PATHINFO_EXTENSION));
     if (!isset($allowed[$ext])) {
