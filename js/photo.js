@@ -423,6 +423,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     }).join("");
 
     responsiveRoot.innerHTML = `${homeHtml}${groupHtml}`;
+
+    responsiveRoot.querySelectorAll(":scope > .menu-item-has-children").forEach((item) => {
+      if (!item.querySelector(":scope > .pinhole-nav-widget-acordion")) {
+        item.querySelector(":scope > a")?.insertAdjacentHTML(
+          "afterend",
+          '<span class="pinhole-nav-widget-acordion"><i class="fa fa-angle-down"></i></span>'
+        );
+      }
+    });
   }
 
   async function loadDynamicMenus() {
@@ -472,6 +481,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     bar.className = "pinhole-top-actions";
     bar.setAttribute("aria-label", "Acciones rápidas");
     bar.innerHTML = `
+      <a class="top-action-btn mobile-menu-action pinhole-action-sidebar has-tooltip" href="javascript:void(0);" data-tooltip="Ver galerías" aria-label="Ver galerías">
+        <i class="fa fa-bars" aria-hidden="true"></i>
+      </a>
       <a class="top-action-btn download-all download-cta has-tooltip is-disabled" href="#" data-tooltip="Descargar galería" aria-label="Descargar galería" aria-disabled="true">
         <img src="./resources/download.webp" alt="Descargar">
       </a>
