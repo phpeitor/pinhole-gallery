@@ -16017,6 +16017,10 @@ p img.alignright {
   -webkit-transform: translate3d(0, 0, 0);
   transform: translate3d(0, 0, 0);
 }
+body.gallery-sticky-bottom-ready .pinhole-sticky-bottom {
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+}
 .sticky-bottom-slot {
   line-height: 1.4;
   position: relative;

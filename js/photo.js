@@ -473,6 +473,46 @@ document.addEventListener("DOMContentLoaded", async () => {
     return "";
   }
 
+  function getGalleryRoutes() {
+    return Array.from(menuRouteMap.values()).filter(route => route.id && route.folder);
+  }
+
+  function setStickyGalleryNavVisible(visible) {
+    document.body.classList.toggle("gallery-sticky-bottom-ready", visible);
+  }
+
+  function updateStickyGalleryNav(routeId = "") {
+    const stickyBar = document.querySelector(".pinhole-sticky-bottom");
+    if (!stickyBar) return;
+
+    const routes = getGalleryRoutes();
+    const activeId = toRouteId(routeId || getRouteIdByFolder(currentFolder) || location.hash.replace("#", ""));
+    const activeIndex = routes.findIndex(route => route.id === activeId);
+    const canNavigate = HAS_TOKEN && routes.length > 1 && activeIndex >= 0 && !isHomeRoute(activeId);
+
+    setStickyGalleryNavVisible(canNavigate);
+    if (!canNavigate) return;
+
+    const previousRoute = routes[(activeIndex - 1 + routes.length) % routes.length];
+    const nextRoute = routes[(activeIndex + 1) % routes.length];
+    const previousLink = stickyBar.querySelector(".slot-left");
+    const nextLink = stickyBar.querySelector(".slot-right");
+
+    if (previousLink) {
+      previousLink.href = `#${previousRoute.id}`;
+      previousLink.dataset.galleryNav = previousRoute.id;
+      previousLink.setAttribute("aria-label", `Galería anterior: ${previousRoute.title}`);
+      previousLink.title = previousRoute.title;
+    }
+
+    if (nextLink) {
+      nextLink.href = `#${nextRoute.id}`;
+      nextLink.dataset.galleryNav = nextRoute.id;
+      nextLink.setAttribute("aria-label", `Siguiente galería: ${nextRoute.title}`);
+      nextLink.title = nextRoute.title;
+    }
+  }
+
   function ensureTopActions() {
     let bar = document.querySelector(".pinhole-top-actions");
     if (bar) return bar;
@@ -520,6 +560,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const isHome = isHomeRoute(currentId);
     setTopActionsVisibility(HAS_TOKEN);
     setDownloadActionVisibility(!isHome);
+    updateStickyGalleryNav(currentId);
   }
 
   function stopHomeSlider() {
@@ -556,6 +597,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     setDownloadActionState({ enabled: false, loading: false });
     setTopActionsVisibility(HAS_TOKEN);
     setDownloadActionVisibility(false);
+    updateStickyGalleryNav("home");
 
     galleryContainer.style.height = "auto";
     galleryContainer.style.minHeight = "0";
@@ -809,6 +851,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     currentFolder = folder;
     currentTitle = titleText;
+    updateStickyGalleryNav(getRouteIdByFolder(folder));
 
     stopHomeSlider();
 
@@ -1009,7 +1052,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // ====== Navegación de menú ======
   document.addEventListener("click", (e) => {
-    const link = e.target.closest("#menu-main-menu a[href^='#'], #menu-main-menu-1 a[href^='#'], #menu-main-menu-2 a[href^='#'], .pinhole-site-branding a[rel='home']");
+    const link = e.target.closest("#menu-main-menu a[href^='#'], #menu-main-menu-1 a[href^='#'], #menu-main-menu-2 a[href^='#'], .pinhole-sticky-bottom a[href^='#'], .pinhole-site-branding a[rel='home']");
     if (!link) return;
 
     const href = link.getAttribute("href") || "";
@@ -1035,6 +1078,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     e.preventDefault();
     history.replaceState(null, "", "#" + id);
+    updateStickyGalleryNav(id);
 
     const fallbackTitle = link.dataset.title || link.textContent.trim();
     const route = resolveRouteInfo(id, fallbackTitle);
