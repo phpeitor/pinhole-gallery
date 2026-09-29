@@ -4,3 +4,4 @@
 !/img/.htaccess
 /vendor
 /node_modules
+*.zip
