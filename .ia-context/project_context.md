@@ -8,7 +8,7 @@ Galeria privada de imagenes con acceso por token, menu dinamico, carga infinita 
 
 Pixitor evoluciona hacia una identidad minimalista de archivo digital retro/pixel. La referencia visual combina fondos tinta oscuros, superficies papel, acentos violeta/rosa/lima, bordes rectos y sombras duras discretas. Evitar modales redondeados genericos tipo Bootstrap y decoracion excesiva. Ver `ui_design_direction.md` para tokens y reglas de aplicacion.
 
-La marca vigente es el SVG `resources/phpeitor-pixsvg.svg`: “MEDIA” como palabra principal y el trazado original de “PHPEITOR” debajo. `resources/phpeitor-dataset.svg` es referencia de la composicion/tipo original, no sustituye el SVG activo.
+La marca vigente usa `resources/phpeitor-pixsvg.svg` en tema claro y `resources/phpeitor-pixsvg-light.svg` en temas oscuros: “MEDIA” como palabra principal y el trazado original de “PHPEITOR” debajo, con trazo animado granate. `resources/phpeitor-dataset.svg` es referencia de la composicion/tipo original, no sustituye los SVG activos.
 
 En Inicio, el video invitado usa los clips existentes `resources/2.mp4` a `resources/5.mp4`, conserva su proporcion intrinseca y se dimensiona por metadatos para llenar el marco sin bandas negras ni recorte. Si un clip falla, prueba los restantes y termina en un estado de error visible en vez de dejar un recuadro negro. La firma “– Phpeitor” se omite; la marca vive en el logotipo del encabezado. Con token, el slider de recuerdos usa una sola tarjeta vertical estilo Stories, con indicadores y controles discretos, sin emojis flotantes.
 

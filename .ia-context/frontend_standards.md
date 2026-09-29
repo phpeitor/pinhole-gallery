@@ -25,7 +25,7 @@
 7. No romper el layout de columnas usado por `.pinhole-item col-lg-4 col-md-4 col-sm-6`.
 8. Mantener estados visibles para loading, disabled, hover, focus y error; respetar `prefers-reduced-motion`.
 9. Mantener el video de Inicio en su proporcion intrinseca, sin barras/recorte, ajustando sus dimensiones con metadatos y viewport.
-10. Mantener la marca en `resources/phpeitor-pixsvg.svg`; no volver a introducir la firma “– Phpeitor” bajo el video.
+10. Mantener MEDIA/PHPEITOR en sus variantes SVG de tema claro/oscuro, con trazo animado granate visible; no volver a introducir la firma “– Phpeitor” bajo el video.
 11. El slider de Inicio autenticado es una historia vertical por vez, con progreso por imagen y navegacion accesible; no apilar tarjetas horizontales ni agregar reacciones emoji decorativas.
 12. El fondo debe leer el tema activo (`--interactive-bg`), no quedar fijado a un color retro estatico.
 13. El fondo interactivo debe pausar en pestañas ocultas, limitar carga/frecuencia y recolorear glifos sin reconstruir la simulacion al cambiar de tema.

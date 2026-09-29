@@ -61,6 +61,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const menuRouteMap = new Map();
 
   const HOME_HASHES = new Set(["", "/", "home", "inicio", "viewall"]);
+  let activeColorThemeId = "default";
   const galleryTokenForm = document.getElementById("mc-embedded-subscribe-form");
   const galleryTokenInput = document.getElementById("token");
   const galleryTokenButton = document.getElementById("btn_token");
@@ -84,15 +85,30 @@ document.addEventListener("DOMContentLoaded", async () => {
     el.textContent = new Date().getFullYear();
   });
 
-  function applyColorTheme(themeId = "default") {
-    document.body.classList.remove("theme-default", "theme-color-1", "theme-color-2", "theme-color-3", "theme-color-4");
-    document.body.classList.add("theme-" + themeId);
+  function setThemeLogo() {
+    const logoSrc = activeColorThemeId === "default"
+      ? "./resources/phpeitor-pixsvg.svg?v=3"
+      : "./resources/phpeitor-pixsvg-light.svg?v=1";
     document.querySelectorAll(".pinhole-site-branding img").forEach(img => {
-      img.src = "./resources/phpeitor-pixsvg.svg?v=2";
+      if (!img.src.endsWith(logoSrc.replace("./", ""))) img.src = logoSrc;
       img.removeAttribute("srcset");
     });
+  }
+
+  function applyColorTheme(themeId = "default") {
+    activeColorThemeId = themeId;
+    document.body.classList.remove("theme-default", "theme-color-1", "theme-color-2", "theme-color-3", "theme-color-4");
+    document.body.classList.add("theme-" + themeId);
+    setThemeLogo();
     window.refreshInteractiveBackground?.();
   }
+
+  const brandingLogoObserver = new MutationObserver(setThemeLogo);
+  document.querySelectorAll(".pinhole-site-branding img.pinhole-logo").forEach(img => {
+    brandingLogoObserver.observe(img, { attributes: true, attributeFilter: ["src", "srcset"] });
+  });
+  // The bundled theme swaps its logo on breakpoints; restore Pixitor's themed SVG afterwards.
+  window.addEventListener("resize", setThemeLogo, { passive: true });
 
   function applySwitcherStylesheet(type, themeId, url) {
     document.querySelectorAll(".pinhole-switcher-" + type).forEach(el => el.remove());

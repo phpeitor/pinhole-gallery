@@ -959,17 +959,6 @@ body.theme-color-4 {
     --interactive-opacity: 0.16;
 }
 
-body.theme-color-1 .pinhole-logo,
-body.theme-color-2 .pinhole-logo,
-body.theme-color-3 .pinhole-logo,
-body.theme-color-4 .pinhole-logo {
-    filter: brightness(0) invert(1);
-}
-
-body.theme-default .pinhole-logo {
-    filter: none;
-}
-
 .pinhole-header,
 .pinhole-section,
 .pinhole-site-content,

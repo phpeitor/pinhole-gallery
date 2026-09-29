@@ -20,9 +20,10 @@ Los tokens CSS viven en `css/index.css` como variables `--pixitor-*`. Mantener e
 
 ## Marca
 
-- Asset activo: `resources/phpeitor-pixsvg.svg`.
+- Assets activos: `resources/phpeitor-pixsvg.svg` para superficies claras y `resources/phpeitor-pixsvg-light.svg` para temas oscuros/gradientes.
 - Palabra principal: `MEDIA`; marca secundaria inferior: trazado original `PHPEITOR`.
-- Usar el mismo SVG en encabezado normal, sticky, movil y selector de tema.
+- Usar la variante correspondiente en encabezado normal, sticky, movil y selector de tema.
+- El trazo animado usa granate `#A61B3B` con resplandor rojo; mantenerlo visible y diferenciado del relleno en ambas variantes.
 - Limitar el wordmark en encabezado a un ancho visual aproximado de 280 px y altura max de 56 px.
 - No agregar una segunda firma textual debajo del video de Inicio.
 - `resources/phpeitor-dataset.svg` queda como referencia del diseño anterior.
