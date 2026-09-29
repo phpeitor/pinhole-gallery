@@ -16,6 +16,7 @@ Carpeta de contexto operativo para que los agentes mantengan continuidad entre i
 3. Galeria con Masonry, PhotoSwipe, carga infinita y rutas por hash.
 4. Autenticacion privada por token en sesion PHP.
 5. Recursos estaticos en `resources/`, galerias en `img/` y endpoints en `php/`.
+6. Direccion visual Pixitor minimalista retro/pixel: consultar `ui_design_direction.md` antes de modificar Home, modales o marca.
 
 ## Regla principal
 

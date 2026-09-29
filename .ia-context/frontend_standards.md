@@ -16,13 +16,19 @@
 
 ## CSS
 
-1. Respetar el lenguaje visual del tema Pinhole: clases `pinhole-*`, menu lateral y galeria masonry.
-2. Agregar estilos custom cerca de reglas relacionadas o al final con un bloque claramente nombrado.
-3. Evitar `!important` salvo para sobrescribir estilos del tema que no puedan aislarse mejor.
-4. Validar desktop y mobile para cualquier cambio visual.
-5. No romper el layout de columnas usado por `.pinhole-item col-lg-4 col-md-4 col-sm-6`.
-6. Mantener estados visibles para loading, disabled, hover, focus y error.
-7. Optimizar imagenes/video por atributos HTML primero antes de hacks CSS.
+1. Mantener las clases/estructura Pinhole que necesita la galeria, pero aplicar la identidad Pixitor documentada en `ui_design_direction.md`.
+2. Favorecer una estetica minimalista retro/pixel: fondo tinta, superficies papel, acentos puntuales, esquinas rectas y sombras duras controladas.
+3. Evitar apariencia generica Bootstrap, radios grandes, gradientes decorativos y elementos de marca duplicados.
+4. Agregar estilos custom cerca de reglas relacionadas o en bloques claramente nombrados al final de `css/index.css`.
+5. Evitar `!important` salvo al neutralizar reglas heredadas del tema que no puedan aislarse de otro modo.
+6. Validar desktop y mobile, incluyendo scroll interno de modales y dialogos de confirmacion.
+7. No romper el layout de columnas usado por `.pinhole-item col-lg-4 col-md-4 col-sm-6`.
+8. Mantener estados visibles para loading, disabled, hover, focus y error; respetar `prefers-reduced-motion`.
+9. Mantener el video de Inicio en su proporcion intrinseca, sin barras/recorte, ajustando sus dimensiones con metadatos y viewport.
+10. Mantener la marca en `resources/phpeitor-pixsvg.svg`; no volver a introducir la firma “– Phpeitor” bajo el video.
+11. El slider de Inicio autenticado es una historia vertical por vez, con progreso por imagen y navegacion accesible; no apilar tarjetas horizontales ni agregar reacciones emoji decorativas.
+12. El fondo debe leer el tema activo (`--interactive-bg`), no quedar fijado a un color retro estatico.
+13. Optimizar imagenes/video por atributos HTML primero antes de hacks CSS.
 
 ## HTML
 

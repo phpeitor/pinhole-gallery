@@ -37,3 +37,13 @@
 1. Desktop: menu, acciones superiores y masonry funcionan.
 2. Mobile: menu responsive, bloqueo, Home y galeria no se desbordan.
 3. Estados hover/focus no son la unica forma de descubrir controles.
+
+## Identidad Pixitor / UX
+
+1. Inicio sin token: el video usa su proporcion intrinseca, llena el marco y no muestra barras negras ni la firma “– Phpeitor”.
+2. Cambiar el tamano del viewport mantiene el video centrado, completo y dentro de la pantalla.
+3. El logo muestra MEDIA con el trazado PHPEITOR debajo y conserva un tamano contenido en header desktop/mobile.
+4. Modal de subida, confirmacion Alertify y overlay de progreso comparten el lenguaje retro/pixel: superficies tinta/papel, bordes rectos y sombra dura sutil.
+5. Verificar contraste, foco de teclado, scroll del modal y `prefers-reduced-motion`.
+6. Home con token: una sola historia vertical visible, imagen no achatada, indicadores sincronizados y botones anterior/siguiente funcionales; no emojis flotantes.
+7. Cambiar entre temas claro, oscuro y gradientes actualiza el fondo de Home y galerias.

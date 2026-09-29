@@ -29,6 +29,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   let activeRequestId = 0;
   let downloadResetTimer = null;
   let homeSliderTimer = null;
+  let homeVideoResizeHandler = null;
   const tokenLockTimers = {};
   const menuRouteMap = new Map();
 
@@ -45,7 +46,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.body.classList.remove("theme-default", "theme-color-1", "theme-color-2", "theme-color-3", "theme-color-4");
     document.body.classList.add("theme-" + themeId);
     document.querySelectorAll(".pinhole-site-branding img").forEach(img => {
-      img.src = "./resources/pinhole_logo.png";
+      img.src = "./resources/phpeitor-pixsvg.svg?v=2";
       img.removeAttribute("srcset");
     });
     window.refreshInteractiveBackground?.();
@@ -577,6 +578,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   function showHomeView() {
     showInteractiveBackground();
     document.body.classList.add("home-intro");
+    document.body.classList.remove("home-story-ready");
     if (activeController) activeController.abort();
     activeController = new AbortController();
     const requestId = ++activeRequestId;
@@ -613,8 +615,6 @@ document.addEventListener("DOMContentLoaded", async () => {
             : `<video class="home-guest-video" src="./resources/${homeVideo}" autoplay muted loop playsinline preload="metadata" aria-label="Video de presentación"></video>`
           }
         </div>
-        <p class="home-hero-description"></p>
-        <cite>– Phpeitor</cite>
       </section>
     `;
 
@@ -624,6 +624,22 @@ document.addEventListener("DOMContentLoaded", async () => {
       const slider = galleryContainer.querySelector(".home-hero-slider");
       slider?.classList.remove("is-loading");
       slider?.classList.add("is-guest-video");
+      const video = slider?.querySelector(".home-guest-video");
+      if (video && slider) {
+        if (homeVideoResizeHandler) window.removeEventListener("resize", homeVideoResizeHandler);
+        homeVideoResizeHandler = () => {
+          if (!video.videoWidth || !video.videoHeight) return;
+          const ratio = video.videoWidth / video.videoHeight;
+          const maxWidth = Math.min(460, window.innerWidth - 64);
+          const maxHeight = Math.min(440, window.innerHeight * 0.46);
+          const width = Math.min(maxWidth, maxHeight * ratio);
+          slider.style.width = `${width}px`;
+          slider.style.height = `${width / ratio}px`;
+        };
+        video.addEventListener("loadedmetadata", homeVideoResizeHandler, { once: true });
+        homeVideoResizeHandler();
+        window.addEventListener("resize", homeVideoResizeHandler, { passive: true });
+      }
     }
   }
 
@@ -648,6 +664,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!slider) return;
 
     stopHomeSlider();
+    document.body.classList.remove("home-story-ready");
 
     if (!items.length) {
       slider.classList.remove("is-loading");
@@ -656,48 +673,73 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     slider.classList.remove("is-loading");
+    document.body.classList.add("home-story-ready");
     const slideHtml = items.map((item, index) => {
       const src = escapeHtml(item.thumb || item.url || "");
       return `
         <div class="home-hero-slide" aria-hidden="true">
-          <span class="home-story-bars" aria-hidden="true"><i></i><i></i><i></i></span>
-          <img src="${src}" alt="" loading="${index === 0 ? "eager" : "lazy"}" decoding="async">
-          <span class="home-slide-reaction" aria-hidden="true">♡</span>
-          <span class="home-slide-pill" aria-hidden="true"></span>
+          <img src="${src}" alt="Recuerdo destacado ${index + 1}" loading="${index === 0 ? "eager" : "lazy"}" decoding="async">
         </div>
       `;
     }).join("");
 
     slider.innerHTML = `
-      <span class="home-slider-emoji emoji-eyes" aria-hidden="true">👀</span>
-      <span class="home-slider-emoji emoji-party" aria-hidden="true">🥳</span>
-      <span class="home-slider-emoji emoji-heart" aria-hidden="true">💖</span>
-      <span class="home-slider-emoji emoji-star" aria-hidden="true">⭐</span>
-      <div class="home-slider-deck">${slideHtml}</div>
+      <div class="home-slider-deck">
+        <div class="home-story-indicators" aria-hidden="true">${items.map((_, index) => `<i${index === 0 ? ' class="is-active"' : ""}></i>`).join("")}</div>
+        ${slideHtml}
+        <button type="button" class="home-story-nav home-story-prev" aria-label="Imagen anterior"><i class="fa fa-chevron-left" aria-hidden="true"></i></button>
+        <button type="button" class="home-story-nav home-story-next" aria-label="Imagen siguiente"><i class="fa fa-chevron-right" aria-hidden="true"></i></button>
+        <span class="home-story-count" aria-hidden="true"></span>
+      </div>
     `;
 
     let activeIndex = 0;
     const slides = Array.from(slider.querySelectorAll(".home-hero-slide"));
+    const indicators = Array.from(slider.querySelectorAll(".home-story-indicators i"));
+    const counter = slider.querySelector(".home-story-count");
 
-    const updateSlides = () => {
-      const prevIndex = (activeIndex - 1 + slides.length) % slides.length;
-      const nextIndex = (activeIndex + 1) % slides.length;
-
+    const showSlide = (index) => {
+      activeIndex = (index + slides.length) % slides.length;
       slides.forEach((slide, index) => {
         slide.classList.toggle("is-active", index === activeIndex);
-        slide.classList.toggle("is-prev", slides.length > 1 && index === prevIndex);
-        slide.classList.toggle("is-next", slides.length > 1 && index === nextIndex);
         slide.setAttribute("aria-hidden", index === activeIndex ? "false" : "true");
       });
+      indicators.forEach((indicator, index) => {
+        indicator.classList.toggle("is-active", index === activeIndex);
+        indicator.classList.toggle("is-done", index < activeIndex);
+      });
+      if (counter) counter.textContent = `${String(activeIndex + 1).padStart(2, "0")} / ${String(slides.length).padStart(2, "0")}`;
     };
 
-    updateSlides();
-    if (items.length < 2) return;
+    showSlide(0);
+    const previousButton = slider.querySelector(".home-story-prev");
+    const nextButton = slider.querySelector(".home-story-next");
+    if (items.length < 2) {
+      if (previousButton) previousButton.disabled = true;
+      if (nextButton) nextButton.disabled = true;
+      return;
+    }
 
-    homeSliderTimer = setInterval(() => {
-      activeIndex = (activeIndex + 1) % slides.length;
-      updateSlides();
-    }, 3600);
+    previousButton?.addEventListener("click", () => showSlide(activeIndex - 1));
+    nextButton?.addEventListener("click", () => showSlide(activeIndex + 1));
+
+    if (!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
+      const pauseRotation = () => {
+        if (homeSliderTimer) clearInterval(homeSliderTimer);
+        homeSliderTimer = null;
+      };
+      const resumeRotation = () => {
+        pauseRotation();
+        homeSliderTimer = setInterval(() => showSlide(activeIndex + 1), 4800);
+      };
+      slider.addEventListener("mouseenter", pauseRotation);
+      slider.addEventListener("mouseleave", resumeRotation);
+      slider.addEventListener("focusin", pauseRotation);
+      slider.addEventListener("focusout", (event) => {
+        if (!slider.contains(event.relatedTarget)) resumeRotation();
+      });
+      resumeRotation();
+    }
   }
 
   function getParentFromMenu(id) {
@@ -848,6 +890,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   async function fetchAndRender(folder, titleText = "") {
     if (!HAS_TOKEN) return;
     document.body.classList.remove("home-intro");
+    if (homeVideoResizeHandler) {
+      window.removeEventListener("resize", homeVideoResizeHandler);
+      homeVideoResizeHandler = null;
+    }
     showInteractiveBackground();
     setDownloadActionVisibility(true);
 

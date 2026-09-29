@@ -4,6 +4,16 @@
 
 Galeria privada de imagenes con acceso por token, menu dinamico, carga infinita por lotes, layout masonry, lightbox PhotoSwipe y descarga masiva por galeria.
 
+## Direccion UI/UX actual
+
+Pixitor evoluciona hacia una identidad minimalista de archivo digital retro/pixel. La referencia visual combina fondos tinta oscuros, superficies papel, acentos violeta/rosa/lima, bordes rectos y sombras duras discretas. Evitar modales redondeados genericos tipo Bootstrap y decoracion excesiva. Ver `ui_design_direction.md` para tokens y reglas de aplicacion.
+
+La marca vigente es el SVG `resources/phpeitor-pixsvg.svg`: “MEDIA” como palabra principal y el trazado original de “PHPEITOR” debajo. `resources/phpeitor-dataset.svg` es referencia de la composicion/tipo original, no sustituye el SVG activo.
+
+En Inicio, el video invitado conserva su proporcion intrinseca y se dimensiona por metadatos para llenar el marco sin bandas negras ni recorte. La firma “– Phpeitor” se omite; la marca vive en el logotipo del encabezado. Con token, el slider de recuerdos usa una sola tarjeta vertical estilo Stories, con indicadores y controles discretos, sin emojis flotantes.
+
+Los fondos de Inicio y galeria deben reaccionar al tema activo mediante `--interactive-bg`; no fijar el fondo globalmente al color base retro.
+
 ## Flujo principal
 
 1. El usuario abre `index.html`.
@@ -21,7 +31,7 @@ Galeria privada de imagenes con acceso por token, menu dinamico, carga infinita 
 
 1. `index.html`: markup base, menus, contenedor de galeria y dependencias del tema.
 2. `js/photo.js`: estado de sesion, rutas hash, menus, render de galeria, Masonry, PhotoSwipe, descarga y Home.
-3. `css/index.css`: estilos del tema y customizaciones UX/responsive.
+3. `css/index.css`: sobreescrituras UX/responsive y sistema visual retro de Pixitor.
 4. `php/bootstrap.php`: carga Composer y variables `.env`.
 5. `php/token_validate.php`: login por token.
 6. `php/check_token.php`: validacion de sesion activa.
