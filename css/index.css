@@ -1612,8 +1612,8 @@ body.has-upload-token .gallery-delete-image:focus {
 .upload-progress[hidden] { display: none; }
 
 .upload-progress {
-    position: absolute;
-    z-index: 20;
+    position: fixed;
+    z-index: 100000;
     inset: 0;
     display: grid;
     place-items: center;

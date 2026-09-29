@@ -41,7 +41,7 @@ Los tokens CSS viven en `css/index.css` como variables `--pixitor-*`. Mantener e
 
 - Modal de subida: panel tinta, borde fino recto, sombra corta dura, tabs/inputs claramente diferenciados y botones de alto contraste.
 - Confirmaciones Alertify deben seguir el mismo lenguaje de panel/papel; evitar dialogo blanco generico con radios grandes.
-- Progreso de subida: overlay con spinner, puntos animados, pasos “Preparando / Enviando / Finalizando” y mensajes rotativos con `setTimeout` mientras se espera. Mantenerlo visible al menos 700 ms para cargas instantaneas; no inventar porcentaje si el transporte no lo mide.
+- Progreso de subida: overlay a nivel de viewport con spinner, puntos animados, pasos “Preparando / Enviando / Finalizando” y mensajes rotativos con `setTimeout` mientras se espera. Mantenerlo visible al menos 1800 ms para cargas instantaneas; no inventar porcentaje si el transporte no lo mide. No anidar el overlay dentro del contenido scrollable del modal.
 - Mantener scroll interno, botones de cierre claros, focus visible, `aria-live` para estados y respeto a `prefers-reduced-motion`.
 
 ## Galeria y limites de implementacion

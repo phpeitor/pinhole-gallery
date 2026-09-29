@@ -1313,11 +1313,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     uploadProgressDetail.textContent = messages[index];
     uploadProgressTimer = setTimeout(() => {
       cycleUploadProgressDetails(messages, (index + 1) % messages.length);
-    }, 1900);
+    }, 900);
   }
 
   function keepUploadProgressVisible(startedAt) {
-    const remaining = Math.max(0, 700 - (Date.now() - startedAt));
+    const remaining = Math.max(0, 1800 - (Date.now() - startedAt));
     return remaining ? new Promise(resolve => setTimeout(resolve, remaining)) : Promise.resolve();
   }
 
