@@ -576,10 +576,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   function showHomeView() {
     showInteractiveBackground();
+    document.body.classList.add("home-intro");
     if (activeController) activeController.abort();
     activeController = new AbortController();
     const requestId = ++activeRequestId;
-    const guestVideos = ["1.mp4", "2.mp4", "3.mp4", "4.mp4", "5.mp4"];
+    const guestVideos = ["1.mp4", "2.mp4", "3.mp4", "4.mp4"];
     const homeVideo = guestVideos[Math.floor(Math.random() * guestVideos.length)];
 
     stopHomeSlider();
@@ -612,7 +613,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             : `<video class="home-guest-video" src="./resources/${homeVideo}" autoplay muted loop playsinline preload="metadata" aria-label="Video de presentación"></video>`
           }
         </div>
-        <p class="home-hero-description">WebApp de imágenes estilo Instagram con feed dinámico, scroll infinito, navegación por álbumes, carga optimizada y una experiencia fluida en dispositivos móviles y escritorio.</p>
+        <p class="home-hero-description"></p>
         <cite>– Phpeitor</cite>
       </section>
     `;
@@ -846,6 +847,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   async function fetchAndRender(folder, titleText = "") {
     if (!HAS_TOKEN) return;
+    document.body.classList.remove("home-intro");
     showInteractiveBackground();
     setDownloadActionVisibility(true);
 
@@ -1243,10 +1245,36 @@ document.addEventListener("DOMContentLoaded", async () => {
   const preview = document.getElementById("upload-preview");
   const status = document.getElementById("upload-status");
   const btnUpload = document.getElementById("btn-upload");
+  const uploadProgress = document.getElementById("upload-progress");
+  const uploadProgressTitle = document.getElementById("upload-progress-title");
+  const uploadProgressDetail = document.getElementById("upload-progress-detail");
+  const uploadProgressSteps = Array.from(document.querySelectorAll("[data-upload-step]"));
 
   let uploadTokenValid = false;
   let uploadAlbumOptions = [];
   let selectedUploadFiles = [];
+
+  function setUploadProgress(step, visible = true) {
+    if (!uploadProgress) return;
+    uploadProgress.hidden = !visible;
+    if (!visible) return;
+
+    const progressCopy = {
+      prepare: ["Preparando tus imágenes", "Estamos organizando el destino y preparando los archivos."],
+      send: ["Subiendo tus imágenes", "Enviando los archivos al servidor. Puede tardar un momento."],
+      finish: ["Casi listo", "La carga terminó; estamos confirmando que todo se guardó correctamente."],
+    };
+    const [title, detail] = progressCopy[step] || progressCopy.prepare;
+    if (uploadProgressTitle) uploadProgressTitle.textContent = title;
+    if (uploadProgressDetail) uploadProgressDetail.textContent = detail;
+
+    const steps = ["prepare", "send", "finish"];
+    const activeIndex = steps.indexOf(step);
+    uploadProgressSteps.forEach((item, index) => {
+      item.classList.toggle("done", index < activeIndex);
+      item.classList.toggle("active", index === activeIndex);
+    });
+  }
 
   function setUploadTokenState(valid) {
     uploadTokenValid = valid;
@@ -1506,6 +1534,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (preview) preview.innerHTML = "";
     if (fileSummary) fileSummary.textContent = "Sin archivos seleccionados";
     if (status) status.innerHTML = "";
+    setUploadProgress("prepare", false);
     if (newAlbumName) newAlbumName.value = "";
     if (newFolderName) newFolderName.value = "";
     if (btnUpload) btnUpload.disabled = false;
@@ -1664,6 +1693,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
 
       async function doUpload() {
+        setUploadProgress("prepare");
+        btnUpload.disabled = true;
+        btnUpload.setAttribute("aria-busy", "true");
+
         if (uploadMode === "new" || (subfolder && uploadMode === "existing")) {
           try {
             const formData = new FormData();
@@ -1678,18 +1711,22 @@ document.addEventListener("DOMContentLoaded", async () => {
             const data = await res.json();
             if (!data.ok) {
               status.innerHTML = '<span class="error">Error al crear carpeta: ' + (data.error || "") + '</span>';
+              setUploadProgress("prepare", false);
+              btnUpload.disabled = false;
+              btnUpload.removeAttribute("aria-busy");
               return;
             }
           } catch {
             status.innerHTML = '<span class="error">Error de conexion al crear carpeta</span>';
+            setUploadProgress("prepare", false);
+            btnUpload.disabled = false;
+            btnUpload.removeAttribute("aria-busy");
             return;
           }
         }
 
         // === Subir archivos ===
-        btnUpload.disabled = true;
-        btnUpload.textContent = "Subiendo...";
-        status.innerHTML = '<span class="info">Subiendo archivos...</span>';
+        setUploadProgress("send");
 
         try {
           const formData = new FormData();
@@ -1699,29 +1736,35 @@ document.addEventListener("DOMContentLoaded", async () => {
           }
 
           const res = await fetch("php/upload.php", { method: "POST", body: formData });
+          setUploadProgress("finish");
           const data = await res.json();
 
           if (data.ok) {
+            setUploadProgress("finish", false);
+            clearUploadForm();
             status.innerHTML = '<span class="success">' + data.uploaded + ' archivo(s) subido(s) correctamente</span>';
             if (data.errors?.length) {
               status.innerHTML += '<br><span class="error">' + data.errors.join("<br>") + '</span>';
             }
-            clearUploadForm();
             loadDynamicMenus();
             if (currentFolder && currentTitle) {
               fetchAndRender(currentFolder, currentTitle);
             }
           } else {
+            setUploadProgress("finish", false);
             status.innerHTML = '<span class="error">' + (data.error || "Error al subir") + '</span>';
             if (data.errors?.length) {
               status.innerHTML += '<br><span class="error">' + data.errors.join("<br>") + '</span>';
             }
           }
         } catch (e) {
+          setUploadProgress("finish", false);
           status.innerHTML = '<span class="error">Error: ' + e.message + '</span>';
           console.error(e);
         } finally {
+          setUploadProgress("finish", false);
           btnUpload.disabled = false;
+          btnUpload.removeAttribute("aria-busy");
           btnUpload.innerHTML = '<i class="fa fa-upload"></i> Subir';
         }
       }

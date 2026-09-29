@@ -1,0 +1,19 @@
+<svg viewBox="-6 -4 778 154" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="PHPeitor Media">
+  <title>PHPeitor Media</title>
+  <style>
+    .phpeitor-trace {
+      fill: none; stroke: #F43F5E; stroke-opacity: 1; stroke-width: 1.5;
+      stroke-dasharray: 70 200; vector-effect: non-scaling-stroke;
+      filter: drop-shadow(0 0 3px #F43F5E) drop-shadow(0 0 1px #fff);
+      animation: phpeitor-trace 5s linear infinite;
+    }
+    @keyframes phpeitor-trace { to { stroke-dashoffset: -270px; } }
+    @media (prefers-reduced-motion: reduce) { .phpeitor-trace { display: none; } }
+  </style>
+  <defs>
+    <path id="phpeitor-wordmark" d="M22.993 0.000L94.993 0.000L116.492 28.000L106.501 71.035L72.000 99.035L0.000 99.035Z M44.492 28.000L34.501 71.035L78.501 71.035L88.492 28.000Z M138.993 0.000L238.993 0.000L216.000 99.035L188.000 99.035L196.303 63.272L152.303 63.272L144.000 99.035L116.000 99.035Z M160.606 27.510L158.690 35.763L202.690 35.763L204.606 27.510Z M254.993 0.000L354.993 0.000L348.492 28.000L312.492 28.000L296.000 99.035L268.000 99.035L284.492 28.000L248.492 28.000Z M370.993 0.000L470.993 0.000L448.000 99.035L420.000 99.035L428.303 63.272L384.303 63.272L376.000 99.035L348.000 99.035Z M392.606 27.510L390.690 35.763L434.690 35.763L436.606 27.510Z M486.993 0.000L572.174 0.000L565.787 27.510L509.000 27.510L507.084 35.763L563.871 35.763L549.181 99.035L464.000 99.035L470.387 71.525L527.174 71.525L529.090 63.272L472.303 63.272Z M588.174 0.000L673.355 0.000L666.968 27.510L581.787 27.510Z M579.871 35.763L648.016 35.763L641.629 63.272L573.484 63.272Z M571.568 71.525L656.749 71.525L650.362 99.035L565.181 99.035Z M689.355 0.000L789.355 0.000L782.854 28.000L746.854 28.000L730.362 99.035L702.362 99.035L718.854 28.000L682.854 28.000Z"/>
+  </defs>
+  <use href="#phpeitor-wordmark" fill="#060C3B"/>
+  <text x="330" y="145" fill="#F43F5E" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700" letter-spacing="4">MEDIA</text>
+  <use href="#phpeitor-wordmark" class="phpeitor-trace"/>
+</svg>
