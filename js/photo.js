@@ -723,7 +723,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     previousButton?.addEventListener("click", () => showSlide(activeIndex - 1));
     nextButton?.addEventListener("click", () => showSlide(activeIndex + 1));
 
-    if (!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) {
+    if (!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches)) {
       const pauseRotation = () => {
         if (homeSliderTimer) clearInterval(homeSliderTimer);
         homeSliderTimer = null;
@@ -1299,11 +1299,35 @@ document.addEventListener("DOMContentLoaded", async () => {
   let uploadTokenValid = false;
   let uploadAlbumOptions = [];
   let selectedUploadFiles = [];
+  let uploadProgressTimer = null;
+
+  function stopUploadProgressTicker() {
+    if (uploadProgressTimer !== null) clearTimeout(uploadProgressTimer);
+    uploadProgressTimer = null;
+  }
+
+  function cycleUploadProgressDetails(messages, index = 0) {
+    stopUploadProgressTicker();
+    if (!uploadProgressDetail || !messages.length) return;
+
+    uploadProgressDetail.textContent = messages[index];
+    uploadProgressTimer = setTimeout(() => {
+      cycleUploadProgressDetails(messages, (index + 1) % messages.length);
+    }, 1900);
+  }
+
+  function keepUploadProgressVisible(startedAt) {
+    const remaining = Math.max(0, 700 - (Date.now() - startedAt));
+    return remaining ? new Promise(resolve => setTimeout(resolve, remaining)) : Promise.resolve();
+  }
 
   function setUploadProgress(step, visible = true) {
     if (!uploadProgress) return;
     uploadProgress.hidden = !visible;
-    if (!visible) return;
+    if (!visible) {
+      stopUploadProgressTicker();
+      return;
+    }
 
     const progressCopy = {
       prepare: ["Preparando tus imágenes", "Estamos organizando el destino y preparando los archivos."],
@@ -1739,7 +1763,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
 
       async function doUpload() {
+        const progressStartedAt = Date.now();
         setUploadProgress("prepare");
+        cycleUploadProgressDetails([
+          "Verificando el álbum de destino…",
+          "Preparando tus imágenes para la transferencia…",
+          "Organizando la carga…",
+        ]);
         btnUpload.disabled = true;
         btnUpload.setAttribute("aria-busy", "true");
 
@@ -1757,6 +1787,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             const data = await res.json();
             if (!data.ok) {
               status.innerHTML = '<span class="error">Error al crear carpeta: ' + (data.error || "") + '</span>';
+              await keepUploadProgressVisible(progressStartedAt);
               setUploadProgress("prepare", false);
               btnUpload.disabled = false;
               btnUpload.removeAttribute("aria-busy");
@@ -1764,6 +1795,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
           } catch {
             status.innerHTML = '<span class="error">Error de conexion al crear carpeta</span>';
+            await keepUploadProgressVisible(progressStartedAt);
             setUploadProgress("prepare", false);
             btnUpload.disabled = false;
             btnUpload.removeAttribute("aria-busy");
@@ -1773,6 +1805,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         // === Subir archivos ===
         setUploadProgress("send");
+        cycleUploadProgressDetails([
+          "Enviando imágenes al servidor…",
+          "Transfiriendo tus archivos de forma segura…",
+          "Esperando respuesta del servidor…",
+        ]);
 
         try {
           const formData = new FormData();
@@ -1782,8 +1819,10 @@ document.addEventListener("DOMContentLoaded", async () => {
           }
 
           const res = await fetch("php/upload.php", { method: "POST", body: formData });
+          stopUploadProgressTicker();
           setUploadProgress("finish");
           const data = await res.json();
+          await keepUploadProgressVisible(progressStartedAt);
 
           if (data.ok) {
             setUploadProgress("finish", false);
@@ -1804,6 +1843,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
           }
         } catch (e) {
+          stopUploadProgressTicker();
+          await keepUploadProgressVisible(progressStartedAt);
           setUploadProgress("finish", false);
           status.innerHTML = '<span class="error">Error: ' + e.message + '</span>';
           console.error(e);

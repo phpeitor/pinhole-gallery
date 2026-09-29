@@ -1664,6 +1664,13 @@ body.has-upload-token .gallery-delete-image:focus {
     font-weight: 700;
 }
 
+.upload-progress-title::after {
+    display: inline-block;
+    width: 1.2em;
+    content: "";
+    animation: uploadThinking 1.2s steps(4, end) infinite;
+}
+
 .upload-progress-detail {
     min-height: 22px;
     margin: 7px 0 22px;
@@ -1710,6 +1717,12 @@ body.has-upload-token .gallery-delete-image:focus {
 .upload-progress-steps li.done::before { border-color: #4b9a68; background: #4b9a68; }
 
 @keyframes uploadSpinner { to { transform: rotate(360deg); } }
+@keyframes uploadThinking {
+    0% { content: ""; }
+    25% { content: "."; }
+    50% { content: ".."; }
+    75%, 100% { content: "..."; }
+}
 @keyframes uploadProgressEnter {
     from { opacity: 0; transform: translateY(8px) scale(.98); }
     to { opacity: 1; transform: translateY(0) scale(1); }

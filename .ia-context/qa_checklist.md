@@ -47,3 +47,4 @@
 5. Verificar contraste, foco de teclado, scroll del modal y `prefers-reduced-motion`.
 6. Home con token: una sola historia vertical visible, imagen no achatada, indicadores sincronizados y botones anterior/siguiente funcionales; no emojis flotantes.
 7. Cambiar entre temas claro, oscuro y gradientes actualiza el fondo de Home y galerias.
+8. Confirmar una subida muestra el overlay inmediatamente, anima los puntos, rota mensajes de espera y lo oculta al terminar tanto en exito como en error.
