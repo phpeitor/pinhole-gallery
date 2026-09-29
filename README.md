@@ -180,8 +180,8 @@ Para forzar regeneracion manual de un album, elimina su `.meta.json`. No borres 
 
 ## Desarrollo
 
-1. Mantener PHP procedural simple; no introducir frameworks.
-2. Mantener JS vanilla; no agregar bundlers para cambios puntuales.
+1. Mantener PHP, sin frameworks.
+2. Mantener JS, no agregar bundlers para cambios puntuales.
 3. Preferir cambios pequenos y verificables.
 4. No enlazar `/img` directamente desde HTML/JS.
 5. No versionar `.env`, `vendor/`, imagenes privadas, thumbnails ni caches generados.

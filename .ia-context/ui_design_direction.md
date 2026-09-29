@@ -30,6 +30,7 @@ Los tokens CSS viven en `css/index.css` como variables `--pixitor-*`. Mantener e
 ## Inicio y video invitado
 
 - El video es el foco principal de Inicio; eliminar firma redundante y textos vacios alrededor.
+- Elegir solo videos existentes en `resources/` y usar fallback entre ellos ante `error`/timeout; nunca dejar un panel negro sin feedback.
 - Leer `videoWidth`/`videoHeight` al dispararse `loadedmetadata` y adaptar el marco respetando esa proporcion.
 - Ajustar tamano a viewport, sin letterboxing artificial ni recorte; el video debe llenar el marco y mantenerse completo.
 - Al cambiar a un album, retirar listeners de resize asociados al video de Inicio.
@@ -41,7 +42,7 @@ Los tokens CSS viven en `css/index.css` como variables `--pixitor-*`. Mantener e
 ## Modales y feedback
 
 - Acceso por token: formulario corto, input oscuro con foco lila, boton lima y spinner inline durante validacion; conservar el panel abierto cuando falle para facilitar reintento.
-- Reemplazar el candado 3D flotante por un icono pequeño estatico; un acento verde/lima y check comunican desbloqueo durante la transicion.
+- Conservar la imagen existente del candado, pero pequena y estatica mientras esta bloqueado; recuperar color y un micro movimiento solo durante el desbloqueo.
 - La referencia “En colaboración con WordPress” es metadata secundaria: tamano pequeño, color atenuado, sin protagonismo.
 - Modal de subida: panel tinta, borde fino recto, sombra corta dura, tabs/inputs claramente diferenciados y botones de alto contraste.
 - Confirmaciones Alertify deben seguir el mismo lenguaje de panel/papel; evitar dialogo blanco generico con radios grandes.

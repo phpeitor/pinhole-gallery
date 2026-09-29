@@ -56,6 +56,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   let downloadResetTimer = null;
   let homeSliderTimer = null;
   let homeVideoResizeHandler = null;
+  let homeVideoLoadTimer = null;
   const tokenLockTimers = {};
   const menuRouteMap = new Map();
 
@@ -271,7 +272,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   function showUnlockedLockBeforeReload(btnToken) {
     HAS_TOKEN = true;
     document.body.classList.add("has-token", "pinhole-unlocking", "pinhole-sidebar-open");
-    document.querySelector(".access-lock-icon")?.classList.replace("fa-lock", "fa-unlock-alt");
     if (galleryTokenStatus) galleryTokenStatus.innerHTML = '<span class="success"><i class="fa fa-check-circle" aria-hidden="true"></i> Acceso confirmado. Preparando tu galería…</span>';
     if (btnToken) {
       btnToken.disabled = true;
@@ -631,10 +631,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     showInteractiveBackground();
     document.body.classList.add("home-intro");
     document.body.classList.remove("home-story-ready");
+    if (homeVideoLoadTimer) {
+      clearTimeout(homeVideoLoadTimer);
+      homeVideoLoadTimer = null;
+    }
+    if (homeVideoResizeHandler) {
+      window.removeEventListener("resize", homeVideoResizeHandler);
+      homeVideoResizeHandler = null;
+    }
     if (activeController) activeController.abort();
     activeController = new AbortController();
     const requestId = ++activeRequestId;
-    const guestVideos = ["1.mp4", "2.mp4", "3.mp4", "4.mp4"];
+    const guestVideos = ["2.mp4", "3.mp4", "4.mp4", "5.mp4"];
     const homeVideo = guestVideos[Math.floor(Math.random() * guestVideos.length)];
 
     stopHomeSlider();
@@ -664,7 +672,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         <div class="home-hero-slider is-loading" aria-label="Imágenes destacadas aleatorias">
           ${HAS_TOKEN
             ? `<div class="home-hero-slider-loader">Cargando recuerdos...</div>`
-            : `<video class="home-guest-video" src="./resources/${homeVideo}" autoplay muted loop playsinline preload="metadata" aria-label="Video de presentación"></video>`
+            : `<video class="home-guest-video" src="./resources/${homeVideo}" autoplay muted loop playsinline preload="auto" aria-label="Video de presentación"></video>`
           }
         </div>
       </section>
@@ -674,11 +682,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       loadHomeSlider(requestId, activeController.signal);
     } else {
       const slider = galleryContainer.querySelector(".home-hero-slider");
-      slider?.classList.remove("is-loading");
       slider?.classList.add("is-guest-video");
       const video = slider?.querySelector(".home-guest-video");
       if (video && slider) {
-        if (homeVideoResizeHandler) window.removeEventListener("resize", homeVideoResizeHandler);
+        const attemptedVideos = new Set([homeVideo]);
+        const clearVideoLoadTimer = () => {
+          if (homeVideoLoadTimer) clearTimeout(homeVideoLoadTimer);
+          homeVideoLoadTimer = null;
+        };
         homeVideoResizeHandler = () => {
           if (!video.videoWidth || !video.videoHeight) return;
           const ratio = video.videoWidth / video.videoHeight;
@@ -688,9 +699,41 @@ document.addEventListener("DOMContentLoaded", async () => {
           slider.style.width = `${width}px`;
           slider.style.height = `${width / ratio}px`;
         };
-        video.addEventListener("loadedmetadata", homeVideoResizeHandler, { once: true });
+        const showVideoFallback = () => {
+          clearVideoLoadTimer();
+          if (homeVideoResizeHandler) window.removeEventListener("resize", homeVideoResizeHandler);
+          homeVideoResizeHandler = null;
+          slider.classList.remove("is-loading");
+          slider.classList.add("has-video-error");
+          slider.innerHTML = '<div class="home-video-fallback"><i class="fa fa-film" aria-hidden="true"></i><span>El video no está disponible</span><small>Vuelve a intentarlo más tarde.</small></div>';
+        };
+        const tryNextVideo = () => {
+          clearVideoLoadTimer();
+          const nextVideo = guestVideos.find(source => !attemptedVideos.has(source));
+          if (!nextVideo) {
+            showVideoFallback();
+            return;
+          }
+          attemptedVideos.add(nextVideo);
+          video.src = `./resources/${nextVideo}`;
+          video.load();
+          homeVideoLoadTimer = setTimeout(tryNextVideo, 10000);
+        };
+
+        video.addEventListener("loadedmetadata", homeVideoResizeHandler);
+        video.addEventListener("loadeddata", () => {
+          clearVideoLoadTimer();
+          slider.classList.remove("is-loading");
+          const playback = video.play();
+          playback?.catch(error => {
+            if (error.name === "NotAllowedError") video.controls = true;
+            else if (error.name !== "AbortError") tryNextVideo();
+          });
+        }, { once: true });
+        video.addEventListener("error", tryNextVideo);
         homeVideoResizeHandler();
         window.addEventListener("resize", homeVideoResizeHandler, { passive: true });
+        homeVideoLoadTimer = setTimeout(tryNextVideo, 10000);
       }
     }
   }
@@ -943,6 +986,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   async function fetchAndRender(folder, titleText = "") {
     if (!HAS_TOKEN) return;
     document.body.classList.remove("home-intro");
+    if (homeVideoLoadTimer) {
+      clearTimeout(homeVideoLoadTimer);
+      homeVideoLoadTimer = null;
+    }
     if (homeVideoResizeHandler) {
       window.removeEventListener("resize", homeVideoResizeHandler);
       homeVideoResizeHandler = null;

@@ -10,9 +10,9 @@ Pixitor evoluciona hacia una identidad minimalista de archivo digital retro/pixe
 
 La marca vigente es el SVG `resources/phpeitor-pixsvg.svg`: “MEDIA” como palabra principal y el trazado original de “PHPEITOR” debajo. `resources/phpeitor-dataset.svg` es referencia de la composicion/tipo original, no sustituye el SVG activo.
 
-En Inicio, el video invitado conserva su proporcion intrinseca y se dimensiona por metadatos para llenar el marco sin bandas negras ni recorte. La firma “– Phpeitor” se omite; la marca vive en el logotipo del encabezado. Con token, el slider de recuerdos usa una sola tarjeta vertical estilo Stories, con indicadores y controles discretos, sin emojis flotantes.
+En Inicio, el video invitado usa los clips existentes `resources/2.mp4` a `resources/5.mp4`, conserva su proporcion intrinseca y se dimensiona por metadatos para llenar el marco sin bandas negras ni recorte. Si un clip falla, prueba los restantes y termina en un estado de error visible en vez de dejar un recuadro negro. La firma “– Phpeitor” se omite; la marca vive en el logotipo del encabezado. Con token, el slider de recuerdos usa una sola tarjeta vertical estilo Stories, con indicadores y controles discretos, sin emojis flotantes.
 
-El acceso por token usa un panel compacto: spinner inline mientras se valida, el formulario conserva el panel abierto ante error y el bloqueo visual es un icono pequeno estatico con confirmacion sutil al desbloquear. La referencia WordPress es metadata secundaria, no contenido destacado.
+El acceso por token usa un panel compacto: spinner inline mientras se valida, el formulario conserva el panel abierto ante error y la imagen del candado se mantiene pequena/estatica hasta una transicion sutil de desbloqueo. La referencia WordPress es metadata secundaria, no contenido destacado.
 
 Los fondos de Inicio y galeria deben reaccionar al tema activo mediante `--interactive-bg`; no fijar el fondo globalmente al color base retro.
 
