@@ -159,6 +159,7 @@ La eliminacion requiere sesion de `UPLOAD_TOKEN` activa y pasa por `php/delete_i
 4. La barra superior muestra cerrar sesion en Home y agrega descarga cuando hay album activo.
 5. El logo se mantiene como Pixitor y cambia de contraste por CSS segun tema.
 6. El fondo interactivo pausa en pestañas ocultas, limita su frecuencia a 30 FPS y actualiza el color de glifos sin reconstruir la simulacion al cambiar de tema.
+7. El panel de acceso por token usa spinner inline, conserva el formulario ante errores y presenta WordPress como credito discreto.
 
 ## Operación
 

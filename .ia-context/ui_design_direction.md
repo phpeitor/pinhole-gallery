@@ -35,10 +35,14 @@ Los tokens CSS viven en `css/index.css` como variables `--pixitor-*`. Mantener e
 - Al cambiar a un album, retirar listeners de resize asociados al video de Inicio.
 - Con token, mostrar una sola historia vertical estilo Instagram, no una pila horizontal/achatada: foto protagonista, barras de progreso por elemento, contador y controles prev/next accesibles.
 - Eliminar emojis flotantes y adornos/reacciones simuladas. Usar `object-fit: cover` en las historias verticales para llenar el marco.
+- Controles anterior/siguiente del slider: controles circulares de 44 px, translúcidos, ubicados hacia los bordes del story; neutralizar `min-width` heredado del tema y conservar foco visible/área táctil.
 - Sin token, conservar el video en su propia proporcion y su tarjeta papel/retro sencilla.
 
 ## Modales y feedback
 
+- Acceso por token: formulario corto, input oscuro con foco lila, boton lima y spinner inline durante validacion; conservar el panel abierto cuando falle para facilitar reintento.
+- Reemplazar el candado 3D flotante por un icono pequeño estatico; un acento verde/lima y check comunican desbloqueo durante la transicion.
+- La referencia “En colaboración con WordPress” es metadata secundaria: tamano pequeño, color atenuado, sin protagonismo.
 - Modal de subida: panel tinta, borde fino recto, sombra corta dura, tabs/inputs claramente diferenciados y botones de alto contraste.
 - Confirmaciones Alertify deben seguir el mismo lenguaje de panel/papel; evitar dialogo blanco generico con radios grandes.
 - Progreso de subida: overlay a nivel de viewport con spinner, puntos animados, pasos “Preparando / Enviando / Finalizando” y mensajes rotativos con `setTimeout` mientras se espera. Mantenerlo visible al menos 1800 ms para cargas instantaneas; no inventar porcentaje si el transporte no lo mide. No anidar el overlay dentro del contenido scrollable del modal.

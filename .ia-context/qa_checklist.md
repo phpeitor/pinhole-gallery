@@ -14,6 +14,8 @@
 3. Token invalido: debe rechazar y mostrar feedback.
 4. Token valido: debe desbloquear y permitir navegar galerias.
 5. Logout: debe cerrar sesion y ocultar acciones de galeria.
+6. Token valido: boton de acceso muestra spinner durante validacion y estado de desbloqueo breve; icono pequeño cambia a check/unlock.
+7. Token invalido o error de red: spinner termina, error legible aparece y panel queda abierto para reintentar.
 
 ## Galeria
 
@@ -48,8 +50,9 @@
 4. Modal de subida, confirmacion Alertify y overlay de progreso comparten el lenguaje retro/pixel: superficies tinta/papel, bordes rectos y sombra dura sutil.
 5. Verificar contraste, foco de teclado, scroll del modal y `prefers-reduced-motion`.
 6. Home con token: una sola historia vertical visible, imagen no achatada, indicadores sincronizados y botones anterior/siguiente funcionales; no emojis flotantes.
-7. Cambiar entre temas claro, oscuro y gradientes actualiza el fondo de Home y galerias.
-8. Confirmar una subida muestra el overlay inmediatamente, anima los puntos, rota mensajes de espera y lo oculta al terminar tanto en exito como en error.
-9. Cambiar color durante la animacion recolorea glifos sin congelar/reiniciar la simulacion; al cambiar pestaña, la animacion se pausa y luego se reanuda.
-10. El cambio de tema actualiza color de fondo y glifos sin duplicar loops RAF.
-11. `php/public_config.php` solo entrega endpoints/limites publicos; revisar que ningun token aparezca en HTML, JS ni respuesta de config.
+7. Controles anterior/siguiente permanecen circulares (44 × 44 px), no se estiran por el CSS global del tema y conservan foco visible/área táctil.
+8. Cambiar entre temas claro, oscuro y gradientes actualiza el fondo de Home y galerias.
+9. Confirmar una subida muestra el overlay inmediatamente, anima los puntos, rota mensajes de espera y lo oculta al terminar tanto en exito como en error.
+10. Cambiar color durante la animacion recolorea glifos sin congelar/reiniciar la simulacion; al cambiar pestaña, la animacion se pausa y luego se reanuda.
+11. El cambio de tema actualiza color de fondo y glifos sin duplicar loops RAF.
+12. `php/public_config.php` solo entrega endpoints/limites publicos; revisar que ningun token aparezca en HTML, JS ni respuesta de config.

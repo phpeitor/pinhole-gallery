@@ -12,6 +12,8 @@ La marca vigente es el SVG `resources/phpeitor-pixsvg.svg`: “MEDIA” como pal
 
 En Inicio, el video invitado conserva su proporcion intrinseca y se dimensiona por metadatos para llenar el marco sin bandas negras ni recorte. La firma “– Phpeitor” se omite; la marca vive en el logotipo del encabezado. Con token, el slider de recuerdos usa una sola tarjeta vertical estilo Stories, con indicadores y controles discretos, sin emojis flotantes.
 
+El acceso por token usa un panel compacto: spinner inline mientras se valida, el formulario conserva el panel abierto ante error y el bloqueo visual es un icono pequeno estatico con confirmacion sutil al desbloquear. La referencia WordPress es metadata secundaria, no contenido destacado.
+
 Los fondos de Inicio y galeria deben reaccionar al tema activo mediante `--interactive-bg`; no fijar el fondo globalmente al color base retro.
 
 La animacion interactiva limita la simulacion a 30 FPS, usa una malla adaptativa de bajo costo, pausa con pestañas ocultas y recolorea los glifos sin reconstruir particulas al cambiar el tema. Evitar agregar listeners por particula/constraint.

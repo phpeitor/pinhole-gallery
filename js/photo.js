@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const CHUNK = Number.isInteger(configuredPageSize) && configuredPageSize > 0
     ? Math.min(configuredPageSize, 50)
     : 12;
-  const UNLOCK_REDIRECT_DELAY = 2200;
+  const UNLOCK_REDIRECT_DELAY = 1300;
   const API = {
     tokenValidate: "php/token_validate.php",
     checkToken: "php/check_token.php",
@@ -60,6 +60,21 @@ document.addEventListener("DOMContentLoaded", async () => {
   const menuRouteMap = new Map();
 
   const HOME_HASHES = new Set(["", "/", "home", "inicio", "viewall"]);
+  const galleryTokenForm = document.getElementById("mc-embedded-subscribe-form");
+  const galleryTokenInput = document.getElementById("token");
+  const galleryTokenButton = document.getElementById("btn_token");
+  const galleryTokenButtonLabel = galleryTokenButton?.querySelector(".token-button-label");
+  const galleryTokenStatus = document.getElementById("mce-responses");
+
+  function setGalleryTokenLoading(loading, label = loading ? "Validando" : "Ingresar") {
+    galleryTokenForm?.classList.toggle("is-validating", loading);
+    if (galleryTokenInput) galleryTokenInput.disabled = loading;
+    if (galleryTokenButton) {
+      galleryTokenButton.disabled = loading;
+      galleryTokenButton.toggleAttribute("aria-busy", loading);
+    }
+    if (galleryTokenButtonLabel) galleryTokenButtonLabel.textContent = label;
+  }
 
   // Evita que el script del tema vuelva a tomar control del layout de esta galería.
   galleryContainer?.classList.remove("pinhole-masonry", "pinhole-grid");
@@ -161,6 +176,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     document.body.classList.add("pinhole-sidebar-open");
     input?.classList.add("input-error");
+    setGalleryTokenLoading(false, "Bloqueado");
     if (btnToken) btnToken.disabled = true;
     if (!tokenStatus) return;
 
@@ -174,20 +190,21 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (countdownEl) countdownEl.textContent = formatRetryAfter(remaining);
       },
       onDone: () => {
-        if (btnToken) btnToken.disabled = false;
+        setGalleryTokenLoading(false);
         input?.classList.remove("input-error");
         tokenStatus.innerHTML = '<span class="info">Ya puedes intentar nuevamente</span>';
       }
     });
   }
 
-  document.getElementById("mc-embedded-subscribe-form")
-    ?.addEventListener("submit", async (e) => {
+  galleryTokenForm?.addEventListener("submit", async (e) => {
       e.preventDefault();
-      const input = document.getElementById("token");
-      const btnToken = document.getElementById("btn_token");
-      const tokenStatus = document.getElementById("mce-responses");
+      const input = galleryTokenInput;
+      const btnToken = galleryTokenButton;
+      const tokenStatus = galleryTokenStatus;
       const token = input.value.trim();
+      let keepLocked = false;
+      let keepUnlocking = false;
       input.classList.remove("input-error");
       if (tokenStatus) tokenStatus.innerHTML = "";
 
@@ -196,6 +213,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         input.focus();
         return;
       }
+
+      setGalleryTokenLoading(true, "Validando");
+      if (tokenStatus) tokenStatus.innerHTML = '<span class="info">Comprobando acceso seguro…</span>';
 
       try {
         const res = await fetch(API.tokenValidate, {
@@ -206,12 +226,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         const data = await res.json();
 
         if (data.ok) {
+          keepUnlocking = true;
           showUnlockedLockBeforeReload(btnToken);
         } else if (data.locked) {
+          keepLocked = true;
           showGalleryTokenLock(data.retryAfter);
           alertify.error("Demasiados intentos. Intenta nuevamente en unos minutos");
         } else {
-          document.body.classList.remove("pinhole-sidebar-open");
           input.classList.add("input-error");
           input.focus();
           const message = data.attemptsLeft !== undefined
@@ -224,7 +245,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         }
       } catch (err) {
         console.error(err);
-        alertify.error("Error validando token");
+        if (tokenStatus) tokenStatus.innerHTML = '<span class="error"><i class="fa fa-info-circle" aria-hidden="true"></i> No se pudo validar. Revisa tu conexión e intenta de nuevo.</span>';
+      } finally {
+        if (!keepLocked && !keepUnlocking) setGalleryTokenLoading(false);
       }
     });
 
@@ -248,9 +271,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   function showUnlockedLockBeforeReload(btnToken) {
     HAS_TOKEN = true;
     document.body.classList.add("has-token", "pinhole-unlocking", "pinhole-sidebar-open");
+    document.querySelector(".access-lock-icon")?.classList.replace("fa-lock", "fa-unlock-alt");
+    if (galleryTokenStatus) galleryTokenStatus.innerHTML = '<span class="success"><i class="fa fa-check-circle" aria-hidden="true"></i> Acceso confirmado. Preparando tu galería…</span>';
     if (btnToken) {
       btnToken.disabled = true;
-      btnToken.value = "Desbloqueado";
+      btnToken.setAttribute("aria-busy", "true");
+      if (galleryTokenButtonLabel) galleryTokenButtonLabel.textContent = "Abriendo";
     }
     alertify.success("Token correcto. Desbloqueando galeria...");
     setTimeout(() => {
