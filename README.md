@@ -17,17 +17,6 @@
 5. La metadata y thumbnails se generan bajo demanda para mantener el sitio rapido.
 6. El proyecto corre actualmente bajo `/gallery/`, por eso se usan rutas relativas o absolutas con ese prefijo cuando aplica.
 
-## Stack
-
-1. PHP 8+ procedural.
-2. Composer con `vlucas/phpdotenv`.
-3. JavaScript vanilla.
-4. CSS tradicional sin build step.
-5. Masonry para layout de galeria.
-6. PhotoSwipe para lightbox.
-7. GD de PHP para thumbnails WebP.
-8. Extension `zip` de PHP para descargas masivas.
-
 ## Requisitos
 
 1. PHP 8x o superior.
@@ -218,7 +207,3 @@ Validaciones manuales:
 5. Subida, preview y eliminacion de imagenes.
 6. Descarga ZIP de album activo.
 7. Acceso directo a `/gallery/img/`, `/gallery/js/`, `/gallery/css/` y rutas inexistentes.
-
-## Licencia
-
-Uso interno o personal segun necesidades del proyecto.

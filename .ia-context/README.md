@@ -17,6 +17,7 @@ Carpeta de contexto operativo para que los agentes mantengan continuidad entre i
 4. Autenticacion privada por token en sesion PHP.
 5. Recursos estaticos en `resources/`, galerias en `img/` y endpoints en `php/`.
 6. Direccion visual Pixitor minimalista retro/pixel: consultar `ui_design_direction.md` antes de modificar Home, modales o marca.
+7. Configuracion de entorno: `.env.example` es la plantilla versionable; los valores reales viven en `.env`, y `php/public_config.php` solo publica rutas/opciones no sensibles.
 
 ## Regla principal
 

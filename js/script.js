@@ -138,8 +138,7 @@ function main() {
   const ctx = c.getContext('2d');
 
   const particles = [];
-  const constraints = [], verticalConstraints = [], horizontalConstraints = [];
-  const pinnedParticles = [];
+  const constraints = [];
 
   input = new Input({ c, particles });
 
@@ -156,7 +155,6 @@ function main() {
 
       const particle = new Particle({ x, y, pinned, id, char })
       particles.push(particle);
-      if (pinned) pinnedParticles.push(particle);
     }
   }
 
@@ -186,7 +184,6 @@ function main() {
         });
 
         constraints.push(hc);
-        horizontalConstraints.push(hc);
       }
     }
   }
@@ -201,8 +198,8 @@ function main() {
   }
 
   function drawCode() {
-    const offsetX = (c.width / dpr - width) / 2;      // logical px
-    const offsetY = (c.height / dpr - height) / 2 - 30; // logical px
+    const offsetX = (c.width / dpr - CONFIG.awidth) / 2;      // logical px
+    const offsetY = (c.height / dpr - CONFIG.aheight) / 2 - 30; // logical px
 
     particles.forEach(p => {
       if (!p.char || p.char === ' ') return;
@@ -535,4 +532,6 @@ window.refreshInteractiveBackground = () => {
   syncBackgroundAnimation();
 };
 
-setTimeout(() => main(), 500);
+requestAnimationFrame(() => {
+  if (!refreshGlyphs) main();
+});

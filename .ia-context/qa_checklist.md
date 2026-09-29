@@ -51,3 +51,5 @@
 7. Cambiar entre temas claro, oscuro y gradientes actualiza el fondo de Home y galerias.
 8. Confirmar una subida muestra el overlay inmediatamente, anima los puntos, rota mensajes de espera y lo oculta al terminar tanto en exito como en error.
 9. Cambiar color durante la animacion recolorea glifos sin congelar/reiniciar la simulacion; al cambiar pestaña, la animacion se pausa y luego se reanuda.
+10. El cambio de tema actualiza color de fondo y glifos sin duplicar loops RAF.
+11. `php/public_config.php` solo entrega endpoints/limites publicos; revisar que ningun token aparezca en HTML, JS ni respuesta de config.

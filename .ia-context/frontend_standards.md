@@ -28,7 +28,9 @@
 10. Mantener la marca en `resources/phpeitor-pixsvg.svg`; no volver a introducir la firma “– Phpeitor” bajo el video.
 11. El slider de Inicio autenticado es una historia vertical por vez, con progreso por imagen y navegacion accesible; no apilar tarjetas horizontales ni agregar reacciones emoji decorativas.
 12. El fondo debe leer el tema activo (`--interactive-bg`), no quedar fijado a un color retro estatico.
-13. Optimizar imagenes/video por atributos HTML primero antes de hacks CSS.
+13. El fondo interactivo debe pausar en pestañas ocultas, limitar carga/frecuencia y recolorear glifos sin reconstruir la simulacion al cambiar de tema.
+14. Consumir URLs/limites publicos desde `window.PIXITOR_CONFIG`; nunca colocar tokens ni valores secretos en JS/config publico.
+15. Optimizar imagenes/video por atributos HTML primero antes de hacks CSS.
 
 ## HTML
 

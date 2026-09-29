@@ -16,7 +16,7 @@
 - Texto atenuado: `#aaa5b7`
 - Sombra pixel: desplazamiento corto, sin blur grande (ej. `6px 6px 0 #0c0b11`)
 
-Los tokens CSS viven en `css/index.css` como variables `--pixitor-*`. Mantener el fondo de codigo animado muy tenue para que no compita con fotos ni texto. El fondo debe seguir usando `--interactive-bg` para reflejar el tema activo; no fijarlo al color tinta.
+Los tokens CSS viven en `css/index.css` como variables `--pixitor-*`. Mantener el fondo de codigo animado muy tenue para que no compita con fotos ni texto. El fondo debe seguir usando `--interactive-bg` para reflejar el tema activo; no fijarlo al color tinta. La simulacion de canvas se limita a 30 FPS, reduce densidad de malla y pausa cuando la pestaña no esta visible. El cambio de tema recolorea los glifos existentes sin reiniciar particulas ni crear loops RAF duplicados.
 
 ## Marca
 

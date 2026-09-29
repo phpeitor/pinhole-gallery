@@ -14,6 +14,7 @@
 10. Leer secretos y parametros de despliegue desde `php/bootstrap.php`/`.env`; usar `safeLoad()` y defaults validados.
 11. Mantener `.env.example` completo y sin credenciales reales; nunca exponer `appConfig()` completo al navegador.
 12. Los endpoints publicos del frontend se entregan solo mediante `php/public_config.php`; usar `appEndpointUrl()` para generar rutas consistentes.
+13. Valores por defecto/configuracion configurable se agregan a `appConfig()` y `.env.example`; si corresponden a secretos, viven solo en `.env`.
 
 ## Sesion y seguridad
 
