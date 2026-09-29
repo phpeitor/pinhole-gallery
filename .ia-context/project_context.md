@@ -14,6 +14,10 @@ En Inicio, el video invitado conserva su proporcion intrinseca y se dimensiona p
 
 Los fondos de Inicio y galeria deben reaccionar al tema activo mediante `--interactive-bg`; no fijar el fondo globalmente al color base retro.
 
+La animacion interactiva limita la simulacion a 30 FPS, usa una malla adaptativa de bajo costo, pausa con pestañas ocultas y recolorea los glifos sin reconstruir particulas al cambiar el tema. Evitar agregar listeners por particula/constraint.
+
+La configuracion PHP central vive en `php/bootstrap.php` y su plantilla completa es `.env.example`. `.env` local permanece ignorado y contiene los secretos reales. `php/public_config.php` expone unicamente rutas de endpoints y valores publicos; nunca tokens/secretos.
+
 ## Flujo principal
 
 1. El usuario abre `index.html`.
@@ -32,15 +36,16 @@ Los fondos de Inicio y galeria deben reaccionar al tema activo mediante `--inter
 1. `index.html`: markup base, menus, contenedor de galeria y dependencias del tema.
 2. `js/photo.js`: estado de sesion, rutas hash, menus, render de galeria, Masonry, PhotoSwipe, descarga y Home.
 3. `css/index.css`: sobreescrituras UX/responsive y sistema visual retro de Pixitor.
-4. `php/bootstrap.php`: carga Composer y variables `.env`.
-5. `php/token_validate.php`: login por token.
-6. `php/check_token.php`: validacion de sesion activa.
-7. `php/list.php`: listado paginado de imagenes con cache de metadata y thumbnails.
-8. `php/media.php`: sirve imagenes y thumbnails solo con sesion valida; `/img` no debe usarse directo desde frontend.
-9. `php/gallery_media.php`: helper de thumbnails WebP y rutas relativas.
-10. `php/home_slider.php`: imagenes aleatorias para Home.
-11. `php/menu.php`: construccion de estructura de menu desde carpetas.
-12. `php/zip.php`: descarga ZIP de carpeta.
+4. `php/bootstrap.php`: carga Composer, `.env`, configuracion tipada y sesiones seguras.
+5. `php/public_config.php`: expone al frontend rutas/limites publicos sin secretos.
+6. `php/token_validate.php`: login por token.
+7. `php/check_token.php`: validacion de sesion activa.
+8. `php/list.php`: listado paginado de imagenes con cache de metadata y thumbnails.
+9. `php/media.php`: sirve imagenes y thumbnails solo con sesion valida; `/img` no debe usarse directo desde frontend.
+10. `php/gallery_media.php`: helper de thumbnails WebP y rutas relativas.
+11. `php/home_slider.php`: imagenes aleatorias para Home.
+12. `php/menu.php`: construccion de estructura de menu desde carpetas.
+13. `php/zip.php`: descarga ZIP de carpeta.
 
 ## Restricciones de arquitectura
 

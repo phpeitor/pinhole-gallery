@@ -1,9 +1,10 @@
 <?php
 declare(strict_types=1);
 
-if (session_status() !== PHP_SESSION_ACTIVE) {
-  session_start();
-}
+require_once __DIR__ . '/bootstrap.php';
+$appConfig = appConfig();
+
+startAppSession();
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -63,10 +64,19 @@ $allowed = [
   'png' => 'image/png',
   'webp' => 'image/webp',
 ];
+$allowed = array_intersect_key($allowed, array_flip($appConfig['upload']['allowed_extensions']));
 
 $files = $_FILES['files'];
 $uploaded = 0;
 $errors = [];
+$fileCount = is_array($files['name']) ? count($files['name']) : 1;
+$maxFileSizeBytes = $appConfig['upload']['max_file_size_mb'] * 1024 * 1024;
+
+if ($fileCount > $appConfig['upload']['max_files']) {
+  http_response_code(413);
+  echo json_encode(['ok' => false, 'error' => 'Se permiten hasta ' . $appConfig['upload']['max_files'] . ' archivos por carga']);
+  exit;
+}
 
 function uploadErrorMessage(int $code): string {
   return match ($code) {
@@ -89,6 +99,11 @@ if (is_array($files['name'])) {
       continue;
     }
 
+    if ($maxFileSizeBytes > 0 && (int)$files['size'][$i] > $maxFileSizeBytes) {
+      $errors[] = $files['name'][$i] . ': El archivo excede el maximo de ' . $appConfig['upload']['max_file_size_mb'] . ' MB';
+      continue;
+    }
+
     $ext = strtolower(pathinfo($files['name'][$i], PATHINFO_EXTENSION));
     if (!isset($allowed[$ext])) {
       $errors[] = $files['name'][$i] . ': Tipo de archivo no permitido';
@@ -105,6 +120,8 @@ if (is_array($files['name'])) {
 } else {
   if ($files['error'] !== UPLOAD_ERR_OK) {
     $errors[] = $files['name'] . ': ' . uploadErrorMessage((int)$files['error']);
+  } elseif ($maxFileSizeBytes > 0 && (int)$files['size'] > $maxFileSizeBytes) {
+    $errors[] = $files['name'] . ': El archivo excede el maximo de ' . $appConfig['upload']['max_file_size_mb'] . ' MB';
   } else {
     $ext = strtolower(pathinfo($files['name'], PATHINFO_EXTENSION));
     if (!isset($allowed[$ext])) {

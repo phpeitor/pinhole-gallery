@@ -31,6 +31,8 @@
 2. Endpoints JSON deben conservar `Content-Type` correcto.
 3. Carpetas invalidas o con `..` deben ser bloqueadas.
 4. Cambios en imagenes deben invalidar `.meta.json` cuando aplique.
+5. `.env.example` contiene claves/placeholders sin valores secretos; `php/public_config.php` nunca incluye tokens.
+6. Endpoints usan `startAppSession()` y el cambio de TTL/rate-limit/thumbs respeta valores de `.env`.
 
 ## Responsive
 
@@ -48,3 +50,4 @@
 6. Home con token: una sola historia vertical visible, imagen no achatada, indicadores sincronizados y botones anterior/siguiente funcionales; no emojis flotantes.
 7. Cambiar entre temas claro, oscuro y gradientes actualiza el fondo de Home y galerias.
 8. Confirmar una subida muestra el overlay inmediatamente, anima los puntos, rota mensajes de espera y lo oculta al terminar tanto en exito como en error.
+9. Cambiar color durante la animacion recolorea glifos sin congelar/reiniciar la simulacion; al cambiar pestaña, la animacion se pausa y luego se reanuda.

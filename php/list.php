@@ -4,10 +4,9 @@ declare(strict_types=1);
 header('Content-Type: application/json; charset=utf-8');
 
 require_once __DIR__ . '/gallery_media.php';
+$galleryConfig = appConfig()['gallery'];
 
-if (session_status() !== PHP_SESSION_ACTIVE) {
-  session_start();
-}
+startAppSession();
 
 if (
   empty($_SESSION['gallery_token']) ||
@@ -26,7 +25,7 @@ if ($folder === '' || str_contains($folder, '..')) {
 }
 
 $offset = max(0, (int)($_GET['offset'] ?? 0));
-$limit  = min(50, max(1, (int)($_GET['limit'] ?? 10)));
+$limit  = min($galleryConfig['max_page_size'], max(1, (int)($_GET['limit'] ?? $galleryConfig['page_size'])));
 
 $basePath = realpath(__DIR__ . '/../img');
 $baseDir  = __DIR__ . '/../img/' . $folder;
@@ -45,7 +44,7 @@ if (!is_dir($baseDir)) {
 
 $cacheFile = $baseDir . '/.meta.json';
 $thumbDir = $baseDir . '/.thumbs';
-$cacheVersion = 2;
+$cacheVersion = 3;
 
 $files = glob($baseDir . "/*.{jpg,JPG,jpeg,JPEG,png,PNG,webp,WEBP}", GLOB_BRACE) ?: [];
 natsort($files);
@@ -72,8 +71,10 @@ if (file_exists($cacheFile)) {
 
 // cache válido?
 $useCache = is_array($cache)
-  && isset($cache['cacheVersion'], $cache['maxMtime'], $cache['filesSignature'], $cache['items'])
+  && isset($cache['cacheVersion'], $cache['maxMtime'], $cache['filesSignature'], $cache['thumbWidth'], $cache['thumbQuality'], $cache['items'])
   && (int)$cache['cacheVersion'] === $cacheVersion
+  && (int)$cache['thumbWidth'] === $galleryConfig['thumb_width']
+  && (int)$cache['thumbQuality'] === $galleryConfig['thumb_quality']
   && (int)$cache['maxMtime'] === (int)$maxMtime
   && (string)$cache['filesSignature'] === $filesSignature
   && is_array($cache['items']);
@@ -101,7 +102,8 @@ if ($useCache) {
     "cacheVersion" => $cacheVersion,
     "maxMtime" => $maxMtime,
     "filesSignature" => $filesSignature,
-    "thumbWidth" => GALLERY_THUMB_WIDTH,
+    "thumbWidth" => $galleryConfig['thumb_width'],
+    "thumbQuality" => $galleryConfig['thumb_quality'],
     "items" => $allItems
   ], JSON_UNESCAPED_SLASHES));
 }

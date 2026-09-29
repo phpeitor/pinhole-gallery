@@ -8,8 +8,34 @@ document.addEventListener("DOMContentLoaded", async () => {
   const THUMB_WIDTH = 378;
   const FALLBACK_WIDTH = 1920;
   const FALLBACK_HEIGHT = 1280;
-  const CHUNK = 12;
+  const configuredPageSize = Number(window.PIXITOR_CONFIG?.pageSize);
+  const CHUNK = Number.isInteger(configuredPageSize) && configuredPageSize > 0
+    ? Math.min(configuredPageSize, 50)
+    : 12;
   const UNLOCK_REDIRECT_DELAY = 2200;
+  const API = {
+    tokenValidate: "php/token_validate.php",
+    checkToken: "php/check_token.php",
+    logout: "php/logout.php",
+    menu: "php/menu.php",
+    homeSlider: "php/home_slider.php",
+    media: "php/media.php",
+    list: "php/list.php",
+    zip: "php/zip.php",
+    deleteImage: "php/delete_image.php",
+    checkUploadToken: "php/check_upload_token.php",
+    uploadTokenValidate: "php/upload_token_validate.php",
+    createFolder: "php/create_folder.php",
+    upload: "php/upload.php",
+    ...(window.PIXITOR_CONFIG?.endpoints || {}),
+  };
+  const configuredUploadLimit = Number(window.PIXITOR_CONFIG?.maxUploadFiles);
+  const MAX_UPLOAD_FILES = Number.isInteger(configuredUploadLimit) && configuredUploadLimit > 0
+    ? configuredUploadLimit
+    : 20;
+  const ALLOWED_UPLOAD_EXTENSIONS = Array.isArray(window.PIXITOR_CONFIG?.allowedUploadExtensions)
+    ? window.PIXITOR_CONFIG.allowedUploadExtensions
+    : ["jpg", "jpeg", "png", "webp"];
   const galleryContainer = document.querySelector(".pinhole-gallery");
   const titleEl = document.querySelector(".entry-title");
   const metaEl = document.querySelector(".entry-meta");
@@ -172,7 +198,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
 
       try {
-        const res = await fetch("php/token_validate.php", {
+        const res = await fetch(API.tokenValidate, {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: "token=" + encodeURIComponent(token),
@@ -235,7 +261,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   async function checkToken() {
     try {
-      const res = await fetch("php/check_token.php", { cache: "no-store" });
+      const res = await fetch(API.checkToken, { cache: "no-store" });
       const data = await res.json();
       if (data.valid) {
         unlockGallery();
@@ -437,7 +463,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   async function loadDynamicMenus() {
     try {
-      const res = await fetch("php/menu.php", { cache: "no-store" });
+      const res = await fetch(API.menu, { cache: "no-store" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
       const data = await res.json();
@@ -528,7 +554,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       <a class="top-action-btn download-all download-cta has-tooltip is-disabled" href="#" data-tooltip="Descargar galería" aria-label="Descargar galería" aria-disabled="true">
         <img src="./resources/download.webp" alt="Descargar">
       </a>
-      <a class="top-action-btn logout-action has-tooltip" href="php/logout.php" data-tooltip="Cerrar sesión" aria-label="Cerrar sesión">
+      <a class="top-action-btn logout-action has-tooltip" href="${escapeHtml(API.logout)}" data-tooltip="Cerrar sesión" aria-label="Cerrar sesión">
         <img src="./resources/close.webp" alt="Cerrar sesión">
       </a>
     `;
@@ -645,7 +671,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   async function loadHomeSlider(requestId, signal) {
     try {
-      const res = await fetch("php/home_slider.php?limit=5", { signal, cache: "no-store" });
+      const sliderLimit = Math.min(Number(window.PIXITOR_CONFIG?.homeSliderLimit) || 5, 10);
+      const res = await fetch(`${API.homeSlider}?limit=${sliderLimit}`, { signal, cache: "no-store" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
 
       const data = await res.json();
@@ -777,8 +804,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const sourcePath = `${folder}/${filename}`;
     const thumbPath = thumb ? `${folder}/${thumb}` : sourcePath;
-    const url = `php/media.php?path=${encodeURIComponent(sourcePath)}`;
-    const imgSrc = `php/media.php?path=${encodeURIComponent(thumbPath)}`;
+    const url = `${API.media}?path=${encodeURIComponent(sourcePath)}`;
+    const imgSrc = `${API.media}?path=${encodeURIComponent(thumbPath)}`;
     const thumbH = Math.round(THUMB_WIDTH * (realH / realW));
 
     const wrap = document.createElement("div");
@@ -876,7 +903,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   async function fetchList({ folder, offset, limit, signal }) {
-    const url = `php/list.php?folder=${encodeURIComponent(folder)}&offset=${offset}&limit=${limit}`;
+    const url = `${API.list}?folder=${encodeURIComponent(folder)}&offset=${offset}&limit=${limit}`;
     const res = await fetch(url, { signal, cache: "no-store" });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
@@ -1084,7 +1111,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     setDownloadActionState({ enabled: true, loading: true });
 
-    const url = `php/zip.php?folder=${encodeURIComponent(currentFolder)}`;
+    const url = `${API.zip}?folder=${encodeURIComponent(currentFolder)}`;
     const a = document.createElement("a");
     a.href = url;
     a.download = "";
@@ -1186,7 +1213,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         try {
           const formData = new FormData();
           formData.append("path", path);
-          const res = await fetch("php/delete_image.php", { method: "POST", body: formData });
+          const res = await fetch(API.deleteImage, { method: "POST", body: formData });
           const data = await res.json();
           if (!data.ok) {
             alertify.error(data.error || "No se pudo eliminar");
@@ -1353,7 +1380,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   async function checkUploadToken() {
     try {
-      const res = await fetch("php/check_upload_token.php", { cache: "no-store" });
+      const res = await fetch(API.checkUploadToken, { cache: "no-store" });
       const data = await res.json();
       setUploadTokenState(Boolean(data.valid));
     } catch {
@@ -1403,7 +1430,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       uploadTokenInput.classList.remove("input-error");
       uploadTokenStatus.innerHTML = '<span class="info">Validando...</span>';
       try {
-        const res = await fetch("php/upload_token_validate.php", {
+        const res = await fetch(API.uploadTokenValidate, {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: "token=" + encodeURIComponent(token),
@@ -1463,7 +1490,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     uploadAlbumOptions = [];
     renderUploadAlbumOptions();
     try {
-      const res = await fetch("php/menu.php", { cache: "no-store" });
+      const res = await fetch(API.menu, { cache: "no-store" });
       const data = await res.json();
       const groups = Array.isArray(data?.groups) ? data.groups : [];
       groups.forEach(g => {
@@ -1622,6 +1649,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   if (fileInput) {
+    fileInput.accept = ALLOWED_UPLOAD_EXTENSIONS.map(extension => `.${extension}`).join(",");
+    const isAllowedUploadFile = file => ALLOWED_UPLOAD_EXTENSIONS.includes(file.name.split(".").pop().toLowerCase());
     const syncUploadFileInput = (files) => {
       const transfer = new DataTransfer();
       selectedUploadFiles = files;
@@ -1667,7 +1696,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     };
 
     fileInput.addEventListener("change", () => {
-      selectedUploadFiles = Array.from(fileInput.files || []);
+      const chosenFiles = Array.from(fileInput.files || []).filter(isAllowedUploadFile);
+      if (chosenFiles.length > MAX_UPLOAD_FILES) {
+        status.innerHTML = `<span class="error">Puedes subir hasta ${MAX_UPLOAD_FILES} archivos por carga.</span>`;
+      }
+      syncUploadFileInput(chosenFiles.slice(0, MAX_UPLOAD_FILES));
       renderSelectedFiles();
       setUploadInvalid(fileDropzone, false);
     });
@@ -1689,9 +1722,12 @@ document.addEventListener("DOMContentLoaded", async () => {
         });
       });
       fileDropzone.addEventListener("drop", (e) => {
-        const files = Array.from(e.dataTransfer?.files || []).filter(file => file.type.startsWith("image/"));
+        const files = Array.from(e.dataTransfer?.files || []).filter(isAllowedUploadFile);
         if (!files.length) return;
-        syncUploadFileInput(files);
+        if (files.length > MAX_UPLOAD_FILES) {
+          status.innerHTML = `<span class="error">Puedes subir hasta ${MAX_UPLOAD_FILES} archivos por carga.</span>`;
+        }
+        syncUploadFileInput(files.slice(0, MAX_UPLOAD_FILES));
         setUploadInvalid(fileDropzone, false);
         renderSelectedFiles();
       });
@@ -1783,7 +1819,7 @@ document.addEventListener("DOMContentLoaded", async () => {
               formData.append("parent", "");
               formData.append("name", targetFolder);
             }
-            const res = await fetch("php/create_folder.php", { method: "POST", body: formData });
+            const res = await fetch(API.createFolder, { method: "POST", body: formData });
             const data = await res.json();
             if (!data.ok) {
               status.innerHTML = '<span class="error">Error al crear carpeta: ' + (data.error || "") + '</span>';
@@ -1818,7 +1854,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             formData.append("files[]", f);
           }
 
-          const res = await fetch("php/upload.php", { method: "POST", body: formData });
+          const res = await fetch(API.upload, { method: "POST", body: formData });
           stopUploadProgressTicker();
           setUploadProgress("finish");
           const data = await res.json();

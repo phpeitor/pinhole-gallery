@@ -1,11 +1,13 @@
 <?php
-session_start();
 require_once __DIR__ . '/bootstrap.php';
 require_once __DIR__ . '/token_rate_limit.php';
+startAppSession();
+
+$config = appConfig();
 
 header('Content-Type: application/json; charset=utf-8');
 
-$VALID_TOKEN = $_ENV['UPLOAD_TOKEN'] ?? '';
+$VALID_TOKEN = $config['security']['upload_token'];
 $token = trim($_POST['token'] ?? '');
 $limitKey = 'upload_token_attempts';
 
@@ -17,7 +19,7 @@ if ($limit['locked']) {
 }
 
 if (!$VALID_TOKEN || $token !== $VALID_TOKEN) {
-  $failure = tokenRateLimitFail($limitKey);
+  $failure = tokenRateLimitFail($limitKey, $config['security']['token_max_attempts'], $config['security']['token_lock_seconds']);
   if ($failure['locked']) {
     http_response_code(429);
   }
@@ -29,7 +31,7 @@ tokenRateLimitClear($limitKey);
 
 $_SESSION['upload_token'] = [
   'value'   => $token,
-  'expires' => time() + (60 * 60 * 12)
+  'expires' => time() + $config['security']['upload_session_ttl']
 ];
 
 echo json_encode(['ok' => true]);

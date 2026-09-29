@@ -1,10 +1,12 @@
 <?php
 declare(strict_types=1);
 
-const GALLERY_THUMB_WIDTH = 640;
-const GALLERY_THUMB_QUALITY = 78;
+require_once __DIR__ . '/bootstrap.php';
 
-function createGalleryThumb(string $sourcePath, string $thumbDir, int $thumbWidth = GALLERY_THUMB_WIDTH): ?string {
+function createGalleryThumb(string $sourcePath, string $thumbDir, ?int $thumbWidth = null): ?string {
+  $config = appConfig()['gallery'];
+  $thumbWidth ??= $config['thumb_width'];
+  $thumbQuality = $config['thumb_quality'];
   if (!function_exists('imagewebp')) return null;
 
   $size = @getimagesize($sourcePath);
@@ -12,7 +14,7 @@ function createGalleryThumb(string $sourcePath, string $thumbDir, int $thumbWidt
 
   $sourceMtime = @filemtime($sourcePath) ?: 0;
   $sourceSize = @filesize($sourcePath) ?: 0;
-  $thumbName = sha1(basename($sourcePath) . '|' . $sourceMtime . '|' . $sourceSize . '|' . $thumbWidth) . '.webp';
+  $thumbName = sha1(basename($sourcePath) . '|' . $sourceMtime . '|' . $sourceSize . '|' . $thumbWidth . '|' . $thumbQuality) . '.webp';
   $thumbPath = $thumbDir . DIRECTORY_SEPARATOR . $thumbName;
 
   if (is_file($thumbPath)) {
@@ -49,7 +51,7 @@ function createGalleryThumb(string $sourcePath, string $thumbDir, int $thumbWidt
   imagefilledrectangle($thumb, 0, 0, $targetWidth, $targetHeight, $transparent);
 
   imagecopyresampled($thumb, $source, 0, 0, 0, 0, $targetWidth, $targetHeight, $width, $height);
-  $ok = imagewebp($thumb, $thumbPath, GALLERY_THUMB_QUALITY);
+  $ok = imagewebp($thumb, $thumbPath, $thumbQuality);
 
   imagedestroy($source);
   imagedestroy($thumb);

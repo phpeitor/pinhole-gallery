@@ -45,20 +45,23 @@
 composer install
 ```
 
-2. Crear `.env` en la raiz:
+2. Crear `.env` en la raiz desde la plantilla completa, solo si aun no existe:
 
-```env
-GALLERY_TOKEN=token_para_ver_galeria
-UPLOAD_TOKEN=token_para_subir_y_eliminar
+```powershell
+Copy-Item .env.example .env
 ```
 
-3. Verificar extensiones PHP:
+3. Editar `.env`: reemplazar `GALLERY_TOKEN` y `UPLOAD_TOKEN` por secretos largos y distintos. Revisar tambien `APP_BASE_URL`, limites, sesion y endpoints si cambia el entorno. Si `.env` ya existe, conservar los tokens actuales y agregar/ajustar las claves de `.env.example`; nunca compartir ni versionar `.env`.
+
+`php/bootstrap.php` centraliza las opciones backend. `php/public_config.php` entrega al navegador solo nombre publico, limites de interfaz y rutas de endpoints; nunca serializa tokens ni otros secretos.
+
+4. Verificar extensiones PHP:
 
 ```bash
 php -m
 ```
 
-4. Abrir `http://127.0.0.1/gallery/` o la URL configurada en Apache.
+5. Abrir `http://127.0.0.1/gallery/` o la URL configurada en Apache.
 
 ## Flujo Principal
 
@@ -166,6 +169,7 @@ La eliminacion requiere sesion de `UPLOAD_TOKEN` activa y pasa por `php/delete_i
 3. Los temas de color, fuentes y RTL se persisten en `localStorage`.
 4. La barra superior muestra cerrar sesion en Home y agrega descarga cuando hay album activo.
 5. El logo se mantiene como Pixitor y cambia de contraste por CSS segun tema.
+6. El fondo interactivo pausa en pestañas ocultas, limita su frecuencia a 30 FPS y actualiza el color de glifos sin reconstruir la simulacion al cambiar de tema.
 
 ## Operación
 

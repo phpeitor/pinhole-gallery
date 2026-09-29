@@ -1,12 +1,10 @@
 <?php
 declare(strict_types=1);
 
-if (session_status() !== PHP_SESSION_ACTIVE) {
-  session_start();
-}
-header('Content-Type: application/json; charset=utf-8');
-
 require_once __DIR__ . '/gallery_media.php';
+startAppSession();
+header('Content-Type: application/json; charset=utf-8');
+$appConfig = appConfig();
 
 if (
   empty($_SESSION['gallery_token']) ||
@@ -23,7 +21,7 @@ if (!$imgRoot || !is_dir($imgRoot)) {
   exit;
 }
 
-$limit = min(5, max(1, (int)($_GET['limit'] ?? 5)));
+$limit = min($appConfig['gallery']['home_slider_limit'], max(1, (int)($_GET['limit'] ?? $appConfig['gallery']['home_slider_limit'])));
 $candidates = [];
 $allowed = ['jpg' => true, 'jpeg' => true, 'png' => true, 'webp' => true];
 $iterator = new RecursiveIteratorIterator(
@@ -64,8 +62,8 @@ foreach ($candidates as $filePath) {
   $thumbPath = $thumb && $folder !== '' ? $folder . '/' . $thumb : $relative;
 
   $images[] = [
-    'url' => 'php/media.php?path=' . rawurlencode($relative),
-    'thumb' => 'php/media.php?path=' . rawurlencode($thumbPath),
+    'url' => appEndpointUrl('media') . '?path=' . rawurlencode($relative),
+    'thumb' => appEndpointUrl('media') . '?path=' . rawurlencode($thumbPath),
     'width' => (int)$size[0],
     'height' => (int)$size[1],
   ];

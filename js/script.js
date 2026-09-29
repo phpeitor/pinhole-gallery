@@ -30,11 +30,11 @@ const dpr = Math.min(window.devicePixelRatio || 1, 2);
 const CONFIG = {
   awidth: w,
   aheight: h,
-  gridW: Math.min(72, Math.max(28, Math.floor(w / 24))),
-  gridH: Math.min(54, Math.max(24, Math.floor(h / 24))),
+  gridW: Math.min(48, Math.max(18, Math.floor(w / 36))),
+  gridH: Math.min(32, Math.max(14, Math.floor(h / 36))),
   gravity: .2,
   damping: .99,
-  iterationsPerFrame: 5,
+  iterationsPerFrame: 2,
   compressFactor: .02,
   stretchFactor: 1.1,
   mouseSize: 5000,
@@ -66,17 +66,39 @@ window.addEventListener('resize', () => {
   }
 })
 
-let rafID, input, c;
+let rafID = 0, input, c, refreshGlyphs, runloop;
+const TARGET_FRAME_MS = 1000 / 30;
+let lastFrameTime = 0;
+
+function canAnimateBackground() {
+  return document.visibilityState === 'visible'
+    && document.body.classList.contains('show-interactive-background');
+}
+
+function syncBackgroundAnimation() {
+  if (canAnimateBackground() && c && runloop && !rafID) {
+    lastFrameTime = 0;
+    rafID = requestAnimationFrame(runloop);
+  } else if (!canAnimateBackground() && rafID) {
+    cancelAnimationFrame(rafID);
+    rafID = 0;
+  }
+}
+
+document.addEventListener('visibilitychange', syncBackgroundAnimation);
+const backgroundClassObserver = new MutationObserver(syncBackgroundAnimation);
+backgroundClassObserver.observe(document.body, { attributes: true, attributeFilter: ['class'] });
+
 function main() {
   // Tear down any prior run so re-entry doesn't stack raf loops or listeners.
   if (rafID) cancelAnimationFrame(rafID);
+  rafID = 0;
   if (input) input.unbind();
 
   fullCode = main.toString();
   const { awidth: width, aheight: height, gridW, gridH, gravity, damping, iterationsPerFrame, compressFactor, stretchFactor, cellWidth, cellHeight } = CONFIG;
 
   const charCanvases = {};
-  const codeColor = getInteractiveCodeColor();
   const fontSize = Math.max(12, cellHeight * 1.2); // logical px
   const box = Math.ceil(fontSize * 1.4);           // logical px, glyph cell size
   for (const ch of new Set(fullCode)) {
@@ -88,11 +110,26 @@ function main() {
     octx.font = `bold ${fontSize}px monospace`;
     octx.textAlign = 'center';
     octx.textBaseline = 'middle';
-    octx.fillStyle = codeColor;
     octx.fillText(ch, box / 2, box / 2);           // logical center (no double-dpr)
     off.logicalSize = box;                         // stash for drawImage
     charCanvases[ch] = off;
   }
+
+  refreshGlyphs = () => {
+    const codeColor = getInteractiveCodeColor();
+    for (const [ch, off] of Object.entries(charCanvases)) {
+      const octx = off.getContext('2d');
+      octx.setTransform(1, 0, 0, 1, 0, 0);
+      octx.clearRect(0, 0, off.width, off.height);
+      octx.scale(dpr, dpr);
+      octx.fillStyle = codeColor;
+      octx.font = `bold ${fontSize}px monospace`;
+      octx.textAlign = 'center';
+      octx.textBaseline = 'middle';
+      octx.fillText(ch, box / 2, box / 2);
+    }
+  };
+  refreshGlyphs();
 
   c = document.createElement('canvas');
   container.innerHTML = '';
@@ -202,15 +239,18 @@ function main() {
     }
   }
 
-  let lastDelta = 0;
-  function runloop(delta) {
+  runloop = function (delta) {
+    rafID = 0;
+    if (!canAnimateBackground()) return;
     rafID = requestAnimationFrame(runloop);
+    if (lastFrameTime && delta - lastFrameTime < TARGET_FRAME_MS) return;
 
     ctx.save();
     ctx.clearRect(0, 0, c.width, c.height); // device space; transform is identity here
 
-    particles.forEach(p => p.update(delta - lastDelta));
-    lastDelta = delta;
+    const frameDelta = lastFrameTime ? Math.min((delta - lastFrameTime) / TARGET_FRAME_MS, 2) : 1;
+    particles.forEach(p => p.update(frameDelta));
+    lastFrameTime = delta;
 
     if (CONFIG.randomSolve) shuffleArray(constraints)
     for (let i = 0; i < iterationsPerFrame; i++) {
@@ -222,8 +262,8 @@ function main() {
     drawCode();
 
     ctx.restore();
-  }
-  rafID = requestAnimationFrame(runloop);
+  };
+  syncBackgroundAnimation();
 }
 
 class Input {
@@ -458,10 +498,6 @@ class Constraint {
     this.minLength = length * compressFactor;
     this.maxLength = length * stretchFactor;
 
-    c.addEventListener("update", (e) => {
-      this.minLength = this.length * (this.isSpacer ? compressFactor : e.detail.compressFactor);
-      this.maxLength = this.length * (this.isSpacer ? stretchFactor : e.detail.stretchFactor);
-    })
   }
   solve() {
     // Inline the vector math to avoid thrash
@@ -493,6 +529,10 @@ class Constraint {
   }
 }
 
-window.refreshInteractiveBackground = main;
+window.refreshInteractiveBackground = () => {
+  if (refreshGlyphs) refreshGlyphs();
+  else main();
+  syncBackgroundAnimation();
+};
 
 setTimeout(() => main(), 500);
