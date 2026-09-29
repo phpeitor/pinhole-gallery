@@ -114,6 +114,7 @@ foreach ($parentDirs as $parent) {
     'group' => makeLabel($parent),
     'id' => $directId,
     'folder' => $parentHasImages ? $parent : null,
+    'parentFolder' => $parent,
     'items' => array_values($items),
   ];
 }

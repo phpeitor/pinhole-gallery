@@ -20,6 +20,8 @@ La animacion interactiva limita la simulacion a 30 FPS, usa una malla adaptativa
 
 La configuracion PHP central vive en `php/bootstrap.php` y su plantilla completa es `.env.example`. `.env` local permanece ignorado y contiene los secretos reales. `php/public_config.php` expone unicamente rutas de endpoints y valores publicos; nunca tokens/secretos.
 
+El selector de destino de subida muestra tanto carpetas album con imagenes como carpetas padre que solo contienen subalbums, para permitir crear el siguiente nivel desde `Subcarpeta`.
+
 ## Flujo principal
 
 1. El usuario abre `index.html`.

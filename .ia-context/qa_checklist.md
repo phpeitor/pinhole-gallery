@@ -53,7 +53,8 @@
 7. Home con token: una sola historia vertical visible, imagen no achatada, indicadores sincronizados y botones anterior/siguiente funcionales; no emojis flotantes.
 8. Controles anterior/siguiente permanecen circulares (44 × 44 px), no se estiran por el CSS global del tema y conservan foco visible/área táctil.
 9. Cambiar entre temas claro, oscuro y gradientes actualiza el fondo de Home y galerias.
-10. Confirmar una subida muestra el overlay inmediatamente, anima los puntos, rota mensajes de espera y lo oculta al terminar tanto en exito como en error.
-11. Cambiar color durante la animacion recolorea glifos sin congelar/reiniciar la simulacion; al cambiar pestaña, la animacion se pausa y luego se reanuda.
-12. El cambio de tema actualiza color de fondo y glifos sin duplicar loops RAF.
-13. `php/public_config.php` solo entrega endpoints/limites publicos; revisar que ningun token aparezca en HTML, JS ni respuesta de config.
+10. En subida, para padres con solo subalbums aparece el padre y se puede crear una subcarpeta de segundo nivel.
+11. Confirmar una subida muestra el overlay inmediatamente, anima los puntos, rota mensajes de espera y lo oculta al terminar tanto en exito como en error.
+12. Cambiar color durante la animacion recolorea glifos sin congelar/reiniciar la simulacion; al cambiar pestaña, la animacion se pausa y luego se reanuda.
+13. El cambio de tema actualiza color de fondo y glifos sin duplicar loops RAF.
+14. `php/public_config.php` solo entrega endpoints/limites publicos; revisar que ningun token aparezca en HTML, JS ni respuesta de config.

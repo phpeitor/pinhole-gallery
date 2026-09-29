@@ -1583,12 +1583,17 @@ document.addEventListener("DOMContentLoaded", async () => {
       const data = await res.json();
       const groups = Array.isArray(data?.groups) ? data.groups : [];
       groups.forEach(g => {
-        if (g.folder) {
+        const parentFolder = g.parentFolder || g.folder;
+        if (parentFolder) {
           const opt = document.createElement("option");
-          opt.value = g.folder;
+          opt.value = parentFolder;
           opt.textContent = g.group;
           folderSelect.appendChild(opt);
-          uploadAlbumOptions.push({ value: g.folder, label: g.group, meta: "" });
+          uploadAlbumOptions.push({
+            value: parentFolder,
+            label: g.group,
+            meta: g.folder ? "Álbum principal" : "Álbum padre · crear subcarpeta aquí",
+          });
         }
         if (g.items) {
           g.items.forEach(item => {

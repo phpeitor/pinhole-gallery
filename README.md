@@ -44,6 +44,8 @@ Copy-Item .env.example .env
 
 `php/bootstrap.php` centraliza las opciones backend. `php/public_config.php` entrega al navegador solo nombre publico, limites de interfaz y rutas de endpoints; nunca serializa tokens ni otros secretos.
 
+En cPanel con HTTPS y el sitio publicado en la raiz del dominio, usa `APP_ENV=production`, `APP_DEBUG=false`, `APP_BASE_URL=https://admin.metadatape.com`, `SESSION_COOKIE_PATH=/` y `SESSION_COOKIE_SECURE=true`. `APP_BASE_URL` debe ser el origen/base publico, sin concatenar la siguiente clave; cada variable debe ir en su propia linea.
+
 4. Verificar extensiones PHP:
 
 ```bash
