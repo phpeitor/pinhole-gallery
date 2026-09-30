@@ -6,7 +6,7 @@ Galeria privada de imagenes con acceso por token, menu dinamico, carga infinita 
 
 ## Direccion UI/UX actual
 
-Pixitor evoluciona hacia una identidad minimalista de archivo digital retro/pixel. La referencia visual combina fondos tinta oscuros, superficies papel, acentos violeta/rosa/lima, bordes rectos y sombras duras discretas. Evitar modales redondeados genericos tipo Bootstrap y decoracion excesiva. Ver `ui_design_direction.md` para tokens y reglas de aplicacion.
+Pixitor evoluciona hacia una identidad minimalista de archivo digital retro/pixel. La primera visita inicia en el segundo preset `Dark` (`color-1`); el preset `Default` del personalizador sigue siendo claro. La referencia combina superficies papel, acentos violeta/rosa/lima, bordes rectos y sombras duras discretas. Evitar modales redondeados genericos tipo Bootstrap y decoracion excesiva. Ver `ui_design_direction.md` para tokens y reglas de aplicacion.
 
 La marca vigente usa `resources/phpeitor-pixsvg.svg` en tema claro y `resources/phpeitor-pixsvg-light.svg` en temas oscuros: “MEDIA” como palabra principal y el trazado original de “PHPEITOR” debajo, con trazo animado granate. `resources/phpeitor-dataset.svg` es referencia de la composicion/tipo original, no sustituye los SVG activos.
 
@@ -21,6 +21,8 @@ La animacion interactiva limita la simulacion a 30 FPS, usa una malla adaptativa
 La configuracion PHP central vive en `php/bootstrap.php` y su plantilla completa es `.env.example`. `.env` local permanece ignorado y contiene los secretos reales. `php/public_config.php` expone unicamente rutas de endpoints y valores publicos; nunca tokens/secretos.
 
 El selector de destino de subida muestra tanto carpetas album con imagenes como carpetas padre que solo contienen subalbums, para permitir crear el siguiente nivel desde `Subcarpeta`.
+
+Las paginas `404.html` y `403.html` muestran sus assets Rive a pantalla completa con el runtime Rive Canvas. El 404 usa la state machine `State Machine 1`, estado inicial `Dog`, y sus inputs Reset/Click. El 403 reproduce las animaciones independientes Timeline 1/2/3: Timeline 2 es el efecto 404 y Timeline 3 el corazón; un clic sobre el canvas avanza a la siguiente animación.
 
 ## Flujo principal
 

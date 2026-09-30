@@ -16,6 +16,8 @@
 - Texto atenuado: `#aaa5b7`
 - Sombra pixel: desplazamiento corto, sin blur grande (ej. `6px 6px 0 #0c0b11`)
 
+La primera visita inicia con el segundo preset (`Dark`, `color-1`); el primer preset (`Default`) se mantiene claro cuando se elige manualmente. El customizer debe permanecer accesible en viewport movil; no heredar la regla del tema que lo oculta bajo 1200px.
+
 Los tokens CSS viven en `css/index.css` como variables `--pixitor-*`. Mantener el fondo de codigo animado muy tenue para que no compita con fotos ni texto. El fondo debe seguir usando `--interactive-bg` para reflejar el tema activo; no fijarlo al color tinta. La simulacion de canvas se limita a 30 FPS, reduce densidad de malla y pausa cuando la pestaña no esta visible. El cambio de tema recolorea los glifos existentes sin reiniciar particulas ni crear loops RAF duplicados.
 
 ## Marca
@@ -23,6 +25,7 @@ Los tokens CSS viven en `css/index.css` como variables `--pixitor-*`. Mantener e
 - Assets activos: `resources/phpeitor-pixsvg.svg` para superficies claras y `resources/phpeitor-pixsvg-light.svg` para temas oscuros/gradientes.
 - Palabra principal: `MEDIA`; marca secundaria inferior: trazado original `PHPEITOR`.
 - Usar la variante correspondiente en encabezado normal, sticky, movil y selector de tema.
+- Renderizar un solo wordmark visible; ocultar la copia de marca del header sticky.
 - El trazo animado usa granate `#A61B3B` con resplandor rojo; mantenerlo visible y diferenciado del relleno en ambas variantes.
 - Limitar el wordmark en encabezado a un ancho visual aproximado de 280 px y altura max de 56 px.
 - No agregar una segunda firma textual debajo del video de Inicio.
@@ -49,6 +52,13 @@ Los tokens CSS viven en `css/index.css` como variables `--pixitor-*`. Mantener e
 - Confirmaciones Alertify deben seguir el mismo lenguaje de panel/papel; evitar dialogo blanco generico con radios grandes.
 - Progreso de subida: overlay a nivel de viewport con spinner, puntos animados, pasos “Preparando / Enviando / Finalizando” y mensajes rotativos con `setTimeout` mientras se espera. Mantenerlo visible al menos 1800 ms para cargas instantaneas; no inventar porcentaje si el transporte no lo mide. No anidar el overlay dentro del contenido scrollable del modal.
 - Mantener scroll interno, botones de cierre claros, focus visible, `aria-live` para estados y respeto a `prefers-reduced-motion`.
+
+## Paginas de error Rive
+
+- Renderizar el artboard `.riv` a viewport completo con `Fit.Cover`; dejar controles HTML pequenos como overlays accesibles.
+- 404 state machine `State Machine 1` (estado inicial `Dog`): conectar trigger `Reset`, boolean `Click` y area `Back home` a `index.html`. El botón Reset reinicia la instancia Rive para volver a reproducir el personaje. El panel HTML overlay cubre el botón/email embebidos del artboard y ofrece controles accesibles.
+- 403: exponer las animaciones independientes `Timeline 1`, `Timeline 2` (404) y `Timeline 3` (corazón) desde controles compactos y avanzar una por clic en el canvas.
+- Mantener fallback si el runtime/CDN o el asset no carga, y no autoplay si `prefers-reduced-motion` esta activo.
 
 ## Galeria y limites de implementacion
 

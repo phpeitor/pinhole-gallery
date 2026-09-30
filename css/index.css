@@ -1751,6 +1751,69 @@ body.has-upload-token .gallery-delete-image:focus {
     }
 }
 
+/* Keep a single wordmark in the header; the theme's mobile sticky clone caused a second tagline. */
+.pinhole-header .pinhole-header-sticky .pinhole-site-branding {
+    display: none !important;
+}
+
+/* The bundled customizer hides itself below 1200px; keep its gear reachable on touch screens. */
+@media (max-width: 1200px) {
+    #switcher_link {
+        display: block !important;
+        position: fixed;
+        top: auto;
+        right: auto;
+        bottom: calc(12px + env(safe-area-inset-bottom));
+        left: 12px;
+        z-index: 10005;
+        border: 2px solid #0c0b11;
+        border-radius: 3px;
+        background: var(--pixitor-paper);
+        box-shadow: 4px 4px 0 #0c0b11;
+    }
+
+    #switcher_link a {
+        display: grid;
+        float: none;
+        width: 44px;
+        height: 44px;
+        place-items: center;
+        padding: 0;
+        color: var(--pixitor-ink);
+    }
+
+    #switcher_link a i {
+        font-size: 19px;
+        animation: none;
+    }
+
+    #switcher_wrap {
+        display: block !important;
+        position: fixed;
+        top: auto;
+        right: auto;
+        bottom: calc(68px + env(safe-area-inset-bottom));
+        left: 12px;
+        z-index: 10006;
+        box-sizing: border-box;
+        width: min(290px, calc(100vw - 24px));
+        max-width: none;
+        max-height: min(76dvh, 560px);
+        overflow-x: hidden;
+        overflow-y: auto;
+        border: 2px solid #0c0b11;
+        border-radius: 3px;
+        background: var(--pixitor-paper);
+        box-shadow: 6px 6px 0 #0c0b11;
+        transform: translateX(0);
+    }
+
+    #switcher_wrap.switcher_moved {
+        left: 12px !important;
+        transform: translateX(calc(-100% - 18px));
+    }
+}
+
 /* ---- Pixitor visual direction: minimal digital archive / pixel retro ---- */
 :root {
     --pixitor-ink: #17151f;

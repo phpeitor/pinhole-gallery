@@ -31,6 +31,7 @@
 13. El fondo interactivo debe pausar en pestañas ocultas, limitar carga/frecuencia y recolorear glifos sin reconstruir la simulacion al cambiar de tema.
 14. Consumir URLs/limites publicos desde `window.PIXITOR_CONFIG`; nunca colocar tokens ni valores secretos en JS/config publico.
 15. Optimizar imagenes/video por atributos HTML primero antes de hacks CSS.
+16. Las paginas de error mantienen fallback accesible si Rive/CDN falla; mantener los nombres de state machine e inputs sincronizados con los assets `.riv`.
 
 ## HTML
 

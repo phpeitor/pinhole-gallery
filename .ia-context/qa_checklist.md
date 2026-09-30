@@ -6,6 +6,10 @@
 2. Verificar que no haya errores en consola.
 3. Hacer recarga forzada si se tocaron CSS/JS.
 4. Confirmar que rutas relativas siguen funcionando.
+5. 404/403: el canvas Rive ocupa el viewport completo y los controles HTML siguen legibles/alcanzables.
+6. 404: cargar `resources/404.riv` con `State Machine 1`; el panel tapa el botón/email internos, Reset reinicia la instancia/personaje, Click responde y Back home vuelve a `index.html`.
+7. 403: Timeline 1/2/3 responden a botones y clic en canvas; Timeline 2 muestra 404, Timeline 3 corazón y Home vuelve a `index.html`.
+8. Bloquear Rive/CDN o usar `prefers-reduced-motion`: la pagina conserva fallback/controles utilizables.
 
 ## Autenticacion
 
@@ -48,13 +52,16 @@
 2. Cambiar el tamano del viewport mantiene el video centrado, completo y dentro de la pantalla.
 3. Todos los nombres de video seleccionados existen; simular/fallar una fuente muestra spinner, intenta otra y acaba en fallback legible, nunca en panel negro.
 4. El logo muestra MEDIA con el trazado PHPEITOR debajo y conserva un tamano contenido en header desktop/mobile.
-5. Modal de subida, confirmacion Alertify y overlay de progreso comparten el lenguaje retro/pixel: superficies tinta/papel, bordes rectos y sombra dura sutil.
-6. Verificar contraste, foco de teclado, scroll del modal y `prefers-reduced-motion`.
-7. Home con token: una sola historia vertical visible, imagen no achatada, indicadores sincronizados y botones anterior/siguiente funcionales; no emojis flotantes.
-8. Controles anterior/siguiente permanecen circulares (44 × 44 px), no se estiran por el CSS global del tema y conservan foco visible/área táctil.
-9. Cambiar entre temas claro, oscuro y gradientes actualiza el fondo de Home y galerias.
-10. En subida, para padres con solo subalbums aparece el padre y se puede crear una subcarpeta de segundo nivel.
-11. Confirmar una subida muestra el overlay inmediatamente, anima los puntos, rota mensajes de espera y lo oculta al terminar tanto en exito como en error.
-12. Cambiar color durante la animacion recolorea glifos sin congelar/reiniciar la simulacion; al cambiar pestaña, la animacion se pausa y luego se reanuda.
-13. El cambio de tema actualiza color de fondo y glifos sin duplicar loops RAF.
-14. `php/public_config.php` solo entrega endpoints/limites publicos; revisar que ningun token aparezca en HTML, JS ni respuesta de config.
+5. El encabezado muestra una sola instancia del wordmark y no aparece la seccion “Follow me” en el menu lateral.
+6. En viewport menor a 1200 px, la tuerca abre/cierra el customizer sin quedar bajo el overlay de acceso.
+7. Primera visita sin tema guardado abre `Dark` (segundo preset); `Default` conserva fondo claro y cada variante mantiene contraste del logo.
+8. Modal de subida, confirmacion Alertify y overlay de progreso comparten el lenguaje retro/pixel: superficies tinta/papel, bordes rectos y sombra dura sutil.
+9. Verificar contraste, foco de teclado, scroll del modal y `prefers-reduced-motion`.
+10. Home con token: una sola historia vertical visible, imagen no achatada, indicadores sincronizados y botones anterior/siguiente funcionales; no emojis flotantes.
+11. Controles anterior/siguiente permanecen circulares (44 × 44 px), no se estiran por el CSS global del tema y conservan foco visible/área táctil.
+12. Cambiar entre temas claro, oscuro y gradientes actualiza el fondo de Home y galerias.
+13. En subida, para padres con solo subalbums aparece el padre y se puede crear una subcarpeta de segundo nivel.
+14. Confirmar una subida muestra el overlay inmediatamente, anima los puntos, rota mensajes de espera y lo oculta al terminar tanto en exito como en error.
+15. Cambiar color durante la animacion recolorea glifos sin congelar/reiniciar la simulacion; al cambiar pestaña, la animacion se pausa y luego se reanuda.
+16. El cambio de tema actualiza color de fondo y glifos sin duplicar loops RAF.
+17. `php/public_config.php` solo entrega endpoints/limites publicos; revisar que ningun token aparezca en HTML, JS ni respuesta de config.

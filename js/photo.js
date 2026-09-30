@@ -86,7 +86,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   function setThemeLogo() {
-    const logoSrc = activeColorThemeId === "default"
+    const useDarkInkLogo = activeColorThemeId === "default" || activeColorThemeId === "color-3";
+    const logoSrc = useDarkInkLogo
       ? "./resources/phpeitor-pixsvg.svg?v=3"
       : "./resources/phpeitor-pixsvg-light.svg?v=1";
     document.querySelectorAll(".pinhole-site-branding img").forEach(img => {
@@ -130,17 +131,25 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   }
 
-  function restoreSwitcherPreference(type, storageKey) {
-    const savedId = localStorage.getItem(storageKey) || "default";
+  function restoreSwitcherPreference(type, storageKey, defaultId = "default") {
+    const savedId = localStorage.getItem(storageKey) || defaultId;
     const savedLink = document.querySelector(`.switcher_items a[data-type='${type}'][data-id='${savedId}']`);
-    if (!savedLink) return "default";
+    if (!savedLink) return defaultId;
 
     applySwitcherStylesheet(type, savedId, savedLink.dataset.url || "");
     setSwitcherActive(type, savedId);
     return savedId;
   }
 
-  const restoredColorTheme = restoreSwitcherPreference("color", "galleryColorTheme");
+  const themePreferenceMigrationKey = "galleryColorThemeDarkDefaultV2";
+  if (localStorage.getItem(themePreferenceMigrationKey) !== "1") {
+    const previousColorPreference = localStorage.getItem("galleryColorTheme");
+    if (!previousColorPreference || previousColorPreference === "default") {
+      localStorage.setItem("galleryColorTheme", "color-1");
+    }
+    localStorage.setItem(themePreferenceMigrationKey, "1");
+  }
+  const restoredColorTheme = restoreSwitcherPreference("color", "galleryColorTheme", "color-1");
   restoreSwitcherPreference("font", "galleryFontTheme");
   applyColorTheme(restoredColorTheme);
 
