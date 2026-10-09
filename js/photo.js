@@ -1538,6 +1538,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   async function openUploadModal() {
     if (!uploadModal) return;
     uploadModal.classList.add("open");
+    document.body.classList.add("upload-modal-active");
     if (uploadTokenInput) uploadTokenInput.value = "";
     if (uploadTokenStatus) uploadTokenStatus.innerHTML = "";
     await checkUploadToken();
@@ -1555,6 +1556,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   function closeUploadModal() {
     if (!uploadModal) return;
     uploadModal.classList.remove("open");
+    document.body.classList.remove("upload-modal-active");
   }
 
   document.addEventListener("click", (e) => {

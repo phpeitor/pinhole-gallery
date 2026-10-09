@@ -1803,11 +1803,16 @@ body.has-upload-token .gallery-delete-image:focus {
 #upload-status:empty { display: none; }
 
 /* Toasts must stay above the upload overlay (and the upload-progress layer). */
+.upload-modal.open { z-index: 1800 !important; }
 .ajs-notifier,
 .ajs-notifier.ajs-top,
 .ajs-notifier.ajs-top.ajs-right { z-index: 100010 !important; }
 body > .ajs-notifier { position: fixed !important; z-index: 2147483647 !important; isolation: isolate; }
 .upload-modal > .ajs-notifier { position: absolute !important; inset: 12px 12px auto auto !important; z-index: 2147483647 !important; width: min(390px, calc(100% - 24px)) !important; isolation: isolate; }
+.upload-modal-active .pinhole-sidebar { z-index: 1100 !important; }
+.upload-modal-active .pinhole-sidebar-overlay { z-index: 1090 !important; }
+.upload-modal-active #switcher_link,
+.upload-modal-active #switcher_wrap { visibility: hidden !important; pointer-events: none !important; }
 
 /* Alertify toasts use the same palette and remain readable on narrow screens. */
 .ajs-notifier.ajs-top.ajs-right {
