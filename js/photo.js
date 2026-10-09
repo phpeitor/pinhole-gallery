@@ -337,6 +337,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     return HOME_HASHES.has(String(id || "").trim().toLowerCase());
   }
 
+  function normalizeFolderSegment(value) {
+    return String(value || "").replace(/[^\p{L}\p{N}_ -]/gu, "").trim().replace(/\s+/g, "_");
+  }
+
   function escapeHtml(value) {
     return String(value)
       .replaceAll("&", "&amp;")
@@ -397,6 +401,28 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
   }
 
+  function renderMenuItems(items, groupName, parentTitle = "") {
+    return (items || []).map((item) => {
+      const title = String(item.title || "");
+      const fullTitleText = [groupName, parentTitle, title].filter(Boolean).join(" ");
+      const id = item.id ? escapeHtml(item.id) : "";
+      const folder = item.folder ? escapeHtml(item.folder) : "";
+      const link = id
+        ? `<a href="#${id}" data-folder="${folder}" data-title="${escapeHtml(fullTitleText)}">${escapeHtml(title)}</a>`
+        : `<a href="javascript:void(0)">${escapeHtml(title)}</a>`;
+      const children = renderMenuItems(item.children, groupName, [parentTitle, title].filter(Boolean).join(" "));
+      const hasChildren = children !== "";
+      const classes = [
+        "menu-item",
+        "menu-item-type-custom",
+        "menu-item-object-custom",
+        id,
+        hasChildren ? "menu-item-has-children" : ""
+      ].filter(Boolean).join(" ");
+      return `<li class="${classes}">${link}${hasChildren ? `<ul class="sub-menu">${children}</ul>` : ""}</li>`;
+    }).join("");
+  }
+
   function buildDesktopMenu(groups) {
     const desktopRoots = document.querySelectorAll("#menu-main-menu, #menu-main-menu-1");
 
@@ -422,17 +448,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         ? ` data-folder="${groupFolder}" data-title="${groupName}"`
         : "";
 
-      const children = (group.items || []).map((item) => {
-        const id = escapeHtml(item.id);
-        const folder = escapeHtml(item.folder);
-        const title = escapeHtml(item.title);
-        const fullTitle = escapeHtml(`${group.group} ${item.title}`.trim());
-        return `
-          <li class="menu-item menu-item-type-custom menu-item-object-custom ${id}">
-            <a href="#${id}" data-folder="${folder}" data-title="${fullTitle}">${title}</a>
-          </li>
-        `;
-      }).join("");
+      const children = renderMenuItems(group.items, group.group);
 
       const liClasses = [
         "menu-item",
@@ -472,17 +488,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         ? ` data-folder="${groupFolder}" data-title="${groupName}"`
         : "";
 
-      const children = (group.items || []).map((item) => {
-        const id = escapeHtml(item.id);
-        const folder = escapeHtml(item.folder);
-        const title = escapeHtml(item.title);
-        const fullTitle = escapeHtml(`${group.group} ${item.title}`.trim());
-        return `
-          <li class="menu-item menu-item-type-custom menu-item-object-custom ${id}">
-            <a href="#${id}" data-folder="${folder}" data-title="${fullTitle}">${title}</a>
-          </li>
-        `;
-      }).join("");
+      const children = renderMenuItems(group.items, group.group);
 
       const liClasses = [
         "menu-item",
@@ -500,9 +506,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       `;
     }).join("");
 
-    responsiveRoot.innerHTML = `${homeHtml}${groupHtml}`;
+    const uploadHtml = `
+      <li class="menu-item menu-item-type-custom pinhole-upload-trigger" style="display:none">
+        <a href="javascript:void(0)">Subir</a>
+      </li>`;
+    responsiveRoot.innerHTML = `${homeHtml}${groupHtml}${uploadHtml}`;
 
-    responsiveRoot.querySelectorAll(":scope > .menu-item-has-children").forEach((item) => {
+    responsiveRoot.querySelectorAll(".menu-item-has-children").forEach((item) => {
       if (!item.querySelector(":scope > .pinhole-nav-widget-acordion")) {
         item.querySelector(":scope > a")?.insertAdjacentHTML(
           "afterend",
@@ -1408,8 +1418,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   const folderSearch = document.getElementById("upload-folder-search");
   const folderResults = document.getElementById("upload-folder-results");
   const newAlbumName = document.getElementById("new-album-name");
-  const subfolderField = document.getElementById("subfolder-field");
-  const newFolderName = document.getElementById("new-folder-name");
+  const folderLevelList = document.getElementById("folder-level-list");
+  const addFolderLevelButton = document.getElementById("add-folder-level");
+  const folderPathPreview = document.getElementById("folder-path-preview");
   const fileInput = document.getElementById("upload-files");
   const fileDropzone = document.getElementById("upload-dropzone");
   const fileSummary = document.getElementById("upload-file-summary");
@@ -1425,6 +1436,32 @@ document.addEventListener("DOMContentLoaded", async () => {
   let uploadAlbumOptions = [];
   let selectedUploadFiles = [];
   let uploadProgressTimer = null;
+  let folderLevelInputs = [];
+
+  function liftAlertifyNotifier() {
+    const lift = () => {
+      document.querySelectorAll(".ajs-notifier").forEach((notifier) => {
+        if (notifier.parentElement !== document.body) document.body.appendChild(notifier);
+        notifier.style.setProperty("position", "fixed", "important");
+        notifier.style.setProperty("z-index", "2147483647", "important");
+        notifier.style.setProperty("isolation", "isolate", "important");
+      });
+    };
+    requestAnimationFrame(lift);
+    setTimeout(lift, 80);
+  }
+
+  function notifyUploadError(message) {
+    if (status) status.replaceChildren();
+    alertify.error(escapeHtml(String(message || "Ocurrió un error. Intenta nuevamente.")));
+    liftAlertifyNotifier();
+  }
+
+  function notifyUploadSuccess(message) {
+    if (status) status.replaceChildren();
+    alertify.success(escapeHtml(String(message || "Listo.")));
+    liftAlertifyNotifier();
+  }
 
   function stopUploadProgressTicker() {
     if (uploadProgressTimer !== null) clearTimeout(uploadProgressTimer);
@@ -1523,6 +1560,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       const token = uploadTokenInput.value.trim();
       if (!token) {
         uploadTokenInput.classList.add("input-error");
+        alertify.error("Escribe el token de subida para continuar.");
+        uploadTokenInput.focus();
         return;
       }
       uploadTokenInput.classList.remove("input-error");
@@ -1536,7 +1575,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         const data = await res.json();
         if (data.ok) {
           setUploadTokenState(true);
-          uploadTokenStatus.innerHTML = '<span class="success">Token valido</span>';
+          alertify.success("Token validado. Ya puedes seleccionar las imágenes.");
+          uploadTokenStatus.innerHTML = "";
           if (uploadTokenSection) uploadTokenSection.style.display = "none";
           if (uploadFormSection) uploadFormSection.style.display = "block";
           loadFolderList();
@@ -1546,6 +1586,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           uploadTokenInput.focus();
           btnUploadToken.disabled = true;
           uploadTokenStatus.innerHTML = '<span class="error"><i class="fa fa-info-circle" aria-hidden="true"></i> Demasiados intentos. Intenta nuevamente en <b class="token-countdown"></b></span>';
+          alertify.error("Se alcanzó el límite de intentos. Podrás probar de nuevo cuando termine el contador.");
           const countdownEl = uploadTokenStatus.querySelector(".token-countdown");
           startTokenCountdown({
             seconds: data.retryAfter,
@@ -1562,14 +1603,16 @@ document.addEventListener("DOMContentLoaded", async () => {
         } else {
           uploadTokenInput.classList.add("input-error");
           uploadTokenInput.focus();
-          uploadTokenStatus.innerHTML = data.attemptsLeft !== undefined
-            ? '<span class="error"><i class="fa fa-info-circle" aria-hidden="true"></i> Token invalido. Intentos restantes: ' + data.attemptsLeft + '</span>'
-            : '';
+          uploadTokenStatus.innerHTML = "";
+          alertify.error(data.attemptsLeft !== undefined
+            ? `El token no es válido. Te quedan ${data.attemptsLeft} intento(s).`
+            : "El token no es válido o ya expiró.");
         }
       } catch {
         uploadTokenInput.classList.add("input-error");
         uploadTokenInput.focus();
-        uploadTokenStatus.innerHTML = '';
+        uploadTokenStatus.innerHTML = "";
+        alertify.error("No se pudo validar el token. Revisa tu conexión e inténtalo de nuevo.");
       }
     });
 
@@ -1641,6 +1684,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (folderSearch) folderSearch.value = "";
     setUploadInvalid(folderTrigger, false);
     closeUploadAlbumCombobox();
+    updateFolderPathPreview();
 
     const routeId = getRouteIdByFolder(value);
     if (HAS_TOKEN && routeId) {
@@ -1725,6 +1769,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (modeExisting) modeExisting.classList.toggle("active", uploadMode === "existing");
       if (modeNew) modeNew.classList.toggle("active", uploadMode === "new");
       clearUploadValidation();
+      updateFolderPathPreview();
     });
   });
 
@@ -1736,7 +1781,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (status) status.innerHTML = "";
     setUploadProgress("prepare", false);
     if (newAlbumName) newAlbumName.value = "";
-    if (newFolderName) newFolderName.value = "";
+    folderLevelInputs = [];
+    if (folderLevelList) folderLevelList.replaceChildren();
+    if (addFolderLevelButton) addFolderLevelButton.innerHTML = '<i class="fa fa-plus" aria-hidden="true"></i> Añadir carpeta';
+    if (folderPathPreview) {
+      folderPathPreview.hidden = true;
+      folderPathPreview.replaceChildren();
+    }
     if (btnUpload) btnUpload.disabled = false;
     if (folderSelect) folderSelect.value = "";
     if (folderTriggerValue) folderTriggerValue.textContent = "Buscar o seleccionar album";
@@ -1750,6 +1801,78 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (modeExisting) modeExisting.classList.add("active");
     if (modeNew) modeNew.classList.remove("active");
   }
+
+  function updateFolderPathPreview() {
+    if (!folderPathPreview) return;
+    const base = uploadMode === "new"
+      ? newAlbumName?.value.trim()
+      : (folderSelect?.value ? folderTriggerValue?.textContent.trim() : "Selecciona un álbum");
+    const levels = folderLevelInputs.map(input => input.value.trim()).filter(Boolean);
+    const parts = [base, ...levels].filter(Boolean);
+    folderPathPreview.replaceChildren();
+    if (!levels.length) {
+      folderPathPreview.hidden = true;
+      return;
+    }
+    folderPathPreview.hidden = false;
+    const label = document.createElement("span");
+    label.className = "folder-path-caption";
+    label.textContent = "Destino";
+    const breadcrumb = document.createElement("strong");
+    breadcrumb.textContent = parts.join("  ›  ");
+    folderPathPreview.append(label, breadcrumb);
+  }
+
+  function addFolderLevel(value = "") {
+    if (!folderLevelList) return;
+    const row = document.createElement("div");
+    row.className = "folder-level-row";
+
+    const number = document.createElement("span");
+    number.className = "folder-level-number";
+    number.textContent = String(folderLevelInputs.length + 1).padStart(2, "0");
+    number.setAttribute("aria-hidden", "true");
+
+    const input = document.createElement("input");
+    input.type = "text";
+    input.className = "folder-level-input";
+    input.placeholder = "Nombre de la carpeta";
+    input.autocomplete = "off";
+    input.maxLength = 80;
+    input.value = value;
+    input.setAttribute("aria-label", `Nombre de la carpeta, nivel ${folderLevelInputs.length + 1}`);
+    input.addEventListener("input", updateFolderPathPreview);
+
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "folder-level-remove";
+    remove.innerHTML = '<i class="fa fa-trash" aria-hidden="true"></i>';
+    remove.setAttribute("aria-label", "Quitar esta carpeta");
+    remove.addEventListener("click", () => {
+      folderLevelInputs = folderLevelInputs.filter(item => item !== input);
+      row.remove();
+      if (folderLevelInputs.length === 0) {
+        addFolderLevelButton.innerHTML = '<i class="fa fa-plus" aria-hidden="true"></i> Añadir carpeta';
+      }
+      [...folderLevelList.children].forEach((item, index) => {
+        const field = item.querySelector("input");
+        item.querySelector(".folder-level-number").textContent = String(index + 1).padStart(2, "0");
+        field.setAttribute("aria-label", `Nombre de la carpeta, nivel ${index + 1}`);
+      });
+      updateFolderPathPreview();
+    });
+
+    row.append(number, input, remove);
+    folderLevelList.append(row);
+    folderLevelInputs.push(input);
+    addFolderLevelButton.innerHTML = '<i class="fa fa-plus" aria-hidden="true"></i> Añadir otro nivel';
+    input.focus();
+    updateFolderPathPreview();
+  }
+
+  addFolderLevelButton?.addEventListener("click", () => addFolderLevel());
+  newAlbumName?.addEventListener("input", updateFolderPathPreview);
+  folderTrigger?.addEventListener("click", updateFolderPathPreview);
 
   if (fileInput) {
     fileInput.accept = ALLOWED_UPLOAD_EXTENSIONS.map(extension => `.${extension}`).join(",");
@@ -1800,8 +1923,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     fileInput.addEventListener("change", () => {
       const chosenFiles = Array.from(fileInput.files || []).filter(isAllowedUploadFile);
+      const rejectedCount = fileInput.files.length - chosenFiles.length;
+      if (rejectedCount > 0) alertify.error(`${rejectedCount} archivo(s) no tienen un formato permitido.`);
       if (chosenFiles.length > MAX_UPLOAD_FILES) {
-        status.innerHTML = `<span class="error">Puedes subir hasta ${MAX_UPLOAD_FILES} archivos por carga.</span>`;
+        alertify.error(`Puedes seleccionar hasta ${MAX_UPLOAD_FILES} imágenes por carga.`);
       }
       syncUploadFileInput(chosenFiles.slice(0, MAX_UPLOAD_FILES));
       renderSelectedFiles();
@@ -1828,7 +1953,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const files = Array.from(e.dataTransfer?.files || []).filter(isAllowedUploadFile);
         if (!files.length) return;
         if (files.length > MAX_UPLOAD_FILES) {
-          status.innerHTML = `<span class="error">Puedes subir hasta ${MAX_UPLOAD_FILES} archivos por carga.</span>`;
+          alertify.error(`Puedes seleccionar hasta ${MAX_UPLOAD_FILES} imágenes por carga.`);
         }
         syncUploadFileInput(files.slice(0, MAX_UPLOAD_FILES));
         setUploadInvalid(fileDropzone, false);
@@ -1845,9 +1970,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       const files = selectedUploadFiles;
       clearUploadValidation();
 
-      // === Construir ruta destino (max 2 niveles) ===
+      // Construye una ruta con tantos niveles como haya indicado el usuario.
       let targetFolder = "";
-      const subfolder = newFolderName?.value.trim() || "";
+      const customPath = folderLevelInputs.map(input => normalizeFolderSegment(input.value)).filter(Boolean).join("/");
       const missingFiles = files.length === 0;
       let missingDestination = false;
 
@@ -1857,11 +1982,9 @@ document.addEventListener("DOMContentLoaded", async () => {
           missingDestination = true;
           setUploadInvalid(newAlbumName, true);
         } else {
-          targetFolder = newAlbum.replace(/[^\w\- ]/g, "").trim().replace(/\s+/g, "_");
+          targetFolder = normalizeFolderSegment(newAlbum);
         }
-        if (subfolder) {
-          targetFolder += "/" + subfolder.replace(/[^\w\- ]/g, "").trim().replace(/\s+/g, "_");
-        }
+        if (customPath) targetFolder += "/" + customPath;
       } else {
         const selectedFolder = folderSelect.value;
         if (!selectedFolder) {
@@ -1870,19 +1993,17 @@ document.addEventListener("DOMContentLoaded", async () => {
         } else {
           targetFolder = selectedFolder;
         }
-        if (subfolder) {
-          const parts = targetFolder.split("/");
-          if (parts.length >= 2) {
-            status.innerHTML = '<span class="error">Solo se permiten 2 niveles (album / subcarpeta)</span>';
-            return;
-          }
-          targetFolder += "/" + subfolder.replace(/[^\w\- ]/g, "").trim().replace(/\s+/g, "_");
-        }
+        if (customPath) targetFolder += "/" + customPath;
       }
 
       if (missingFiles) setUploadInvalid(fileDropzone, true);
       if (missingFiles || missingDestination) {
-        status.innerHTML = '<span class="error"><i class="fa fa-info-circle" aria-hidden="true"></i> Completa los campos marcados antes de subir</span>';
+        const message = missingDestination && missingFiles
+          ? "Selecciona un álbum y añade al menos una imagen para continuar."
+          : missingDestination
+            ? "Selecciona o crea un álbum de destino para tus imágenes."
+            : "Añade al menos una imagen antes de iniciar la subida.";
+        notifyUploadError(message);
         return;
       }
 
@@ -1912,20 +2033,16 @@ document.addEventListener("DOMContentLoaded", async () => {
         btnUpload.disabled = true;
         btnUpload.setAttribute("aria-busy", "true");
 
-        if (uploadMode === "new" || (subfolder && uploadMode === "existing")) {
+        if (uploadMode === "new" || customPath) {
           try {
             const formData = new FormData();
-            if (targetFolder.includes("/")) {
-              formData.append("parent", targetFolder.split("/")[0]);
-              formData.append("name", targetFolder.split("/")[1]);
-            } else {
-              formData.append("parent", "");
-              formData.append("name", targetFolder);
-            }
+            const separator = targetFolder.lastIndexOf("/");
+            formData.append("parent", separator >= 0 ? targetFolder.slice(0, separator) : "");
+            formData.append("name", separator >= 0 ? targetFolder.slice(separator + 1) : targetFolder);
             const res = await fetch(API.createFolder, { method: "POST", body: formData });
             const data = await res.json();
             if (!data.ok) {
-              status.innerHTML = '<span class="error">Error al crear carpeta: ' + (data.error || "") + '</span>';
+              notifyUploadError(`No se pudo crear la carpeta: ${data.error || "verifica el nombre e inténtalo nuevamente."}`);
               await keepUploadProgressVisible(progressStartedAt);
               setUploadProgress("prepare", false);
               btnUpload.disabled = false;
@@ -1933,7 +2050,7 @@ document.addEventListener("DOMContentLoaded", async () => {
               return;
             }
           } catch {
-            status.innerHTML = '<span class="error">Error de conexion al crear carpeta</span>';
+            notifyUploadError("No se pudo crear la carpeta por un problema de conexión. Tus imágenes todavía no se han subido.");
             await keepUploadProgressVisible(progressStartedAt);
             setUploadProgress("prepare", false);
             btnUpload.disabled = false;
@@ -1966,9 +2083,9 @@ document.addEventListener("DOMContentLoaded", async () => {
           if (data.ok) {
             setUploadProgress("finish", false);
             clearUploadForm();
-            status.innerHTML = '<span class="success">' + data.uploaded + ' archivo(s) subido(s) correctamente</span>';
+            notifyUploadSuccess(`${data.uploaded} imagen(es) se subieron correctamente.`);
             if (data.errors?.length) {
-              status.innerHTML += '<br><span class="error">' + data.errors.join("<br>") + '</span>';
+              notifyUploadError(data.errors.join(". "));
             }
             loadDynamicMenus();
             if (currentFolder && currentTitle) {
@@ -1976,16 +2093,13 @@ document.addEventListener("DOMContentLoaded", async () => {
             }
           } else {
             setUploadProgress("finish", false);
-            status.innerHTML = '<span class="error">' + (data.error || "Error al subir") + '</span>';
-            if (data.errors?.length) {
-              status.innerHTML += '<br><span class="error">' + data.errors.join("<br>") + '</span>';
-            }
+            notifyUploadError([data.error || "No se pudieron subir las imágenes.", ...(data.errors || [])].join(" "));
           }
         } catch (e) {
           stopUploadProgressTicker();
           await keepUploadProgressVisible(progressStartedAt);
           setUploadProgress("finish", false);
-          status.innerHTML = '<span class="error">Error: ' + e.message + '</span>';
+          notifyUploadError("No se pudo completar la subida. Comprueba tu conexión e inténtalo otra vez.");
           console.error(e);
         } finally {
           setUploadProgress("finish", false);

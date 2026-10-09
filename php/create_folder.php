@@ -28,41 +28,39 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
   exit;
 }
 
-$parent = trim($_POST['parent'] ?? '', '/');
-$name = trim($_POST['name'] ?? '');
+$parent = trim(str_replace('\\', '/', (string)($_POST['parent'] ?? '')), '/');
+$name = trim((string)($_POST['name'] ?? ''));
+$parts = array_values(array_filter(explode('/', ($parent !== '' ? $parent . '/' : '') . $name), 'strlen'));
 
-if ($name === '' || preg_match('/[^\w\- ]/', $name)) {
+if ($parts === []) {
   http_response_code(400);
-  echo json_encode(['ok' => false, 'error' => 'Nombre invalido (solo letras, numeros, espacios, guiones)']);
+  echo json_encode(['ok' => false, 'error' => 'Indica un nombre de carpeta']);
   exit;
 }
 
-// Limpiar nombre: espacios a guion bajo
-$name = trim(preg_replace('/\s+/', '_', $name));
-
-$folder = $parent !== '' ? $parent . '/' . $name : $name;
-
-// Restringir a maximo 2 niveles (album/subcarpeta)
-$parts = explode('/', $folder);
-if (count($parts) > 2) {
-  http_response_code(400);
-  echo json_encode(['ok' => false, 'error' => 'Solo se permiten 2 niveles (album / subcarpeta)']);
-  exit;
+foreach ($parts as &$part) {
+  $part = trim($part);
+  if ($part === '' || $part === '.' || $part === '..' || preg_match('/[^\w\- ]/u', $part)) {
+    http_response_code(400);
+    echo json_encode(['ok' => false, 'error' => 'Nombre invalido. Usa letras, numeros, espacios o guiones']);
+    exit;
+  }
+  $part = trim(preg_replace('/\s+/', '_', $part));
 }
+unset($part);
 
-if (str_contains($folder, '..')) {
-  http_response_code(400);
-  echo json_encode(['ok' => false, 'error' => 'Ruta invalida']);
-  exit;
-}
+$folder = implode('/', $parts);
 
 $targetDir = $imgRoot . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $folder);
-$targetReal = $parent !== '' ? realpath(dirname($targetDir)) : $imgRoot;
 
-if (!$targetReal || !str_starts_with($targetReal, $imgRoot)) {
-  http_response_code(403);
-  echo json_encode(['ok' => false, 'error' => 'Carpeta no permitida']);
-  exit;
+$walkPath = $imgRoot;
+foreach ($parts as $part) {
+  $walkPath .= DIRECTORY_SEPARATOR . $part;
+  if (is_link($walkPath)) {
+    http_response_code(403);
+    echo json_encode(['ok' => false, 'error' => 'No se permiten carpetas enlazadas']);
+    exit;
+  }
 }
 
 if (is_dir($targetDir)) {
@@ -74,6 +72,13 @@ if (is_dir($targetDir)) {
 if (!mkdir($targetDir, 0755, true)) {
   http_response_code(500);
   echo json_encode(['ok' => false, 'error' => 'No se pudo crear la carpeta']);
+  exit;
+}
+
+$targetReal = realpath($targetDir);
+if (!$targetReal || !str_starts_with($targetReal, $imgRoot . DIRECTORY_SEPARATOR)) {
+  http_response_code(403);
+  echo json_encode(['ok' => false, 'error' => 'Carpeta no permitida']);
   exit;
 }
 

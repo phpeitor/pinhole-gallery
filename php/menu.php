@@ -23,6 +23,7 @@ if (!$imgRoot || !is_dir($imgRoot)) {
 function isVisibleDir(string $path, string $name): bool {
   return $name !== ''
     && $name[0] !== '.'
+    && !is_link($path . DIRECTORY_SEPARATOR . $name)
     && is_dir($path . DIRECTORY_SEPARATOR . $name);
 }
 
@@ -46,6 +47,43 @@ function makeId(string $parent, string $child): string {
   return makeSlug($parent . '_' . $child);
 }
 
+function collectGalleryFolders(string $parentPath, string $parent, string $relative, array &$usedIds): array {
+  $items = [];
+  $entries = scandir($parentPath) ?: [];
+  natcasesort($entries);
+
+  foreach ($entries as $name) {
+    if (!isVisibleDir($parentPath, $name)) continue;
+    $childPath = $parentPath . DIRECTORY_SEPARATOR . $name;
+    $childRelative = $relative !== '' ? $relative . '/' . $name : $name;
+
+    $hasImages = hasGalleryImages($childPath);
+    $children = collectGalleryFolders($childPath, $parent, $childRelative, $usedIds);
+    if (!$hasImages && count($children) === 0) continue;
+
+    $id = null;
+    if ($hasImages) {
+      $id = makeId($parent, str_replace('/', '_', $childRelative));
+      $baseId = $id;
+      $suffix = 2;
+      while (isset($usedIds[$id])) {
+        $id = $baseId . '_' . $suffix;
+        $suffix++;
+      }
+      $usedIds[$id] = true;
+    }
+
+    $items[] = [
+      'id' => $id,
+      'folder' => $parent . '/' . $childRelative,
+      'title' => makeLabel($name),
+      'children' => $children,
+    ];
+  }
+
+  return $items;
+}
+
 $entries = scandir($imgRoot) ?: [];
 $parentDirs = [];
 foreach ($entries as $name) {
@@ -60,14 +98,6 @@ $usedIds = [];
 foreach ($parentDirs as $parent) {
   $parentPath = $imgRoot . DIRECTORY_SEPARATOR . $parent;
   $parentHasImages = hasGalleryImages($parentPath);
-
-  $children = scandir($parentPath) ?: [];
-  $childDirs = [];
-  foreach ($children as $child) {
-    if (!isVisibleDir($parentPath, $child)) continue;
-    $childDirs[] = $child;
-  }
-  natcasesort($childDirs);
 
   $items = [];
   $directId = null;
@@ -85,28 +115,7 @@ foreach ($parentDirs as $parent) {
     }
   }
 
-  foreach ($childDirs as $child) {
-    $childPath = $parentPath . DIRECTORY_SEPARATOR . $child;
-    if (!hasGalleryImages($childPath)) continue;
-
-    $id = makeId($parent, $child);
-    if ($id === '') continue;
-
-    // Evita colisiones de id en nombres similares.
-    $baseId = $id;
-    $suffix = 2;
-    while (isset($usedIds[$id])) {
-      $id = $baseId . '_' . $suffix;
-      $suffix++;
-    }
-    $usedIds[$id] = true;
-
-    $items[] = [
-      'id' => $id,
-      'folder' => $parent . '/' . $child,
-      'title' => makeLabel($child),
-    ];
-  }
+  $items = collectGalleryFolders($parentPath, $parent, '', $usedIds);
 
   if (!$parentHasImages && count($items) === 0) continue;
 

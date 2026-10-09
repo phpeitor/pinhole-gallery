@@ -520,6 +520,12 @@ body.pinhole-unlocking .locked-icon-frame {
     animation: lockUnlockNudge .38s ease-out;
 }
 
+body.has-token .locked-icon {
+    filter: sepia(1) saturate(6) hue-rotate(220deg) brightness(1.12) drop-shadow(0 0 10px rgba(197, 168, 255, .72));
+    opacity: 1;
+    transform: scale(1.04);
+}
+
 @keyframes lockUnlockNudge {
     50% { transform: translateY(-2px); }
 }
@@ -1365,10 +1371,15 @@ body.has-upload-token .gallery-delete-image:focus {
 
 .upload-dropzone input[type="file"] {
     position: absolute;
-    width: 1px;
-    height: 1px;
+    inset: 0;
+    width: 100%;
+    height: 100%;
     opacity: 0;
-    pointer-events: none;
+    cursor: pointer;
+}
+
+.upload-dropzone {
+    position: relative;
 }
 
 .upload-dropzone-icon {
@@ -1751,6 +1762,97 @@ body.has-upload-token .gallery-delete-image:focus {
     }
 }
 
+/* Final upload-dialog layout: consistent spacing, no horizontal overflow and touch-sized actions. */
+.upload-modal {
+    box-sizing: border-box;
+    overflow: hidden;
+    padding: clamp(10px, 3vw, 28px);
+}
+
+.upload-modal-content {
+    box-sizing: border-box;
+    width: min(100%, 720px);
+    max-width: 720px;
+    max-height: min(90dvh, 900px);
+    overflow-x: hidden;
+    padding: clamp(22px, 4vw, 38px);
+}
+
+.upload-modal-content *,
+.upload-modal-content *::before,
+.upload-modal-content *::after { box-sizing: border-box; }
+
+#upload-form { display: grid; min-width: 0; gap: 13px; }
+#upload-form > .upload-field,
+#upload-form .upload-mode-panel .upload-field { min-width: 0; margin: 0 !important; }
+#upload-form .upload-mode-panel.active { display: grid; gap: 12px; }
+#upload-form .upload-tabs { margin: 0; }
+.upload-modal-content .upload-field label { margin-bottom: 6px; line-height: 1.35; }
+.upload-modal-content .upload-combobox-trigger { min-height: 54px; }
+.upload-modal-content .folder-level-heading { margin: 0 0 5px; }
+.upload-modal-content .folder-level-heading label { margin: 0; }
+.upload-modal-content .folder-level-heading .upload-hint { margin: 3px 0 0; }
+.upload-modal-content .folder-level-row { grid-template-columns: 38px minmax(0, 1fr) 40px; width: 100%; gap: 7px; }
+.upload-modal-content .folder-level-input { min-width: 0; }
+.upload-modal-content .folder-level-remove { box-sizing: border-box; width: 40px !important; min-width: 40px !important; max-width: 40px !important; height: 40px; min-height: 40px; padding: 0 !important; box-shadow: none !important; }
+.upload-modal-content .folder-level-add { min-height: 40px; margin-top: 6px; }
+.upload-modal-content .folder-path-preview { margin-top: 7px; }
+.upload-modal-content .upload-dropzone { box-sizing: border-box; min-width: 0; margin: 0; }
+.upload-modal-content #btn-upload,
+.upload-modal-content .upload-btn { min-height: 50px; }
+#upload-status:empty { display: none; }
+
+/* Toasts must stay above the upload overlay (and the upload-progress layer). */
+.ajs-notifier,
+.ajs-notifier.ajs-top,
+.ajs-notifier.ajs-top.ajs-right { z-index: 100010 !important; }
+
+/* Alertify toasts use the same palette and remain readable on narrow screens. */
+.ajs-notifier.ajs-top.ajs-right {
+    top: max(14px, env(safe-area-inset-top));
+    right: max(14px, env(safe-area-inset-right));
+    width: min(390px, calc(100vw - 28px));
+}
+
+.ajs-notifier .ajs-message {
+    margin-bottom: 10px;
+    padding: 14px 16px;
+    border: 2px solid #0c0b11;
+    border-radius: 2px;
+    box-shadow: 5px 5px 0 rgba(0, 0, 0, .42);
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
+.ajs-notifier .ajs-message.ajs-error { background: #ffe8e8; color: #7f1d1d; }
+.ajs-notifier .ajs-message.ajs-success { background: #e9ffd1; color: #244313; }
+.ajs-notifier .ajs-message.ajs-warning { background: #fff3cc; color: #674b00; }
+.ajs-notifier .ajs-message:not(.ajs-error):not(.ajs-success):not(.ajs-warning) { background: var(--pixitor-paper); color: var(--pixitor-ink); }
+.ajs-dialog { box-sizing: border-box; width: min(480px, calc(100vw - 24px)) !important; max-width: calc(100vw - 24px) !important; }
+.ajs-content { overflow-wrap: anywhere; line-height: 1.5; }
+
+@media (max-width: 600px) {
+    .upload-modal { align-items: center; padding: 8px; }
+    .upload-modal-content {
+        width: 100%;
+        max-height: calc(100dvh - 16px);
+        padding: 22px 16px calc(20px + env(safe-area-inset-bottom));
+        border-radius: 2px;
+    }
+    #upload-form { gap: 12px; }
+    .upload-modal-content .upload-tabs { gap: 4px; padding: 4px; }
+    .upload-modal-content .upload-tab { min-width: 0; min-height: 48px; padding: 9px 5px; font-size: 11px; line-height: 1.3; }
+    .upload-modal-content .folder-level-row { grid-template-columns: 32px minmax(0, 1fr) 36px; gap: 6px; }
+    .upload-modal-content .folder-level-number { width: 32px; height: 36px; }
+    .upload-modal-content .folder-level-remove { width: 36px !important; min-width: 36px !important; max-width: 36px !important; height: 36px; min-height: 36px; }
+    .upload-modal-content .upload-dropzone { min-height: 138px; padding: 18px 12px; }
+    .upload-modal-content .upload-dropzone-title { max-width: 28ch; font-size: 13px; line-height: 1.45; }
+    .ajs-notifier.ajs-top.ajs-right { top: max(8px, env(safe-area-inset-top)); right: 8px; width: calc(100vw - 16px); }
+    .ajs-notifier .ajs-message { padding: 12px 14px; font-size: 13px; }
+}
+
 /* Keep a single wordmark in the header; the theme's mobile sticky clone caused a second tagline. */
 .pinhole-header .pinhole-header-sticky .pinhole-site-branding {
     display: none !important;
@@ -2130,6 +2232,27 @@ body.home-intro.home-story-ready .home-story-nav:disabled { display: none; }
 .upload-hint { color: var(--pixitor-muted); }
 .upload-dropzone-icon { border-radius: 2px; background: var(--pixitor-lilac); color: var(--pixitor-ink); }
 
+.folder-level-heading { margin-bottom: 10px; }
+.folder-level-heading > div { display: grid; gap: 3px; }
+.folder-level-optional { margin-left: 6px; color: var(--pixitor-muted); font-size: 11px; font-weight: 500; text-transform: uppercase; }
+.folder-level-list { display: grid; gap: 8px; }
+.folder-level-row { display: grid; grid-template-columns: 38px minmax(0, 1fr) 42px; align-items: center; gap: 8px; }
+.folder-level-number { display: grid; width: 34px; height: 34px; place-items: center; border: 1px solid var(--pixitor-line); background: #191722; color: var(--pixitor-lilac); font: 700 12px/1 "Courier New", monospace; }
+.upload-field .folder-level-input { box-sizing: border-box; width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid #595465; border-radius: 2px; background: #191722; color: var(--pixitor-paper); font: inherit; }
+.upload-field .folder-level-input::placeholder { color: #aaa5b7; }
+.folder-level-remove { display: grid; width: 40px; height: 40px; place-items: center; border: 1px solid var(--pixitor-line); border-radius: 2px; background: transparent; color: #c8c2d2; cursor: pointer; }
+.folder-level-remove:hover, .folder-level-remove:focus-visible { border-color: var(--pixitor-pink); background: rgba(255, 93, 131, .12); color: var(--pixitor-pink); }
+.folder-level-add { display: inline-flex; min-height: 40px; align-items: center; gap: 8px; margin-top: 9px; padding: 0 12px; border: 1px dashed #817a94; border-radius: 2px; background: transparent; color: var(--pixitor-lilac); font: 700 12px/1 "Courier New", monospace; text-transform: uppercase; cursor: pointer; }
+.folder-level-add:hover, .folder-level-add:focus-visible { border-color: var(--pixitor-lilac); background: rgba(197, 168, 255, .08); }
+.folder-path-preview { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; margin-top: 11px; padding: 10px 12px; border-left: 3px solid var(--pixitor-lilac); background: #191722; }
+.folder-path-preview[hidden] { display: none; }
+.folder-path-caption { flex: 0 0 100%; color: var(--pixitor-muted); font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.folder-path-preview strong { color: var(--pixitor-paper); font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
+.pinhole-responsive-menu .pinhole-nav-responsive .sub-menu .sub-menu .sub-menu a { padding-left: 60px; }
+.upload-field .folder-level-input:focus-visible,
+.folder-level-add:focus-visible,
+.folder-level-remove:focus-visible { outline: 2px solid var(--pixitor-lilac); outline-offset: 2px; }
+
 .upload-btn {
     border: 2px solid #0c0b11;
     border-radius: 2px;
@@ -2283,6 +2406,12 @@ body.home-intro.home-story-ready .home-story-nav:disabled { display: none; }
 body.pinhole-lock #text-3 .textwidget { text-align: center; }
 body.pinhole-lock:not(.pinhole-unlocking) .locked-icon-frame { animation: none; }
 body.pinhole-lock .partner-note { margin-top: 0; }
+
+/* The access form is in the responsive drawer as well as the desktop sidebar. */
+body.has-token #text-2,
+body.has-token #mc_embed_signup {
+    display: none !important;
+}
 
 body.home-intro .home-hero-slider.is-guest-video.is-loading::before {
     z-index: 2;
