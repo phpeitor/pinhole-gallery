@@ -1806,6 +1806,8 @@ body.has-upload-token .gallery-delete-image:focus {
 .ajs-notifier,
 .ajs-notifier.ajs-top,
 .ajs-notifier.ajs-top.ajs-right { z-index: 100010 !important; }
+body > .ajs-notifier { position: fixed !important; z-index: 2147483647 !important; isolation: isolate; }
+.upload-modal > .ajs-notifier { position: absolute !important; inset: 12px 12px auto auto !important; z-index: 2147483647 !important; width: min(390px, calc(100% - 24px)) !important; isolation: isolate; }
 
 /* Alertify toasts use the same palette and remain readable on narrow screens. */
 .ajs-notifier.ajs-top.ajs-right {

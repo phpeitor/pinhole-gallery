@@ -257,7 +257,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         } else if (data.locked) {
           keepLocked = true;
           showGalleryTokenLock(data.retryAfter);
-          alertify.error("Demasiados intentos. Intenta nuevamente en unos minutos");
+          notifyUploadError("Demasiados intentos. Intenta nuevamente en unos minutos.");
         } else {
           input.classList.add("input-error");
           input.focus();
@@ -267,7 +267,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           if (tokenStatus) {
             tokenStatus.innerHTML = '<span class="error"><i class="fa fa-info-circle" aria-hidden="true"></i> ' + message + '</span>';
           }
-          alertify.error(message);
+          notifyUploadError(message);
         }
       } catch (err) {
         console.error(err);
@@ -303,7 +303,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       btnToken.setAttribute("aria-busy", "true");
       if (galleryTokenButtonLabel) galleryTokenButtonLabel.textContent = "Abriendo";
     }
-    alertify.success("Token correcto. Desbloqueando galeria...");
+    notifyUploadSuccess("Token correcto. Desbloqueando galería…");
     setTimeout(() => {
       unlockGallery();
       location.reload();
@@ -1112,7 +1112,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     } catch (e) {
       if (e.name === "AbortError") return; // cambio de galería
       console.error(e);
-      alertify.error("Error cargando galería");
+      notifyUploadError("No se pudo cargar la galería. Intenta nuevamente.");
     } finally {
       if (requestId === activeRequestId) {
         isLoading = false;
@@ -1203,12 +1203,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     e.preventDefault();
 
     if (!HAS_TOKEN) {
-      alertify.error("Necesitas token para descargar");
+      notifyUploadError("Necesitas validar el token de acceso antes de descargar.");
       return;
     }
 
     if (!currentFolder || btn.classList.contains("is-disabled")) {
-      alertify.error("Selecciona una galería primero");
+      notifyUploadError("Selecciona una galería antes de descargar.");
       return;
     }
 
@@ -1309,7 +1309,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       e.stopPropagation();
 
       if (!uploadTokenValid) {
-        alertify.error("Valida el token de subida para eliminar imagenes");
+        notifyUploadError("Valida el token de subida antes de eliminar imágenes.");
         return;
       }
 
@@ -1324,15 +1324,15 @@ document.addEventListener("DOMContentLoaded", async () => {
           const res = await fetch(API.deleteImage, { method: "POST", body: formData });
           const data = await res.json();
           if (!data.ok) {
-            alertify.error(data.error || "No se pudo eliminar");
+            notifyUploadError(data.error || "No se pudo eliminar la imagen.");
             deleteBtn.disabled = false;
             return;
           }
-          alertify.success("Imagen eliminada");
+          notifyUploadSuccess("Imagen eliminada correctamente.");
           if (currentFolder && currentTitle) fetchAndRender(currentFolder, currentTitle);
         } catch (err) {
           console.error(err);
-          alertify.error("Error eliminando imagen");
+          notifyUploadError("No se pudo eliminar la imagen. Intenta nuevamente.");
           deleteBtn.disabled = false;
         }
       }, () => {}).set({ closable: true });
@@ -1437,16 +1437,28 @@ document.addEventListener("DOMContentLoaded", async () => {
   let selectedUploadFiles = [];
   let uploadProgressTimer = null;
   let folderLevelInputs = [];
+  let alertifyLiftObserver = null;
 
   function liftAlertifyNotifier() {
     const lift = () => {
       document.querySelectorAll(".ajs-notifier").forEach((notifier) => {
-        if (notifier.parentElement !== document.body) document.body.appendChild(notifier);
-        notifier.style.setProperty("position", "fixed", "important");
+        const modalIsOpen = uploadModal?.classList.contains("open");
+        const host = modalIsOpen ? uploadModal : document.body;
+        if (notifier.parentElement !== host) host.appendChild(notifier);
+        notifier.style.setProperty("position", modalIsOpen ? "absolute" : "fixed", "important");
+        notifier.style.setProperty("top", modalIsOpen ? "12px" : "max(14px, env(safe-area-inset-top))", "important");
+        notifier.style.setProperty("right", modalIsOpen ? "12px" : "max(14px, env(safe-area-inset-right))", "important");
+        notifier.style.setProperty("bottom", "auto", "important");
+        notifier.style.setProperty("left", "auto", "important");
+        notifier.style.setProperty("width", modalIsOpen ? "min(390px, calc(100% - 24px))" : "min(390px, calc(100vw - 28px))", "important");
         notifier.style.setProperty("z-index", "2147483647", "important");
         notifier.style.setProperty("isolation", "isolate", "important");
       });
     };
+    if (!alertifyLiftObserver && document.body) {
+      alertifyLiftObserver = new MutationObserver(lift);
+      alertifyLiftObserver.observe(document.body, { childList: true, subtree: true });
+    }
     requestAnimationFrame(lift);
     setTimeout(lift, 80);
   }
@@ -1560,7 +1572,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const token = uploadTokenInput.value.trim();
       if (!token) {
         uploadTokenInput.classList.add("input-error");
-        alertify.error("Escribe el token de subida para continuar.");
+        notifyUploadError("Escribe el token de subida para continuar.");
         uploadTokenInput.focus();
         return;
       }
@@ -1575,7 +1587,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const data = await res.json();
         if (data.ok) {
           setUploadTokenState(true);
-          alertify.success("Token validado. Ya puedes seleccionar las imágenes.");
+          notifyUploadSuccess("Token validado. Ya puedes seleccionar las imágenes.");
           uploadTokenStatus.innerHTML = "";
           if (uploadTokenSection) uploadTokenSection.style.display = "none";
           if (uploadFormSection) uploadFormSection.style.display = "block";
@@ -1586,7 +1598,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           uploadTokenInput.focus();
           btnUploadToken.disabled = true;
           uploadTokenStatus.innerHTML = '<span class="error"><i class="fa fa-info-circle" aria-hidden="true"></i> Demasiados intentos. Intenta nuevamente en <b class="token-countdown"></b></span>';
-          alertify.error("Se alcanzó el límite de intentos. Podrás probar de nuevo cuando termine el contador.");
+          notifyUploadError("Se alcanzó el límite de intentos. Podrás probar de nuevo cuando termine el contador.");
           const countdownEl = uploadTokenStatus.querySelector(".token-countdown");
           startTokenCountdown({
             seconds: data.retryAfter,
@@ -1604,7 +1616,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           uploadTokenInput.classList.add("input-error");
           uploadTokenInput.focus();
           uploadTokenStatus.innerHTML = "";
-          alertify.error(data.attemptsLeft !== undefined
+          notifyUploadError(data.attemptsLeft !== undefined
             ? `El token no es válido. Te quedan ${data.attemptsLeft} intento(s).`
             : "El token no es válido o ya expiró.");
         }
@@ -1612,7 +1624,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         uploadTokenInput.classList.add("input-error");
         uploadTokenInput.focus();
         uploadTokenStatus.innerHTML = "";
-        alertify.error("No se pudo validar el token. Revisa tu conexión e inténtalo de nuevo.");
+        notifyUploadError("No se pudo validar el token. Revisa tu conexión e inténtalo de nuevo.");
       }
     });
 
@@ -1924,9 +1936,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     fileInput.addEventListener("change", () => {
       const chosenFiles = Array.from(fileInput.files || []).filter(isAllowedUploadFile);
       const rejectedCount = fileInput.files.length - chosenFiles.length;
-      if (rejectedCount > 0) alertify.error(`${rejectedCount} archivo(s) no tienen un formato permitido.`);
+      if (rejectedCount > 0) notifyUploadError(`${rejectedCount} archivo(s) no tienen un formato permitido.`);
       if (chosenFiles.length > MAX_UPLOAD_FILES) {
-        alertify.error(`Puedes seleccionar hasta ${MAX_UPLOAD_FILES} imágenes por carga.`);
+        notifyUploadError(`Puedes seleccionar hasta ${MAX_UPLOAD_FILES} imágenes por carga.`);
       }
       syncUploadFileInput(chosenFiles.slice(0, MAX_UPLOAD_FILES));
       renderSelectedFiles();
@@ -1953,7 +1965,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         const files = Array.from(e.dataTransfer?.files || []).filter(isAllowedUploadFile);
         if (!files.length) return;
         if (files.length > MAX_UPLOAD_FILES) {
-          alertify.error(`Puedes seleccionar hasta ${MAX_UPLOAD_FILES} imágenes por carga.`);
+          notifyUploadError(`Puedes seleccionar hasta ${MAX_UPLOAD_FILES} imágenes por carga.`);
         }
         syncUploadFileInput(files.slice(0, MAX_UPLOAD_FILES));
         setUploadInvalid(fileDropzone, false);
