@@ -1782,13 +1782,32 @@ body.has-upload-token .gallery-delete-image:focus {
 .upload-modal-content *::before,
 .upload-modal-content *::after { box-sizing: border-box; }
 
-#upload-form { display: grid; min-width: 0; gap: 13px; }
+#upload-form { display: grid; min-width: 0; gap: 10px; }
+#upload-form > [hidden],
+#upload-form .upload-mode-panel[hidden],
+#upload-form #folder-level-list[hidden] { display: none !important; }
 #upload-form > .upload-field,
 #upload-form .upload-mode-panel .upload-field { min-width: 0; margin: 0 !important; }
-#upload-form .upload-mode-panel.active { display: grid; gap: 12px; }
+#upload-form .upload-mode-panel.active { display: contents !important; }
+#upload-form #subfolder-field { display: grid; gap: 5px; }
 #upload-form .upload-tabs { margin: 0; }
 .upload-modal-content .upload-field label { margin-bottom: 6px; line-height: 1.35; }
 .upload-modal-content .upload-combobox-trigger { min-height: 54px; }
+.upload-modal-content .upload-combobox-trigger,
+.upload-modal-content .upload-combobox-trigger:hover,
+.upload-modal-content .upload-combobox-trigger:focus,
+.upload-modal-content .upload-combobox-trigger:focus-visible,
+.upload-modal-content .upload-combobox.open .upload-combobox-trigger {
+    background: #191722 !important;
+    color: var(--pixitor-paper) !important;
+    user-select: none;
+}
+.upload-modal-content .upload-combobox-value { color: var(--pixitor-paper) !important; }
+.upload-modal-content .upload-combobox-trigger:hover,
+.upload-modal-content .upload-combobox.open .upload-combobox-trigger { border-color: var(--pixitor-lilac) !important; box-shadow: 0 0 0 2px rgba(197, 168, 255, .18) !important; }
+.upload-modal-content .upload-combobox-option:hover,
+.upload-modal-content .upload-combobox-option:focus-visible,
+.upload-modal-content .upload-combobox-option[aria-selected="true"] { background: #393545 !important; color: var(--pixitor-paper) !important; }
 .upload-modal-content .folder-level-heading { margin: 0 0 5px; }
 .upload-modal-content .folder-level-heading label { margin: 0; }
 .upload-modal-content .folder-level-heading .upload-hint { margin: 3px 0 0; }
@@ -1797,6 +1816,32 @@ body.has-upload-token .gallery-delete-image:focus {
 .upload-modal-content .folder-level-remove { box-sizing: border-box; width: 40px !important; min-width: 40px !important; max-width: 40px !important; height: 40px; min-height: 40px; padding: 0 !important; box-shadow: none !important; }
 .upload-modal-content .folder-level-add { min-height: 40px; margin-top: 6px; }
 .upload-modal-content .folder-path-preview { margin-top: 7px; }
+.folder-delete-button[hidden],
+.folder-delete-hint[hidden] { display: none !important; }
+.folder-delete-button {
+    display: inline-flex;
+    width: fit-content;
+    min-height: 38px;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    margin-top: 8px;
+    padding: 0 11px;
+    border: 1px solid rgba(255, 93, 131, .55);
+    border-radius: 2px;
+    background: rgba(255, 93, 131, .08);
+    box-shadow: none;
+    color: #ff9caf;
+    font-size: 12px;
+    line-height: 1.3;
+    text-align: left;
+    text-transform: none;
+    cursor: pointer;
+}
+.folder-delete-button:hover,
+.folder-delete-button:focus-visible { border-color: var(--pixitor-pink); background: rgba(255, 93, 131, .18); color: #ffd9e0; }
+.folder-delete-button:disabled { opacity: .55; cursor: wait; }
+.folder-delete-hint { margin: 4px 0 0; color: var(--pixitor-muted); font-size: 11px; line-height: 1.45; }
 .upload-modal-content .upload-dropzone { box-sizing: border-box; min-width: 0; margin: 0; }
 .upload-modal-content #btn-upload,
 .upload-modal-content .upload-btn { min-height: 50px; }
@@ -1848,7 +1893,7 @@ body > .ajs-notifier { position: fixed !important; z-index: 2147483647 !importan
         padding: 22px 16px calc(20px + env(safe-area-inset-bottom));
         border-radius: 2px;
     }
-    #upload-form { gap: 12px; }
+    #upload-form { gap: 9px; }
     .upload-modal-content .upload-tabs { gap: 4px; padding: 4px; }
     .upload-modal-content .upload-tab { min-width: 0; min-height: 48px; padding: 9px 5px; font-size: 11px; line-height: 1.3; }
     .upload-modal-content .folder-level-row { grid-template-columns: 32px minmax(0, 1fr) 36px; gap: 6px; }
@@ -2479,5 +2524,58 @@ body.home-intro .home-hero-slider.is-guest-video .home-guest-video {
     .upload-modal-content {
         border-radius: 2px;
         box-shadow: 4px 4px 0 rgba(0, 0, 0, .55);
+    }
+}
+
+/* Keep Alertify's close control compact despite the theme's global button rules. */
+.ajs-dialog .ajs-header { position: relative; min-height: 62px; padding-right: 62px !important; }
+.ajs-dialog .ajs-header .ajs-close {
+    position: absolute !important;
+    top: 50% !important;
+    right: 14px !important;
+    display: grid !important;
+    float: none !important;
+    box-sizing: border-box !important;
+    width: 38px !important;
+    min-width: 38px !important;
+    max-width: 38px !important;
+    height: 38px !important;
+    min-height: 38px !important;
+    max-height: 38px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    place-items: center;
+    border: 1px solid #c9c1ad !important;
+    border-radius: 2px !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    color: #514b5b !important;
+    font-family: Arial, sans-serif !important;
+    font-size: 25px !important;
+    line-height: 1 !important;
+    text-align: center !important;
+    transform: translateY(-50%);
+    cursor: pointer;
+    transition: color .16s ease, background .16s ease, border-color .16s ease;
+}
+.ajs-dialog .ajs-header .ajs-close:hover,
+.ajs-dialog .ajs-header .ajs-close:focus-visible {
+    border-color: var(--pixitor-pink) !important;
+    background: var(--pixitor-pink) !important;
+    color: var(--pixitor-ink) !important;
+    outline: 2px solid rgba(255, 93, 131, .3);
+    outline-offset: 2px;
+}
+
+@media (max-width: 600px) {
+    .ajs-dialog .ajs-header { min-height: 58px; padding-right: 54px !important; }
+    .ajs-dialog .ajs-header .ajs-close {
+        right: 10px !important;
+        width: 36px !important;
+        min-width: 36px !important;
+        max-width: 36px !important;
+        height: 36px !important;
+        min-height: 36px !important;
+        max-height: 36px !important;
     }
 }

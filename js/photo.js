@@ -23,6 +23,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     list: "php/list.php",
     zip: "php/zip.php",
     deleteImage: "php/delete_image.php",
+    deleteFolder: "php/delete_folder.php",
     checkUploadToken: "php/check_upload_token.php",
     uploadTokenValidate: "php/upload_token_validate.php",
     createFolder: "php/create_folder.php",
@@ -1417,6 +1418,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   const folderTriggerValue = folderTrigger?.querySelector(".upload-combobox-value");
   const folderSearch = document.getElementById("upload-folder-search");
   const folderResults = document.getElementById("upload-folder-results");
+  const deleteFolderButton = document.getElementById("btn-delete-upload-folder");
+  const deleteFolderHint = document.getElementById("folder-delete-hint");
   const newAlbumName = document.getElementById("new-album-name");
   const folderLevelList = document.getElementById("folder-level-list");
   const addFolderLevelButton = document.getElementById("add-folder-level");
@@ -1643,6 +1646,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     folderSelect.innerHTML = '<option value="">-- Seleccionar existente --</option>';
     folderSelect.disabled = true;
     uploadAlbumOptions = [];
+    if (deleteFolderButton) deleteFolderButton.hidden = true;
+    if (deleteFolderHint) deleteFolderHint.hidden = true;
     renderUploadAlbumOptions();
     try {
       const res = await fetch(API.menu, { cache: "no-store" });
@@ -1661,15 +1666,19 @@ document.addEventListener("DOMContentLoaded", async () => {
             meta: g.folder ? "Álbum principal" : "Álbum padre · crear subcarpeta aquí",
           });
         }
-        if (g.items) {
-          g.items.forEach(item => {
+        const addNestedOptions = (items, ancestors = []) => {
+          (items || []).forEach(item => {
+            const trail = [...ancestors, item.title];
+            const label = [g.group, ...trail].join(" / ");
             const opt = document.createElement("option");
             opt.value = item.folder;
-            opt.textContent = g.group + " / " + item.title;
+            opt.textContent = label;
             folderSelect.appendChild(opt);
-            uploadAlbumOptions.push({ value: item.folder, label: g.group + " / " + item.title, meta: g.group });
+            uploadAlbumOptions.push({ value: item.folder, label, meta: "Carpeta dentro de " + g.group });
+            addNestedOptions(item.children, trail);
           });
-        }
+        };
+        addNestedOptions(g.items);
       });
     } catch {
       // ignore
@@ -1695,6 +1704,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   function selectUploadAlbum(value, label) {
     if (folderSelect) folderSelect.value = value;
     if (folderTriggerValue) folderTriggerValue.textContent = label || "Buscar o seleccionar album";
+    if (deleteFolderButton) deleteFolderButton.hidden = !value;
+    if (deleteFolderHint) deleteFolderHint.hidden = !value;
     if (folderSearch) folderSearch.value = "";
     setUploadInvalid(folderTrigger, false);
     closeUploadAlbumCombobox();
@@ -1706,6 +1717,71 @@ document.addEventListener("DOMContentLoaded", async () => {
       fetchAndRender(value, label);
     }
   }
+
+  async function deleteSelectedFolder() {
+    const path = folderSelect?.value || "";
+    if (!path || !deleteFolderButton) return;
+
+    deleteFolderButton.disabled = true;
+    try {
+      const inspectForm = new FormData();
+      inspectForm.append("action", "inspect");
+      inspectForm.append("path", path);
+      const inspectResponse = await fetch(API.deleteFolder, { method: "POST", body: inspectForm, cache: "no-store" });
+      const details = await inspectResponse.json();
+      if (!inspectResponse.ok || !details.ok) {
+        throw new Error(details.error || "No se pudo revisar la carpeta seleccionada.");
+      }
+
+      const folderText = escapeHtml(path.replaceAll("/", " › "));
+      const imageText = `${details.images} ${details.images === 1 ? "imagen" : "imágenes"}`;
+      const folderCountText = `${details.folders} ${details.folders === 1 ? "carpeta" : "carpetas"}`;
+      const message = `<p>Vas a eliminar <b>${folderText}</b> y todo su contenido.</p>
+        <p>Se eliminarán <b>${folderCountText}</b> y <b>${imageText}</b>.</p>
+        <p><b>Esta acción no se puede deshacer.</b></p>`;
+
+      alertify.confirm("Eliminar carpeta", message, async () => {
+        try {
+          const deleteForm = new FormData();
+          deleteForm.append("action", "delete");
+          deleteForm.append("path", path);
+          const response = await fetch(API.deleteFolder, { method: "POST", body: deleteForm, cache: "no-store" });
+          const result = await response.json();
+          if (!response.ok || !result.ok) {
+            throw new Error(result.error || "No se pudo eliminar la carpeta.");
+          }
+
+          const removedPath = result.path || path;
+          if (currentFolder === removedPath || currentFolder.startsWith(removedPath + "/")) {
+            history.replaceState(null, "", "#home");
+            showHomeView();
+          }
+          folderSelect.value = "";
+          if (folderTriggerValue) folderTriggerValue.textContent = "Buscar o seleccionar album";
+          deleteFolderButton.hidden = true;
+          if (deleteFolderHint) deleteFolderHint.hidden = true;
+          await loadFolderList();
+          await loadDynamicMenus();
+          notifyUploadSuccess(`Carpeta “${removedPath.replaceAll("/", " › ")}” eliminada.`);
+        } catch (error) {
+          notifyUploadError(error.message || "No se pudo eliminar la carpeta.");
+        } finally {
+          deleteFolderButton.disabled = false;
+        }
+      }, () => {
+        deleteFolderButton.disabled = false;
+      }).set({
+        labels: { ok: "Eliminar", cancel: "Conservar" },
+        closable: true,
+        closableByDimmer: true,
+      });
+    } catch (error) {
+      deleteFolderButton.disabled = false;
+      notifyUploadError(error.message || "No se pudo revisar la carpeta seleccionada.");
+    }
+  }
+
+  deleteFolderButton?.addEventListener("click", deleteSelectedFolder);
 
   function renderUploadAlbumOptions() {
     if (!folderResults) return;
@@ -1782,6 +1858,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       uploadMode = tab.dataset.mode;
       if (modeExisting) modeExisting.classList.toggle("active", uploadMode === "existing");
       if (modeNew) modeNew.classList.toggle("active", uploadMode === "new");
+      if (modeExisting) modeExisting.hidden = uploadMode !== "existing";
+      if (modeNew) modeNew.hidden = uploadMode !== "new";
       clearUploadValidation();
       updateFolderPathPreview();
     });
@@ -1797,6 +1875,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (newAlbumName) newAlbumName.value = "";
     folderLevelInputs = [];
     if (folderLevelList) folderLevelList.replaceChildren();
+    if (folderLevelList) folderLevelList.hidden = true;
     if (addFolderLevelButton) addFolderLevelButton.innerHTML = '<i class="fa fa-plus" aria-hidden="true"></i> Añadir carpeta';
     if (folderPathPreview) {
       folderPathPreview.hidden = true;
@@ -1814,6 +1893,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (uploadTabs[0]) uploadTabs[0].classList.add("active");
     if (modeExisting) modeExisting.classList.add("active");
     if (modeNew) modeNew.classList.remove("active");
+    if (modeExisting) modeExisting.hidden = false;
+    if (modeNew) modeNew.hidden = true;
   }
 
   function updateFolderPathPreview() {
@@ -1866,6 +1947,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       folderLevelInputs = folderLevelInputs.filter(item => item !== input);
       row.remove();
       if (folderLevelInputs.length === 0) {
+        folderLevelList.hidden = true;
         addFolderLevelButton.innerHTML = '<i class="fa fa-plus" aria-hidden="true"></i> Añadir carpeta';
       }
       [...folderLevelList.children].forEach((item, index) => {
@@ -1878,6 +1960,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     row.append(number, input, remove);
     folderLevelList.append(row);
+    folderLevelList.hidden = false;
     folderLevelInputs.push(input);
     addFolderLevelButton.innerHTML = '<i class="fa fa-plus" aria-hidden="true"></i> Añadir otro nivel';
     input.focus();
