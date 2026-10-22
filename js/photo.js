@@ -378,6 +378,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     return String(value || "").trim().toLowerCase();
   }
 
+  function menuLabel(title, imageCount) {
+    const count = Math.max(0, Number.parseInt(imageCount, 10) || 0);
+    const safeTitle = escapeHtml(title);
+    return `<span class="menu-item-label">${safeTitle}</span><span class="menu-image-count" aria-hidden="true"><i class="fa fa-image"></i>${count.toLocaleString("es-ES")}</span>`;
+  }
+
   function registerRoute({ id, folder, title }) {
     const key = toRouteId(id);
     if (!key || !folder) return;
@@ -408,11 +414,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       const fullTitleText = [groupName, parentTitle, title].filter(Boolean).join(" ");
       const id = item.id ? escapeHtml(item.id) : "";
       const folder = item.folder ? escapeHtml(item.folder) : "";
-      const link = id
-        ? `<a href="#${id}" data-folder="${folder}" data-title="${escapeHtml(fullTitleText)}">${escapeHtml(title)}</a>`
-        : `<a href="javascript:void(0)">${escapeHtml(title)}</a>`;
       const children = renderMenuItems(item.children, groupName, [parentTitle, title].filter(Boolean).join(" "));
       const hasChildren = children !== "";
+      const count = Math.max(0, Number.parseInt(item.imageCount, 10) || 0);
+      const label = menuLabel(title, count);
+      const ariaLabel = `${title}, ${count} ${count === 1 ? "imagen" : "imágenes"}`;
+      const link = id
+        ? `<a href="#${id}" data-folder="${folder}" data-title="${escapeHtml(fullTitleText)}" aria-label="${escapeHtml(ariaLabel)}">${label}</a>`
+        : `<a href="${hasChildren ? "#" : "javascript:void(0)"}"${hasChildren ? ` aria-label="${escapeHtml(ariaLabel)}"` : ""}>${label}</a>`;
       const classes = [
         "menu-item",
         "menu-item-type-custom",
@@ -444,9 +453,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       const groupId = group.id ? escapeHtml(group.id) : "";
       const groupFolder = group.folder ? escapeHtml(group.folder) : "";
       const hasChildren = Array.isArray(group.items) && group.items.length > 0;
+      const count = Math.max(0, Number.parseInt(group.imageCount, 10) || 0);
+      const groupLabel = menuLabel(group.group, count);
+      const groupAriaLabel = `${group.group}, ${count} ${count === 1 ? "imagen" : "imágenes"}`;
       const groupHref = groupId ? `#${groupId}` : "#";
       const groupData = groupId
-        ? ` data-folder="${groupFolder}" data-title="${groupName}"`
+        ? ` data-folder="${groupFolder}" data-title="${groupName}" aria-label="${escapeHtml(groupAriaLabel)}"`
         : "";
 
       const children = renderMenuItems(group.items, group.group);
@@ -461,7 +473,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       return `
         <li class="${liClasses}">
-          <a href="${groupHref}"${groupData}>${groupName}</a>
+          <a href="${groupHref}"${groupData}${groupId ? "" : ` aria-label="${escapeHtml(groupAriaLabel)}"`}>${groupLabel}</a>
           ${hasChildren ? `<ul class="sub-menu">${children}</ul>` : ""}
         </li>
       `;
@@ -484,9 +496,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       const groupId = group.id ? escapeHtml(group.id) : "";
       const groupFolder = group.folder ? escapeHtml(group.folder) : "";
       const hasChildren = Array.isArray(group.items) && group.items.length > 0;
+      const count = Math.max(0, Number.parseInt(group.imageCount, 10) || 0);
+      const groupLabel = menuLabel(group.group, count);
+      const groupAriaLabel = `${group.group}, ${count} ${count === 1 ? "imagen" : "imágenes"}`;
       const groupHref = groupId ? `#${groupId}` : "#";
       const groupData = groupId
-        ? ` data-folder="${groupFolder}" data-title="${groupName}"`
+        ? ` data-folder="${groupFolder}" data-title="${groupName}" aria-label="${escapeHtml(groupAriaLabel)}"`
         : "";
 
       const children = renderMenuItems(group.items, group.group);
@@ -501,7 +516,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       return `
         <li class="${liClasses}">
-          <a href="${groupHref}"${groupData}>${groupName}</a>
+          <a href="${groupHref}"${groupData}${groupId ? "" : ` aria-label="${escapeHtml(groupAriaLabel)}"`}>${groupLabel}</a>
           ${hasChildren ? `<ul class="sub-menu">${children}</ul>` : ""}
         </li>
       `;

@@ -27,9 +27,9 @@ function isVisibleDir(string $path, string $name): bool {
     && is_dir($path . DIRECTORY_SEPARATOR . $name);
 }
 
-function hasGalleryImages(string $path): bool {
+function countGalleryImages(string $path): int {
   $images = glob($path . '/*.{jpg,JPG,jpeg,JPEG,png,PNG,webp,WEBP}', GLOB_BRACE) ?: [];
-  return count($images) > 0;
+  return count($images);
 }
 
 function makeLabel(string $value): string {
@@ -57,12 +57,12 @@ function collectGalleryFolders(string $parentPath, string $parent, string $relat
     $childPath = $parentPath . DIRECTORY_SEPARATOR . $name;
     $childRelative = $relative !== '' ? $relative . '/' . $name : $name;
 
-    $hasImages = hasGalleryImages($childPath);
+    $imageCount = countGalleryImages($childPath);
     $children = collectGalleryFolders($childPath, $parent, $childRelative, $usedIds);
-    if (!$hasImages && count($children) === 0) continue;
+    if ($imageCount === 0 && count($children) === 0) continue;
 
     $id = null;
-    if ($hasImages) {
+    if ($imageCount > 0) {
       $id = makeId($parent, str_replace('/', '_', $childRelative));
       $baseId = $id;
       $suffix = 2;
@@ -77,6 +77,9 @@ function collectGalleryFolders(string $parentPath, string $parent, string $relat
       'id' => $id,
       'folder' => $parent . '/' . $childRelative,
       'title' => makeLabel($name),
+      'imageCount' => $imageCount > 0
+        ? $imageCount
+        : array_sum(array_column($children, 'imageCount')),
       'children' => $children,
     ];
   }
@@ -97,7 +100,8 @@ $usedIds = [];
 
 foreach ($parentDirs as $parent) {
   $parentPath = $imgRoot . DIRECTORY_SEPARATOR . $parent;
-  $parentHasImages = hasGalleryImages($parentPath);
+  $parentImageCount = countGalleryImages($parentPath);
+  $parentHasImages = $parentImageCount > 0;
 
   $items = [];
   $directId = null;
@@ -124,6 +128,9 @@ foreach ($parentDirs as $parent) {
     'id' => $directId,
     'folder' => $parentHasImages ? $parent : null,
     'parentFolder' => $parent,
+    'imageCount' => $parentHasImages
+      ? $parentImageCount
+      : array_sum(array_column($items, 'imageCount')),
     'items' => array_values($items),
   ];
 }

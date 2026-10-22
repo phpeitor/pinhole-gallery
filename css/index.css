@@ -616,6 +616,45 @@ body.pinhole-lock .pinhole-gallery {
     transition: color .16s ease, background-color .16s ease, padding .16s ease;
 }
 
+.pinhole-header .pinhole-nav:not(.pinhole-nav-responsive) .menu-item-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pinhole-header .pinhole-nav:not(.pinhole-nav-responsive) .menu-image-count,
+.pinhole-responsive-menu .pinhole-nav-responsive .menu-image-count {
+    display: inline-flex;
+    flex: 0 0 auto;
+    min-width: 27px;
+    min-height: 22px;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    margin-left: 12px;
+    padding: 0 7px;
+    border: 1px solid rgba(197, 168, 255, .26);
+    border-radius: 11px;
+    color: #d8c8f4;
+    background: rgba(197, 168, 255, .1);
+    font: 600 11px/1 "Arial", sans-serif;
+    font-variant-numeric: tabular-nums;
+}
+
+.pinhole-header .pinhole-nav:not(.pinhole-nav-responsive) .menu-image-count i,
+.pinhole-responsive-menu .pinhole-nav-responsive .menu-image-count i {
+    color: #c5a8ff;
+    font-size: 10px;
+}
+
+/* El contador es informativo; los clics siempre deben llegar al enlace que
+   contiene el nombre del álbum y el badge. */
+.pinhole-nav .menu-image-count,
+.pinhole-nav .menu-image-count * {
+    pointer-events: none;
+}
+
 .pinhole-header .pinhole-nav:not(.pinhole-nav-responsive) .sub-menu li:hover > a,
 .pinhole-header .pinhole-nav:not(.pinhole-nav-responsive) .sub-menu li.menu-open > a,
 .pinhole-header .pinhole-nav:not(.pinhole-nav-responsive) .sub-menu a:focus-visible {
@@ -691,6 +730,20 @@ body.pinhole-lock .pinhole-gallery {
     padding: 7px 48px 7px 14px;
     color: #d9d4e2;
     font-size: .95em;
+}
+
+.pinhole-responsive-menu .pinhole-nav-responsive .menu-item-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.pinhole-responsive-menu .pinhole-nav-responsive .menu-image-count {
+    min-height: 21px;
+    margin-left: auto;
+    color: #ded2f1;
+    background: rgba(197, 168, 255, .08);
 }
 
 .pinhole-responsive-menu .pinhole-nav-responsive .sub-menu .sub-menu {
