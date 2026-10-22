@@ -570,6 +570,83 @@ body.pinhole-lock .pinhole-gallery {
     top: 0;
 }
 
+/* Escritorio: paneles oscuros de alto contraste, filas claras y estados
+   activos visibles para que el menú combine con el tema de la galería. */
+.pinhole-header .pinhole-nav:not(.pinhole-nav-responsive) > li > .sub-menu {
+    top: calc(100% + 8px);
+    box-sizing: border-box;
+    width: 238px;
+    padding: 7px;
+    border: 1px solid #4b4556;
+    background: #24212a;
+    box-shadow: 0 14px 32px rgba(0, 0, 0, .38), 4px 4px 0 rgba(0, 0, 0, .2);
+    transform: translateY(-4px);
+    transition: opacity .16s ease, transform .16s ease, visibility .16s ease;
+}
+
+.pinhole-header .pinhole-nav:not(.pinhole-nav-responsive) li.menu-open > .sub-menu {
+    transform: translateY(0);
+}
+
+.pinhole-header .pinhole-nav:not(.pinhole-nav-responsive) > li.menu-open > a {
+    color: #c5a8ff;
+}
+
+.pinhole-header .pinhole-nav:not(.pinhole-nav-responsive) .sub-menu li {
+    margin: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, .07);
+}
+
+.pinhole-header .pinhole-nav:not(.pinhole-nav-responsive) .sub-menu li:last-child {
+    border-bottom: 0;
+}
+
+.pinhole-header .pinhole-nav:not(.pinhole-nav-responsive) .sub-menu a {
+    display: flex;
+    box-sizing: border-box;
+    min-height: 44px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 13px;
+    color: #f4f1f8;
+    background: transparent;
+    font-size: 14px;
+    line-height: 1.35;
+    text-decoration: none;
+    transition: color .16s ease, background-color .16s ease, padding .16s ease;
+}
+
+.pinhole-header .pinhole-nav:not(.pinhole-nav-responsive) .sub-menu li:hover > a,
+.pinhole-header .pinhole-nav:not(.pinhole-nav-responsive) .sub-menu li.menu-open > a,
+.pinhole-header .pinhole-nav:not(.pinhole-nav-responsive) .sub-menu a:focus-visible {
+    padding-left: 16px;
+    color: #fff;
+    background: #393342;
+}
+
+.pinhole-header .pinhole-nav:not(.pinhole-nav-responsive) > li > a:focus-visible,
+.pinhole-header .pinhole-nav:not(.pinhole-nav-responsive) .sub-menu a:focus-visible {
+    outline: 2px solid #c5a8ff;
+    outline-offset: -2px;
+}
+
+.pinhole-header .pinhole-nav:not(.pinhole-nav-responsive) .sub-menu .sub-menu {
+    top: 0;
+    left: calc(100% + 7px);
+    box-sizing: border-box;
+    width: 238px;
+    padding: 7px;
+    border: 1px solid #4b4556;
+    background: #24212a;
+    box-shadow: 0 14px 32px rgba(0, 0, 0, .38), 4px 4px 0 rgba(0, 0, 0, .2);
+    transform: translateX(-4px);
+}
+
+.pinhole-header .pinhole-nav:not(.pinhole-nav-responsive) .sub-menu li.menu-open > .sub-menu {
+    left: calc(100% + 7px);
+    transform: translateX(0);
+}
+
 /* Responsive sidebar: jerarquía legible, filas fáciles de tocar y acordeones
    con el control separado del enlace del álbum. */
 .pinhole-responsive-menu .pinhole-nav-responsive > li {
