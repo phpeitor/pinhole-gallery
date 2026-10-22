@@ -25,7 +25,7 @@ function getInteractiveCodeColor() {
 }
 
 // DPR - Cap at 2 to protect fill-rate on 3x screens; drop the cap for max sharpness.
-const dpr = Math.min(window.devicePixelRatio || 1, 2);
+let dpr = Math.min(window.devicePixelRatio || 1, 2);
 
 const CONFIG = {
   awidth: w,
@@ -56,15 +56,29 @@ function sizeCanvas() {
   c.height = Math.round(height * dpr);
 }
 
+let resizeTimer = 0;
 window.addEventListener('resize', () => {
-  if (c && c.width) {
-    sizeCanvas();
-    CONFIG.awidth = getViewportWidth();
-    CONFIG.aheight = getViewportHeight();
-    CONFIG.cellWidth = CONFIG.awidth / (CONFIG.gridW - 1);
-    CONFIG.cellHeight = CONFIG.aheight / (CONFIG.gridH - 1);
-  }
-})
+  window.clearTimeout(resizeTimer);
+  resizeTimer = window.setTimeout(() => {
+    const width = getViewportWidth();
+    const height = getViewportHeight();
+    const nextDpr = Math.min(window.devicePixelRatio || 1, 2);
+    if (c && width === CONFIG.awidth && height === CONFIG.aheight && nextDpr === dpr) return;
+
+    CONFIG.awidth = width;
+    CONFIG.aheight = height;
+    CONFIG.gridW = Math.min(48, Math.max(18, Math.floor(width / 36)));
+    CONFIG.gridH = Math.min(32, Math.max(14, Math.floor(height / 36)));
+    CONFIG.cellWidth = width / (CONFIG.gridW - 1);
+    CONFIG.cellHeight = height / (CONFIG.gridH - 1);
+    dpr = nextDpr;
+
+    // Rebuild the particle grid on viewport/DPR changes. Resizing only the
+    // canvas left the old grid dimensions in place and could make the effect
+    // look frozen or clipped after responsive devtools/browser resizes.
+    if (c) main();
+  }, 140);
+}, { passive: true });
 
 let rafID = 0, input, c, refreshGlyphs, runloop;
 const TARGET_FRAME_MS = 1000 / 30;
@@ -86,6 +100,7 @@ function syncBackgroundAnimation() {
 }
 
 document.addEventListener('visibilitychange', syncBackgroundAnimation);
+window.addEventListener('pageshow', syncBackgroundAnimation);
 const backgroundClassObserver = new MutationObserver(syncBackgroundAnimation);
 backgroundClassObserver.observe(document.body, { attributes: true, attributeFilter: ['class'] });
 
@@ -136,6 +151,11 @@ function main() {
   container.appendChild(c);
   sizeCanvas();
   const ctx = c.getContext('2d');
+  if (!ctx) {
+    c.remove();
+    c = null;
+    return;
+  }
 
   const particles = [];
   const constraints = [];

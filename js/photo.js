@@ -674,6 +674,31 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
+  function renderHomeAlbumRail() {
+    const routes = getGalleryRoutes().slice(0, 12);
+    if (routes.length === 0) return "";
+
+    const albumLinks = routes.map((route, index) => {
+      const title = String(route.title || route.id);
+      const initial = Array.from(title.trim())[0] || "•";
+      return `
+        <a class="home-album-link story-tone-${index % 6}" href="#${escapeHtml(route.id)}"
+           data-folder="${escapeHtml(route.folder)}" data-title="${escapeHtml(title)}"
+           aria-label="Abrir álbum ${escapeHtml(title)}">
+          <span class="home-story-avatar" aria-hidden="true"><span>${escapeHtml(initial.toUpperCase())}</span></span>
+          <span class="home-album-name">${escapeHtml(title)}</span>
+        </a>
+      `;
+    }).join("");
+
+    return `
+      <div class="home-album-section">
+        <div class="home-album-heading"><span>Álbumes</span><span>Desliza para explorar</span></div>
+        <nav class="home-album-rail" aria-label="Acceso rápido a álbumes">${albumLinks}</nav>
+      </div>
+    `;
+  }
+
   function showInteractiveBackground() {
     document.body.classList.toggle("show-interactive-background", true);
   }
@@ -706,7 +731,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     totalItems = 0;
     isLoading = false;
 
-    titleEl.textContent = "Inicio";
+    titleEl.textContent = "Tu espacio de recuerdos";
     metaEl.textContent = "";
     setDownloadActionState({ enabled: false, loading: false });
     setTopActionsVisibility(HAS_TOKEN);
@@ -719,12 +744,21 @@ document.addEventListener("DOMContentLoaded", async () => {
     galleryContainer.classList.add("pinhole-gallery-loaded");
 
     galleryContainer.innerHTML = `
-      <section class="home-hero" aria-label="Presentación del proyecto">
-        <div class="home-hero-slider is-loading" aria-label="Imágenes destacadas aleatorias">
+      <section class="home-hero" aria-label="Presentación de la galería">
+        <div class="home-welcome">
+          <span class="home-welcome-kicker"><i class="fa fa-camera" aria-hidden="true"></i> TU ESPACIO PRIVADO</span>
+          <h2>Momentos que <span>merecen quedarse.</span></h2>
+          <p>Un lugar para volver a tus recuerdos favoritos, en cualquier momento.</p>
+          ${renderHomeAlbumRail()}
+        </div>
+        <div class="home-hero-visual">
+          <div class="home-hero-slider is-loading" aria-label="Imágenes destacadas aleatorias">
           ${HAS_TOKEN
             ? `<div class="home-hero-slider-loader">Cargando recuerdos...</div>`
             : `<video class="home-guest-video" src="./resources/${homeVideo}" autoplay muted loop playsinline preload="auto" aria-label="Video de presentación"></video>`
           }
+          </div>
+          <span class="home-visual-caption"><i class="fa fa-heart" aria-hidden="true"></i> Recuerdos para volver a vivir</span>
         </div>
       </section>
     `;
@@ -1269,7 +1303,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    const link = e.target.closest("#menu-main-menu a[href^='#'], #menu-main-menu-1 a[href^='#'], #menu-main-menu-2 a[href^='#'], .pinhole-sticky-bottom a[href^='#'], .pinhole-site-branding a[rel='home']");
+    const link = e.target.closest("#menu-main-menu a[href^='#'], #menu-main-menu-1 a[href^='#'], #menu-main-menu-2 a[href^='#'], .pinhole-sticky-bottom a[href^='#'], .pinhole-site-branding a[rel='home'], .home-album-link[href^='#']");
     if (!link) return;
 
     // En escritorio, abrir grupos con clic evita depender de una trayectoria
