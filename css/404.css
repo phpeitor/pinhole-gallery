@@ -57,6 +57,8 @@ html, body {
 }
 
 #rive-error[hidden] { display: none; }
+#rive-error[role="button"] { cursor: pointer; }
+#rive-error:focus-visible { outline: 3px solid var(--error-lilac); outline-offset: -6px; }
 
 @keyframes errorRiveSpin { to { transform: translate(-50%, -50%) rotate(360deg); } }
 
@@ -145,6 +147,33 @@ html, body {
   outline-offset: -5px;
 }
 
+.error-home-link {
+  position: absolute;
+  z-index: 6;
+  right: max(20px, env(safe-area-inset-right));
+  bottom: max(20px, env(safe-area-inset-bottom));
+  display: inline-flex;
+  min-height: 46px;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 0 17px;
+  border: 1px solid rgba(246, 240, 223, .36);
+  border-radius: 999px;
+  background: rgba(23, 21, 31, .86);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, .28);
+  color: var(--error-paper);
+  font-size: 13px;
+  font-weight: 650;
+  text-decoration: none;
+  backdrop-filter: blur(10px);
+  transition: border-color .18s ease, background .18s ease, transform .18s ease;
+}
+
+.error-home-link > span { color: var(--error-lilac); font-size: 19px; line-height: 1; }
+.error-home-link:hover { border-color: var(--error-lilac); background: rgba(45, 39, 59, .96); transform: translateY(-2px); }
+.error-home-link:focus-visible { outline: 2px solid var(--error-lilac); outline-offset: 3px; }
+
 .error-controls-404 {
   top: 80%;
   right: auto;
@@ -196,6 +225,7 @@ html, body {
   .error-button { min-height: 42px; padding: 0 10px; font-size: 11px; }
   .error-triggers .error-button { width: auto; min-width: 44px; padding: 0 9px; }
   .rive-home-hotspot { top: 80%; left: 53%; width: 33%; height: 15%; }
+  .error-home-link { right: max(12px, env(safe-area-inset-right)); bottom: max(12px, env(safe-area-inset-bottom)); min-height: 44px; padding: 0 14px; }
   .error-controls-404 {
     right: auto;
     top: 70%;

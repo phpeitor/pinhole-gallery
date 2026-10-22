@@ -6,20 +6,23 @@
     <meta name="theme-color" content="#17151f">
     <title>404 · Media PHPeitor</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='75'>📷</text></svg>">
-    <link rel="stylesheet" href="./css/404.css?v=3">
+    <link rel="stylesheet" href="./css/404.css?v=4">
 </head>
 <body>
     <main class="error-stage is-loading" data-error-code="404">
-        <canvas id="rive-error" data-rive-src="./resources/404.riv?v=2" data-state-machine="State Machine 1" data-click-input="Click" data-reset-input="Reset" aria-label="Animación interactiva de error 404"></canvas>
+        <canvas id="rive-error" data-rive-src="./resources/404.riv?v=2" data-state-machine="State Machine 1" data-click-input="Click" data-reset-input="Reset" role="button" tabindex="0" aria-pressed="false" aria-label="Toca o pulsa Enter para animar al personaje 404"></canvas>
         <div id="rive-fallback" class="rive-fallback" hidden>
             <span class="fallback-code">404</span>
             <span>La página no está disponible</span>
         </div>
         <p class="error-status"><strong>404</strong><span>Página no encontrada</span></p>
        
-        <a id="rive-home-hotspot" class="rive-home-hotspot" href="./index.html" aria-label="Back home"></a>
+        <a id="rive-home-hotspot" class="rive-home-hotspot" href="./index.html" aria-label="Volver al inicio"></a>
+        <a id="rive-home-link" class="error-home-link" href="./index.html">
+            <span aria-hidden="true">←</span> Volver al inicio
+        </a>
     </main>
     <script defer src="https://unpkg.com/@rive-app/canvas@2.31.3"></script>
-    <script defer src="./js/404.js?v=5"></script>
+    <script defer src="./js/404.js?v=6"></script>
 </body>
 </html>

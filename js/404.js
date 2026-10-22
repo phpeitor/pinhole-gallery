@@ -20,6 +20,7 @@
   let resetInput = null;
   let triggerInputs = [];
   let activeAnimationIndex = -1;
+  let clickResetTimer = 0;
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   const stateMachineName = canvas.dataset.stateMachine;
@@ -62,6 +63,7 @@
           const inputs = stateMachineName ? (riveInstance.stateMachineInputs(stateMachineName) || []) : [];
           clickInput = inputs.find(input => input.name === canvas.dataset.clickInput) || null;
           resetInput = inputs.find(input => input.name === canvas.dataset.resetInput) || null;
+          if (!clickInput) console.warn(`No se encontró el input booleano "${canvas.dataset.clickInput}" en ${stateMachineName}`);
           const triggerNames = (canvas.dataset.triggerInputs || "")
             .split(",")
             .map(name => name.trim())
@@ -69,6 +71,7 @@
           triggerInputs = triggerNames
             .map(name => inputs.find(input => input.name === name))
             .filter(Boolean);
+          canvas.setAttribute("aria-pressed", String(Boolean(clickInput?.value)));
           document.querySelectorAll("[data-rive-animation]").forEach(button => {
             button.disabled = !animationNames.includes(button.dataset.riveAnimation);
           });
@@ -85,9 +88,31 @@
 
   window.addEventListener("resize", () => riveInstance?.resizeDrawingSurfaceToCanvas());
 
-  canvas.addEventListener("pointerdown", () => setCanvasClick(true));
-  window.addEventListener("pointerup", () => setCanvasClick(false));
-  canvas.addEventListener("pointerleave", () => setCanvasClick(false));
+  const playCharacterClick = () => {
+    if (!clickInput) return;
+    window.clearTimeout(clickResetTimer);
+    // Force a fresh false -> true edge every time; some Rive state machines
+    // only enter the click animation on the rising edge of their Boolean.
+    clickInput.value = false;
+    canvas.setAttribute("aria-pressed", "false");
+    requestAnimationFrame(() => {
+      if (!clickInput) return;
+      clickInput.value = true;
+      canvas.setAttribute("aria-pressed", "true");
+      clickResetTimer = window.setTimeout(() => {
+        if (!clickInput) return;
+        clickInput.value = false;
+        canvas.setAttribute("aria-pressed", "false");
+      }, 900);
+    });
+  };
+
+  canvas.addEventListener("click", playCharacterClick);
+  canvas.addEventListener("keydown", event => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    playCharacterClick();
+  });
 
   document.getElementById("rive-reset")?.addEventListener("click", () => {
     setCanvasClick(false);
@@ -118,7 +143,7 @@
     });
   }
 
-  document.querySelectorAll("[data-rive-home], #rive-home-hotspot").forEach(homeLink => {
+  document.querySelectorAll("[data-rive-home], #rive-home-hotspot, #rive-home-link").forEach(homeLink => {
     homeLink.addEventListener("click", event => {
       if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
       event.preventDefault();
