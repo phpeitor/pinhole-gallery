@@ -517,7 +517,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (!item.querySelector(":scope > .pinhole-nav-widget-acordion")) {
         item.querySelector(":scope > a")?.insertAdjacentHTML(
           "afterend",
-          '<span class="pinhole-nav-widget-acordion"><i class="fa fa-angle-down"></i></span>'
+          '<button class="pinhole-nav-widget-acordion" type="button" aria-label="Abrir submenú" aria-expanded="false"><i class="fa fa-angle-down" aria-hidden="true"></i></button>'
         );
       }
     });
@@ -1236,6 +1236,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // ====== Navegación de menú ======
   document.addEventListener("click", (e) => {
+    const accordion = e.target.closest(".pinhole-responsive-menu .pinhole-nav-widget-acordion");
+    if (accordion) {
+      window.setTimeout(() => {
+        const expanded = accordion.closest("li")?.classList.contains("active") || false;
+        accordion.setAttribute("aria-expanded", String(expanded));
+        accordion.setAttribute("aria-label", expanded ? "Cerrar submenú" : "Abrir submenú");
+      }, 80);
+      return;
+    }
+
     const link = e.target.closest("#menu-main-menu a[href^='#'], #menu-main-menu-1 a[href^='#'], #menu-main-menu-2 a[href^='#'], .pinhole-sticky-bottom a[href^='#'], .pinhole-site-branding a[rel='home']");
     if (!link) return;
 

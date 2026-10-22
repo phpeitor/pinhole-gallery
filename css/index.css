@@ -570,6 +570,98 @@ body.pinhole-lock .pinhole-gallery {
     top: 0;
 }
 
+/* Responsive sidebar: jerarquía legible, filas fáciles de tocar y acordeones
+   con el control separado del enlace del álbum. */
+.pinhole-responsive-menu .pinhole-nav-responsive > li {
+    margin: 0;
+    padding: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, .09);
+}
+
+.pinhole-responsive-menu .pinhole-nav-responsive li > a {
+    display: flex;
+    min-height: 48px;
+    align-items: center;
+    padding: 8px 52px 8px 14px;
+    color: #f6f3fb;
+    line-height: 1.35;
+    text-decoration: none;
+    transition: background-color .18s ease, color .18s ease;
+}
+
+.pinhole-responsive-menu .pinhole-nav-responsive li > a:hover,
+.pinhole-responsive-menu .pinhole-nav-responsive li > a:focus-visible,
+.pinhole-responsive-menu .pinhole-nav-responsive li.active > a {
+    color: #fff;
+    background: rgba(197, 168, 255, .1);
+}
+
+.pinhole-responsive-menu .pinhole-nav-responsive .sub-menu {
+    margin: 0 0 8px 14px;
+    padding: 4px 0 4px 8px;
+    border: 0;
+    border-left: 2px solid rgba(197, 168, 255, .48);
+}
+
+.pinhole-responsive-menu .pinhole-nav-responsive .sub-menu li {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.pinhole-responsive-menu .pinhole-nav-responsive .sub-menu a {
+    min-height: 44px;
+    padding: 7px 48px 7px 14px;
+    color: #d9d4e2;
+    font-size: .95em;
+}
+
+.pinhole-responsive-menu .pinhole-nav-responsive .sub-menu .sub-menu {
+    margin: 0 0 4px 12px;
+    border-left-color: rgba(255, 93, 131, .45);
+}
+
+.pinhole-responsive-menu .pinhole-nav-responsive .sub-menu .sub-menu a {
+    padding-left: 14px;
+}
+
+.pinhole-responsive-menu .pinhole-nav-widget-acordion {
+    top: 2px;
+    right: 2px;
+    display: grid;
+    width: 44px;
+    height: 44px;
+    place-items: center;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, .1);
+    border-radius: 2px;
+    color: #c5a8ff;
+    background: rgba(255, 255, 255, .04);
+    font: inherit;
+    line-height: 1;
+    cursor: pointer;
+    appearance: none;
+    transition: background-color .18s ease, transform .18s ease;
+}
+
+.pinhole-responsive-menu .pinhole-nav-widget-acordion:hover,
+.pinhole-responsive-menu .pinhole-nav-widget-acordion:focus-visible {
+    background: rgba(197, 168, 255, .15);
+}
+
+.pinhole-responsive-menu li.active > .pinhole-nav-widget-acordion i {
+    transform: rotate(180deg);
+}
+
+.pinhole-responsive-menu .pinhole-nav-widget-acordion i {
+    transition: transform .18s ease;
+}
+
+.pinhole-responsive-menu .pinhole-nav-widget-acordion:focus-visible {
+    outline: 2px solid #c5a8ff;
+    outline-offset: 2px;
+}
+
 body.home-intro .pinhole-header {
     margin-bottom: 8px;
 }
