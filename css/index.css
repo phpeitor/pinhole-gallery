@@ -548,6 +548,28 @@ body.pinhole-lock .pinhole-gallery {
     padding-left: 29px;
 }
 
+/* El menú de escritorio también empieza cerrado: no abrir por hover evita
+   que Emma y sus álbumes aparezcan expandidos al pasar el puntero (en tablet
+   es común que el hover quede activo sin un clic explícito). */
+.pinhole-header .pinhole-nav li > .sub-menu {
+    left: -9999px;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.pinhole-header .pinhole-nav li.menu-open > .sub-menu {
+    left: 0;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.pinhole-header .pinhole-nav .sub-menu li.menu-open > .sub-menu {
+    left: calc(100% - 2px);
+    top: 0;
+}
+
 body.home-intro .pinhole-header {
     margin-bottom: 8px;
 }
