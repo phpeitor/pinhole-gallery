@@ -1239,6 +1239,29 @@ document.addEventListener("DOMContentLoaded", async () => {
     const link = e.target.closest("#menu-main-menu a[href^='#'], #menu-main-menu-1 a[href^='#'], #menu-main-menu-2 a[href^='#'], .pinhole-sticky-bottom a[href^='#'], .pinhole-site-branding a[rel='home']");
     if (!link) return;
 
+    // En escritorio, abrir grupos con clic evita depender de una trayectoria
+    // precisa del puntero para alcanzar opciones cortas como «test».
+    const menuItem = link.closest("li.menu-item-has-children");
+    const childMenu = menuItem?.querySelector(":scope > ul.sub-menu");
+    if (childMenu && link.closest("#menu-main-menu, #menu-main-menu-1")) {
+      const willOpen = !menuItem.classList.contains("menu-open");
+      const hasRoute = Boolean(link.dataset.folder) && link.getAttribute("href") !== "#";
+      // Si el grupo también representa un álbum, primer clic abre sus niveles;
+      // el siguiente clic en el mismo título navega a ese álbum.
+      if (!willOpen && hasRoute) {
+        // Deja que continúe el manejador de navegación de álbumes.
+      } else {
+        e.preventDefault();
+        const siblingList = menuItem.parentElement;
+        siblingList?.querySelectorAll(":scope > li.menu-open").forEach((sibling) => {
+          if (sibling !== menuItem) sibling.classList.remove("menu-open");
+        });
+        menuItem.classList.toggle("menu-open", willOpen);
+        link.setAttribute("aria-expanded", String(willOpen));
+        return;
+      }
+    }
+
     const href = link.getAttribute("href") || "";
     const isBrandHome = link.matches(".pinhole-site-branding a[rel='home']");
     let id = isBrandHome ? "home" : href.replace("#", "");

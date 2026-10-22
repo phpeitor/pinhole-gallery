@@ -470,6 +470,84 @@ body.pinhole-lock .pinhole-gallery {
     color: #383838;
 }
 
+/* Mantén una zona continua entre niveles del menú: los submenús con nombres
+   cortos eran fáciles de abandonar con el puntero antes de llegar al álbum. */
+.pinhole-header .pinhole-nav > li {
+    position: relative;
+}
+
+.pinhole-header .pinhole-nav > li > .sub-menu {
+    top: 92%;
+    padding-top: 0;
+}
+
+.pinhole-header .pinhole-nav .sub-menu .sub-menu,
+.pinhole-header .pinhole-nav .sub-menu li:hover .sub-menu {
+    left: calc(100% - 2px);
+    top: 0;
+    z-index: 9001;
+}
+
+/* Puente transparente para que el cursor no cruce un hueco al pasar a
+   un submenú lateral (especialmente con viewports estrechos). */
+.pinhole-header .pinhole-nav .sub-menu .sub-menu::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 100%;
+    width: 12px;
+    height: 100%;
+    z-index: 9002;
+    pointer-events: auto;
+}
+
+/* Los enlaces ocupan toda la fila; evita que haya franjas sin hover entre
+   opciones aunque el texto (p. ej. «test») sea muy corto. */
+.pinhole-header .pinhole-nav .sub-menu > li {
+    min-height: 42px;
+}
+
+.pinhole-header .pinhole-nav .sub-menu > li > a {
+    display: block;
+    width: 100%;
+    min-height: 42px;
+}
+
+/* Los niveles internos se controlan por clic, no por hover: se mantienen
+   abiertos al mover el cursor desde el grupo hacia el álbum. */
+.pinhole-header .pinhole-nav .sub-menu .sub-menu {
+    left: calc(100% - 2px);
+    top: 0;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.pinhole-header .pinhole-nav .sub-menu li.menu-open > .sub-menu {
+    left: calc(100% - 2px);
+    top: 0;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+.pinhole-header .pinhole-nav .sub-menu > li > a {
+    box-sizing: border-box;
+    min-height: 42px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.pinhole-header .pinhole-nav .sub-menu > li:first-child > a,
+.pinhole-header .pinhole-nav .sub-menu > li:last-child > a {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.pinhole-header .pinhole-nav .sub-menu > li:hover > a {
+    padding-left: 29px;
+}
+
 body.home-intro .pinhole-header {
     margin-bottom: 8px;
 }
@@ -971,6 +1049,13 @@ body.theme-color-4 {
 .pinhole-hidden-overlay {
     position: relative;
     z-index: 1;
+}
+
+/* El header crea su propio contexto de apilamiento. Debe quedar por encima
+   de la sección: los menús desplegables se extienden visualmente sobre ella
+   y, con el mismo z-index, la sección interceptaba los clics de sus enlaces. */
+#pinhole-header {
+    z-index: 10;
 }
 
 /* Keep the theme's fixed drawer and lightbox positioning intact. */
