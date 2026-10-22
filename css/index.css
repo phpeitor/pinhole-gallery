@@ -2338,6 +2338,13 @@ body.home-intro .home-hero-slider.is-guest-video {
     .home-story-nav { transition: none !important; }
 }
 
+/* Public navigation is only useful after access has been validated. Keep the
+   token drawer action available so guests still have a way to sign in. */
+body:not(.has-token) .pinhole-main-nav,
+body:not(.has-token) .pinhole-responsive-menu {
+    display: none !important;
+}
+
 /* The authenticated card stack intentionally peeks outside its slider box.
    Clip that visual overflow at the viewport so it never creates a horizontal
    page scrollbar, while leaving normal vertical scrolling untouched. */
