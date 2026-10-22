@@ -52,7 +52,10 @@
       riveInstance = new window.rive.Rive({
         src: canvas.dataset.riveSrc,
         canvas,
-        autoplay: playInitial || (!reduceMotion && animationNames.length === 0),
+          // Keep the state machine running even with reduced-motion enabled;
+          // it is idle until the user interacts, and must be active to receive
+          // the Click input.
+          autoplay: playInitial || Boolean(stateMachineName) || (!reduceMotion && animationNames.length === 0),
         ...(stateMachineName ? { stateMachines: stateMachineName } : {}),
         layout: window.rive.Layout && window.rive.Fit
           ? new window.rive.Layout({ fit: window.rive.Fit.Cover, alignment: window.rive.Alignment?.Center })
@@ -107,10 +110,22 @@
     });
   };
 
-  canvas.addEventListener("click", playCharacterClick);
+  let lastCharacterActivation = 0;
+  canvas.addEventListener("pointerdown", () => {
+    lastCharacterActivation = Date.now();
+    playCharacterClick();
+  });
+  canvas.addEventListener("click", event => {
+    // Pointer clicks are handled on pointerdown so Rive sees the input before
+    // the browser synthesizes click. Keep click for assistive/programmatic use.
+    if (event.detail !== 0 || Date.now() - lastCharacterActivation < 400) return;
+    lastCharacterActivation = Date.now();
+    playCharacterClick();
+  });
   canvas.addEventListener("keydown", event => {
     if (event.key !== "Enter" && event.key !== " ") return;
     event.preventDefault();
+    lastCharacterActivation = Date.now();
     playCharacterClick();
   });
 
