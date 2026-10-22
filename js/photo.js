@@ -700,7 +700,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         <a class="home-album-link story-tone-${index % 6}" href="#${escapeHtml(group.id)}"
            data-folder="${escapeHtml(group.folder)}" data-title="${escapeHtml(title)}"
            aria-label="Abrir álbum ${escapeHtml(title)}">
-          <span class="home-story-avatar" aria-hidden="true"><span>${renderEmojiSprite("home-story-emoji")}</span></span>
+          <span class="home-story-avatar" aria-hidden="true"><span>${renderEmojiSprite("home-story-emoji", Math.floor(Math.random() * 3))}</span></span>
           <span class="home-album-name">${escapeHtml(title)}</span>
         </a>
       `;
