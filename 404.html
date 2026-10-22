@@ -10,17 +10,13 @@
 </head>
 <body>
     <main class="error-stage is-loading" data-error-code="404">
-        <canvas id="rive-error" data-rive-src="./resources/404.riv?v=1" data-state-machine="State Machine 1" data-click-input="Click" data-reset-input="Reset" aria-label="Animación interactiva de error 404"></canvas>
+        <canvas id="rive-error" data-rive-src="./resources/404.riv?v=2" data-state-machine="State Machine 1" data-click-input="Click" data-reset-input="Reset" aria-label="Animación interactiva de error 404"></canvas>
         <div id="rive-fallback" class="rive-fallback" hidden>
             <span class="fallback-code">404</span>
             <span>La página no está disponible</span>
         </div>
         <p class="error-status"><strong>404</strong><span>Página no encontrada</span></p>
-        <nav class="error-controls error-controls-404" aria-label="Acciones de la página">
-            <p class="error-overlay-note">No encontramos esta ruta.</p>
-            <button id="rive-reset" class="error-button error-button-ghost" type="button">Repetir</button>
-            <a class="error-button error-button-primary" href="./index.html" data-rive-home>Volver al inicio</a>
-        </nav>
+       
         <a id="rive-home-hotspot" class="rive-home-hotspot" href="./index.html" aria-label="Back home"></a>
     </main>
     <script defer src="https://unpkg.com/@rive-app/canvas@2.31.3"></script>

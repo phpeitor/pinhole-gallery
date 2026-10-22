@@ -305,11 +305,32 @@ document.addEventListener("DOMContentLoaded", async () => {
       btnToken.setAttribute("aria-busy", "true");
       if (galleryTokenButtonLabel) galleryTokenButtonLabel.textContent = "Abriendo";
     }
-    notifyUploadSuccess("Token correcto. Desbloqueando galería…");
+    showTokenUnlockLoading();
     setTimeout(() => {
       unlockGallery();
       location.reload();
     }, UNLOCK_REDIRECT_DELAY);
+  }
+
+  function showTokenUnlockLoading() {
+    let overlay = document.getElementById("token-unlock-loading");
+    if (!overlay) {
+      overlay = document.createElement("div");
+      overlay.id = "token-unlock-loading";
+      overlay.className = "token-unlock-loading";
+      overlay.setAttribute("role", "status");
+      overlay.setAttribute("aria-live", "polite");
+      overlay.innerHTML = `
+        <div class="token-unlock-card">
+          <span class="token-unlock-emblem" aria-hidden="true"><i class="fa fa-unlock-alt"></i><span></span></span>
+          <p class="token-unlock-kicker">ACCESO CONFIRMADO</p>
+          <h2>¡Ya estás dentro!</h2>
+          <p class="token-unlock-message">Estamos preparando tus recuerdos…</p>
+          <div class="token-unlock-progress" aria-hidden="true"><span></span></div>
+        </div>`;
+      document.body.appendChild(overlay);
+    }
+    requestAnimationFrame(() => overlay.classList.add("is-visible"));
   }
 
   async function checkToken() {

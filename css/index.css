@@ -3143,6 +3143,122 @@ body.home-intro.home-story-ready .home-story-nav:disabled { display: none; }
 
 @keyframes tokenSubmitSpin { to { transform: rotate(360deg); } }
 
+.token-unlock-loading {
+    position: fixed;
+    z-index: 2147483000;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    box-sizing: border-box;
+    padding: 24px;
+    background: rgba(12, 11, 17, .82);
+    backdrop-filter: blur(8px);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .24s ease, visibility .24s ease;
+}
+
+.token-unlock-loading.is-visible {
+    opacity: 1;
+    visibility: visible;
+}
+
+.token-unlock-card {
+    display: grid;
+    justify-items: center;
+    width: min(100%, 380px);
+    box-sizing: border-box;
+    padding: 34px 30px 28px;
+    border: 1px solid rgba(197, 168, 255, .3);
+    border-radius: 22px;
+    background: linear-gradient(145deg, #292536, #191721);
+    box-shadow: 0 24px 90px rgba(0, 0, 0, .48), 0 0 45px rgba(197, 168, 255, .1);
+    color: var(--pixitor-paper);
+    text-align: center;
+    transform: translateY(12px) scale(.97);
+    transition: transform .3s cubic-bezier(.2, .8, .2, 1);
+}
+
+.token-unlock-loading.is-visible .token-unlock-card {
+    transform: translateY(0) scale(1);
+}
+
+.token-unlock-emblem {
+    position: relative;
+    display: grid;
+    width: 84px;
+    height: 84px;
+    place-items: center;
+    margin-bottom: 20px;
+    border: 1px solid rgba(197, 168, 255, .3);
+    border-radius: 50%;
+    background: rgba(197, 168, 255, .1);
+    color: var(--pixitor-lilac);
+    font-size: 34px;
+    animation: tokenUnlockPulse 1.6s ease-in-out infinite;
+}
+
+.token-unlock-emblem > span {
+    position: absolute;
+    inset: -6px;
+    border: 2px solid transparent;
+    border-top-color: var(--pixitor-lilac);
+    border-right-color: rgba(197, 168, 255, .35);
+    border-radius: 50%;
+    animation: tokenUnlockSpin .9s linear infinite;
+}
+
+.token-unlock-kicker {
+    margin: 0 0 8px;
+    color: var(--pixitor-lilac);
+    font: 700 10px/1.4 "Courier New", monospace;
+    letter-spacing: .16em;
+}
+
+.token-unlock-card h2 {
+    margin: 0;
+    color: var(--pixitor-paper);
+    font-size: clamp(24px, 6vw, 30px);
+    line-height: 1.2;
+}
+
+.token-unlock-message {
+    margin: 10px 0 22px;
+    color: #b7b1c4;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.token-unlock-progress {
+    width: min(100%, 230px);
+    height: 4px;
+    overflow: hidden;
+    border-radius: 99px;
+    background: rgba(255, 255, 255, .1);
+}
+
+.token-unlock-progress > span {
+    display: block;
+    width: 42%;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, var(--pixitor-lilac), #ff83a4);
+    animation: tokenUnlockProgress 1.25s ease-in-out infinite;
+}
+
+@keyframes tokenUnlockSpin { to { transform: rotate(360deg); } }
+@keyframes tokenUnlockPulse { 50% { box-shadow: 0 0 30px rgba(197, 168, 255, .25); transform: scale(1.04); } }
+@keyframes tokenUnlockProgress { 0% { transform: translateX(-115%); } 100% { transform: translateX(250%); } }
+
+@media (prefers-reduced-motion: reduce) {
+    .token-unlock-loading,
+    .token-unlock-card,
+    .token-unlock-emblem,
+    .token-unlock-emblem > span,
+    .token-unlock-progress > span { animation: none !important; transition: none !important; }
+    .token-unlock-loading.is-visible .token-unlock-card { transform: none; }
+}
+
 body.pinhole-lock #text-3 .textwidget { text-align: center; }
 body.pinhole-lock:not(.pinhole-unlocking) .locked-icon-frame { animation: none; }
 body.pinhole-lock .partner-note { margin-top: 0; }
