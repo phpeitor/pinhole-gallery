@@ -3289,6 +3289,31 @@ body.home-intro .home-hero-slide {
     box-shadow: 0 22px 60px rgba(0, 0, 0, .42);
 }
 
+body.home-intro .home-hero-slide.is-prev,
+body.home-intro .home-hero-slide.is-next {
+    z-index: 1;
+    opacity: .68;
+    visibility: visible;
+    filter: saturate(.78) brightness(.78);
+    pointer-events: none;
+}
+
+body.home-intro .home-hero-slide.is-prev {
+    transform: translateX(-22%) rotate(-7deg) scale(.88);
+}
+
+body.home-intro .home-hero-slide.is-next {
+    transform: translateX(22%) rotate(7deg) scale(.88);
+}
+
+body.home-intro .home-hero-slide.is-active {
+    z-index: 3;
+    opacity: 1;
+    visibility: visible;
+    filter: saturate(1.04);
+    transform: translateX(0) rotate(0) scale(1);
+}
+
 body.home-intro .home-hero-slider.is-guest-video {
     width: min(100%, 460px);
     max-width: 460px;

@@ -884,8 +884,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const showSlide = (index) => {
       activeIndex = (index + slides.length) % slides.length;
+      const previousIndex = (activeIndex - 1 + slides.length) % slides.length;
+      const nextIndex = (activeIndex + 1) % slides.length;
       slides.forEach((slide, index) => {
         slide.classList.toggle("is-active", index === activeIndex);
+        slide.classList.toggle("is-prev", slides.length > 2 && index === previousIndex);
+        slide.classList.toggle("is-next", slides.length > 2 && index === nextIndex);
         slide.setAttribute("aria-hidden", index === activeIndex ? "false" : "true");
       });
       indicators.forEach((indicator, index) => {
