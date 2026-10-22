@@ -2338,6 +2338,13 @@ body.home-intro .home-hero-slider.is-guest-video {
     .home-story-nav { transition: none !important; }
 }
 
+/* The authenticated card stack intentionally peeks outside its slider box.
+   Clip that visual overflow at the viewport so it never creates a horizontal
+   page scrollbar, while leaving normal vertical scrolling untouched. */
+body.home-intro.has-token {
+    overflow-x: clip;
+}
+
 body.home-intro .home-welcome h2 b {
     display: inline-block;
     color: #ff7195;
