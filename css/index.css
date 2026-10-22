@@ -2338,6 +2338,79 @@ body.home-intro .home-hero-slider.is-guest-video {
     .home-story-nav { transition: none !important; }
 }
 
+body.home-intro .home-welcome h2 b {
+    display: inline-block;
+    color: #ff7195;
+    font-size: .58em;
+    vertical-align: .15em;
+}
+
+body.home-intro .home-welcome-kicker i {
+    font-family: inherit;
+    font-size: 16px;
+    font-style: normal;
+    letter-spacing: 0;
+}
+
+body.home-intro .home-floating-reactions {
+    position: absolute;
+    z-index: 5;
+    inset: 0;
+    width: min(100%, 420px);
+    height: min(100%, 560px);
+    margin: auto;
+    pointer-events: none;
+}
+
+body.home-intro .home-floating-reactions span {
+    position: absolute;
+    display: grid;
+    width: 54px;
+    height: 54px;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, .65);
+    border-radius: 19px;
+    background: rgba(255, 255, 255, .94);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, .25);
+    font-size: 27px;
+    animation: homeStickerFloat 4.2s ease-in-out infinite;
+}
+
+body.home-intro .home-floating-reactions span:nth-child(1) {
+    top: 12%;
+    left: -5%;
+    transform: rotate(-10deg);
+}
+
+body.home-intro .home-floating-reactions span:nth-child(2) {
+    top: 42%;
+    right: -6%;
+    animation-delay: -.9s;
+}
+
+body.home-intro .home-floating-reactions span:nth-child(3) {
+    right: 2%;
+    bottom: 8%;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    animation-delay: -1.8s;
+}
+
+@keyframes homeStickerFloat {
+    0%, 100% { margin-top: 0; }
+    50% { margin-top: -9px; }
+}
+
+@media (max-width: 800px) {
+    body.home-intro .home-floating-reactions span:nth-child(1) { left: -2%; }
+    body.home-intro .home-floating-reactions span:nth-child(2) { right: -2%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    body.home-intro .home-floating-reactions span { animation: none; }
+}
+
 @media (prefers-reduced-motion: reduce) {
     .upload-modal *, .upload-modal *::before, .upload-modal *::after {
         scroll-behavior: auto !important;
