@@ -1236,6 +1236,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // ====== Navegación de menú ======
   document.addEventListener("click", (e) => {
+    const clickedDesktopMenu = e.target.closest("#menu-main-menu, #menu-main-menu-1");
+    if (!clickedDesktopMenu) {
+      document.querySelectorAll("#menu-main-menu li.menu-open, #menu-main-menu-1 li.menu-open").forEach((item) => {
+        item.classList.remove("menu-open");
+        item.querySelector(":scope > a")?.setAttribute("aria-expanded", "false");
+      });
+    }
+
     const accordion = e.target.closest(".pinhole-responsive-menu .pinhole-nav-widget-acordion");
     if (accordion) {
       window.setTimeout(() => {
@@ -1300,6 +1308,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     const fallbackTitle = link.dataset.title || link.textContent.trim();
     const route = resolveRouteInfo(id, fallbackTitle);
     fetchAndRender(route.folder, route.title);
+  });
+
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    document.querySelectorAll("#menu-main-menu li.menu-open, #menu-main-menu-1 li.menu-open").forEach((item) => {
+      item.classList.remove("menu-open");
+      item.querySelector(":scope > a")?.setAttribute("aria-expanded", "false");
+    });
   });
 
   // ====== Init ======
