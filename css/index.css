@@ -2362,37 +2362,37 @@ body.home-intro .home-floating-reactions {
     pointer-events: none;
 }
 
-body.home-intro .home-floating-reactions span {
+body.home-intro .home-floating-reactions > span {
     position: absolute;
     display: grid;
-    width: 54px;
-    height: 54px;
+    width: 60px;
+    height: 60px;
     place-items: center;
     border: 1px solid rgba(255, 255, 255, .65);
-    border-radius: 19px;
+    border-radius: 50%;
     background: rgba(255, 255, 255, .94);
     box-shadow: 0 12px 30px rgba(0, 0, 0, .25);
     font-size: 27px;
     animation: homeStickerFloat 4.2s ease-in-out infinite;
 }
 
-body.home-intro .home-floating-reactions span:nth-child(1) {
+body.home-intro .home-floating-reactions > span:nth-child(1) {
     top: 12%;
     left: -5%;
     transform: rotate(-10deg);
 }
 
-body.home-intro .home-floating-reactions span:nth-child(2) {
+body.home-intro .home-floating-reactions > span:nth-child(2) {
     top: 42%;
     right: -6%;
     animation-delay: -.9s;
 }
 
-body.home-intro .home-floating-reactions span:nth-child(3) {
+body.home-intro .home-floating-reactions > span:nth-child(3) {
     right: 2%;
     bottom: 8%;
-    width: 44px;
-    height: 44px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
     animation-delay: -1.8s;
 }
@@ -2403,12 +2403,36 @@ body.home-intro .home-floating-reactions span:nth-child(3) {
 }
 
 @media (max-width: 800px) {
-    body.home-intro .home-floating-reactions span:nth-child(1) { left: -2%; }
-    body.home-intro .home-floating-reactions span:nth-child(2) { right: -2%; }
+    body.home-intro .home-floating-reactions > span:nth-child(1) { left: -2%; }
+    body.home-intro .home-floating-reactions > span:nth-child(2) { right: -2%; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-    body.home-intro .home-floating-reactions span { animation: none; }
+    body.home-intro .home-floating-reactions > span { animation: none; }
+}
+
+.emoji-sprite {
+    display: inline-block;
+    flex: 0 0 auto;
+    width: 32px;
+    height: 32px;
+    background-image: url("../resources/emojis.gif?v=2");
+    background-repeat: no-repeat;
+    background-position: var(--emoji-x, 0%) var(--emoji-y, 0%);
+    background-size: 800% 600%;
+    border-radius: 50%;
+    background-color: #fff;
+    overflow: hidden;
+}
+
+.home-story-emoji {
+    width: 42px;
+    height: 42px;
+}
+
+.home-floating-reactions .home-reaction-emoji {
+    width: 42px;
+    height: 42px;
 }
 
 @media (prefers-reduced-motion: reduce) {

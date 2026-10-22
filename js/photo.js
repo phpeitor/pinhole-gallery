@@ -385,6 +385,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     return `<span class="menu-item-label">${safeTitle}</span><span class="menu-image-count" aria-hidden="true"><i class="fa fa-image"></i>${count.toLocaleString("es-ES")}</span>`;
   }
 
+  function renderEmojiSprite(className = "", index = Math.floor(Math.random() * 8)) {
+    // El GIF nuevo es una lámina irregular (no una grilla). Cada recorte es
+    // un cuadro de 200×200 centrado sobre uno de sus ocho stickers.
+    const stickers = [
+      [426, 270], [690, 270], [964, 270], [396, 505],
+      [941, 468], [427, 721], [678, 728], [971, 725]
+    ];
+    const safeIndex = Math.max(0, Math.min(stickers.length - 1, Number.parseInt(index, 10) || 0));
+    const [left, top] = stickers[safeIndex];
+    const x = (left / (1600 - 200)) * 100;
+    const y = (top / (1200 - 200)) * 100;
+    return `<span class="emoji-sprite ${className}" style="--emoji-x:${x}%;--emoji-y:${y}%" aria-hidden="true"></span>`;
+  }
+
   function registerRoute({ id, folder, title }) {
     const key = toRouteId(id);
     if (!key || !folder) return;
@@ -680,14 +694,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     const parentAlbums = galleryMenuGroups.filter((group) => group.id && group.folder).slice(0, 12);
     if (parentAlbums.length === 0) return "";
 
-    const albumEmojis = ["😍", "🥰", "✨", "📸", "💜", "🎉"];
     const albumLinks = parentAlbums.map((group, index) => {
       const title = String(group.group || group.id);
       return `
         <a class="home-album-link story-tone-${index % 6}" href="#${escapeHtml(group.id)}"
            data-folder="${escapeHtml(group.folder)}" data-title="${escapeHtml(title)}"
            aria-label="Abrir álbum ${escapeHtml(title)}">
-          <span class="home-story-avatar" aria-hidden="true"><span>${albumEmojis[index % albumEmojis.length]}</span></span>
+          <span class="home-story-avatar" aria-hidden="true"><span>${renderEmojiSprite("home-story-emoji")}</span></span>
           <span class="home-album-name">${escapeHtml(title)}</span>
         </a>
       `;
@@ -748,13 +761,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     galleryContainer.innerHTML = `
       <section class="home-hero" aria-label="Presentación de la galería">
         <div class="home-welcome">
-          <span class="home-welcome-kicker"><i aria-hidden="true">✨</i> TU ESPACIO PRIVADO</span>
+          <span class="home-welcome-kicker"><span aria-hidden="true">✨</span> TU ESPACIO PRIVADO</span>
           <h2>Momentos que <span>merecen quedarse.</span> <b aria-hidden="true">💜</b></h2>
           <p>Un lugar para volver a tus recuerdos favoritos, en cualquier momento. <span aria-hidden="true">🥰</span></p>
           ${renderHomeAlbumRail()}
         </div>
         <div class="home-hero-visual">
-          <div class="home-floating-reactions" aria-hidden="true"><span>😍</span><span>💖</span><span>✨</span></div>
+          <div class="home-floating-reactions" aria-hidden="true"><span>${renderEmojiSprite("home-reaction-emoji")}</span><span>${renderEmojiSprite("home-reaction-emoji")}</span><span>${renderEmojiSprite("home-reaction-emoji")}</span></div>
           <div class="home-hero-slider is-loading" aria-label="Imágenes destacadas aleatorias">
           ${HAS_TOKEN
             ? `<div class="home-hero-slider-loader">Cargando recuerdos...</div>`
